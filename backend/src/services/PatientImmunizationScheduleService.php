@@ -1,0 +1,849 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Patient;
+use App\Models\Vaccine;
+use App\Models\VaccineInventory;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
+
+class PatientImmunizationScheduleService
+{
+    public function getSchedule(Patient $patient): array
+    {
+        $patient->loadMissing([
+            'immunizationRecords',
+            'optionalVaccines',
+            'vaccineSchedules.inventoryBatch',
+        ]);
+
+        /*
+         * Only vaccines that actually apply to this patient:
+         *
+         * 1. All Routine vaccines
+         * 2. Optional vaccines explicitly assigned
+         *    through patient_vaccines
+         */
+        $vaccines = $this->getApplicableVaccines($patient);
+
+        $today = Carbon::today();
+        $result = [];
+
+        foreach ($vaccines as $vaccine) {
+            $records = $patient->immunizationRecords
+                ->where('vaccine_id', $vaccine->id);
+
+            $completedDoses = $records
+                ->pluck('dose_number')
+                ->map(fn ($dose) => (int) $dose)
+                ->all();
+
+            $nextSchedule = $vaccine->schedules->first(
+                fn ($schedule) => ! in_array(
+                    (int) $schedule->dose_number,
+                    $completedDoses,
+                    true
+                )
+            );
+
+            /*
+             * Only usable inventory counts:
+             *
+             * - belongs to this vaccine
+             * - not archived
+             * - quantity greater than zero
+             * - not expired
+             */
+            $availableStock = VaccineInventory::query()
+                ->where('vaccine_id', $vaccine->id)
+                ->where('is_archived', false)
+                ->where('quantity', '>', 0)
+                ->whereDate('expiration_date', '>=', $today)
+                ->sum('quantity');
+
+            $inventoryAvailable =
+                $availableStock > 0;
+
+            /*
+             * Completed vaccine series.
+             */
+            if (! $nextSchedule) {
+                $result[] = [
+                    'vaccine_id' =>
+                        $vaccine->id,
+
+                    'vaccine_name' =>
+                        $vaccine->name,
+
+                    'category' =>
+                        $vaccine->category,
+
+                    'required_doses' =>
+                        (int) $vaccine->required_doses,
+
+                    'completed_doses' =>
+                        count($completedDoses),
+
+                    'doses_remaining' =>
+                        0,
+
+                    'next_dose' =>
+                        null,
+
+                    'recommended_age' =>
+                        null,
+
+                    'interval' =>
+                        null,
+
+                    'recommended_date' =>
+                        null,
+
+                    'interval_date' =>
+                        null,
+
+                    'eligible_date' =>
+                        null,
+
+                    'status' =>
+                        'Completed',
+
+                    'eligible' =>
+                        false,
+
+                    'available_stock' =>
+                        (int) $availableStock,
+
+                    'inventory_available' =>
+                        $inventoryAvailable,
+
+                    'can_administer' =>
+                        false,
+
+                    'completed' =>
+                        true,
+
+                    /*
+                     * Scheduling / reservation information.
+                     */
+                    'is_scheduled' =>
+                        false,
+
+                    'scheduled_date' =>
+                        null,
+
+                    'reserved_batch_id' =>
+                        null,
+
+                    'reserved_batch_number' =>
+                        null,
+
+                    'reserved_batch_expiration_date' =>
+                        null,
+
+                    'reserved_batch_quantity' =>
+                        null,
+
+                    'reserved_batch_usable' =>
+                        false,
+
+                    'priority_reason' =>
+                        null,
+
+                    'is_series_completion_candidate' =>
+                        false,
+
+                    'allocation_rank' =>
+                        null,
+                ];
+
+                continue;
+            }
+
+            $doseNumber =
+                (int) $nextSchedule->dose_number;
+
+            /*
+             * Find the currently committed appointment
+             * for this exact next dose.
+             */
+            $scheduledDose =
+                $patient
+                    ->vaccineSchedules
+                    ->first(
+                        function ($schedule) use (
+                            $vaccine,
+                            $doseNumber
+                        ) {
+                            return
+                                (int) $schedule->vaccine_id
+                                    === (int) $vaccine->id
+                                &&
+                                (int) $schedule->dose_number
+                                    === $doseNumber
+                                &&
+                                $schedule->status
+                                    === 'scheduled';
+                        }
+                    );
+
+            $reservedBatch =
+                $scheduledDose
+                    ?->inventoryBatch;
+
+            /*
+             * The reserved batch is usable only if
+             * it still exists, is active, has stock,
+             * belongs to this vaccine, and is not expired.
+             */
+            $reservedBatchUsable =
+                $reservedBatch !== null
+                &&
+                (int) $reservedBatch->vaccine_id
+                    === (int) $vaccine->id
+                &&
+                ! $reservedBatch->is_archived
+                &&
+                (int) $reservedBatch->quantity > 0
+                &&
+                $reservedBatch
+                    ->expiration_date
+                    ->greaterThanOrEqualTo($today);
+
+            $recommendedDate =
+                $this->getRecommendedDate(
+                    $patient->date_of_birth,
+                    $nextSchedule->recommended_age
+                );
+
+            $interval =
+                $nextSchedule->interval !== null
+                    ? (int) $nextSchedule->interval
+                    : null;
+
+            $intervalDate = null;
+
+            $previousDoseCompleted =
+                $doseNumber === 1;
+
+            /*
+             * Dose 2+ cannot become eligible until
+             * the immediately previous dose exists.
+             *
+             * When an interval is configured, eligibility
+             * must also respect that minimum interval.
+             */
+            if ($doseNumber > 1) {
+                $previousRecord =
+                    $records->first(
+                        fn ($record) =>
+                            (int) $record->dose_number
+                                === $doseNumber - 1
+                    );
+
+                $previousDoseCompleted =
+                    $previousRecord !== null;
+
+                if (
+                    $previousRecord?->date_administered
+                    &&
+                    $interval !== null
+                ) {
+                    $intervalDate =
+                        $previousRecord
+                            ->date_administered
+                            ->copy()
+                            ->addDays(
+                                $interval
+                            );
+                }
+            }
+
+            /*
+             * The dose becomes eligible on whichever
+             * requirement occurs later:
+             *
+             * - recommended age date
+             * - minimum interval date
+             */
+            $eligibleDate =
+                $this->laterDate(
+                    $recommendedDate,
+                    $intervalDate
+                );
+
+            $eligible =
+                $previousDoseCompleted
+                &&
+                $eligibleDate !== null
+                &&
+                $today->greaterThanOrEqualTo(
+                    $eligibleDate
+                );
+
+            $completedCount =
+                count($completedDoses);
+
+            $requiredDoses =
+                (int) $vaccine->required_doses;
+
+            $dosesRemaining =
+                max(
+                    0,
+                    $requiredDoses -
+                        $completedCount
+                );
+
+            $nearCompletion =
+                $requiredDoses > 1
+                &&
+                $completedCount > 0
+                &&
+                $dosesRemaining === 1;
+
+            $result[] = [
+                'vaccine_id' =>
+                    $vaccine->id,
+
+                'vaccine_name' =>
+                    $vaccine->name,
+
+                'category' =>
+                    $vaccine->category,
+
+                'required_doses' =>
+                    $requiredDoses,
+
+                'completed_doses' =>
+                    $completedCount,
+
+                'doses_remaining' =>
+                    $dosesRemaining,
+
+                /*
+                 * Series completion candidate.
+                 *
+                 * Example:
+                 * 2/3 completed -> final dose candidate.
+                 */
+                'near_completion' =>
+                    $nearCompletion,
+
+                'next_dose' =>
+                    $doseNumber,
+
+                'recommended_age' =>
+                    $nextSchedule->recommended_age,
+
+                'interval' =>
+                    $interval,
+
+                'recommended_date' =>
+                    $recommendedDate
+                        ?->toDateString(),
+
+                'interval_date' =>
+                    $intervalDate
+                        ?->toDateString(),
+
+                'eligible_date' =>
+                    $eligibleDate
+                        ?->toDateString(),
+
+                'status' =>
+                    $this->determineStatus(
+                        $today,
+                        $recommendedDate
+                    ),
+
+                'eligible' =>
+                    $eligible,
+
+                /*
+                 * Generic physical vaccine stock.
+                 */
+                'available_stock' =>
+                    (int) $availableStock,
+
+                'inventory_available' =>
+                    $inventoryAvailable,
+
+                /*
+                 * Readiness flag.
+                 *
+                 * Final administration validation
+                 * remains inside the administration
+                 * service.
+                 */
+                'can_administer' =>
+                    $eligible
+                    &&
+                    (
+                        $scheduledDose
+                            ? $reservedBatchUsable
+                            : $inventoryAvailable
+                    ),
+
+                'completed' =>
+                    false,
+
+                /*
+                 * ========================================================
+                 * APPOINTMENT / BATCH RESERVATION
+                 * ========================================================
+                 */
+
+                'is_scheduled' =>
+                    $scheduledDose !== null,
+
+                'scheduled_date' =>
+                    $scheduledDose
+                        ?->scheduled_date
+                        ?->toDateString(),
+
+                'reserved_batch_id' =>
+                    $reservedBatch
+                        ?->id,
+
+                'reserved_batch_number' =>
+                    $reservedBatch
+                        ?->batch_number,
+
+                'reserved_batch_expiration_date' =>
+                    $reservedBatch
+                        ?->expiration_date
+                        ?->toDateString(),
+
+                'reserved_batch_quantity' =>
+                    $reservedBatch !== null
+                        ? (int) $reservedBatch->quantity
+                        : null,
+
+                'reserved_batch_usable' =>
+                    $reservedBatchUsable,
+
+                /*
+                 * Frozen allocation / priority information
+                 * stored on the actual appointment.
+                 */
+                'priority_reason' =>
+                    $scheduledDose
+                        ?->priority_reason,
+
+                'is_series_completion_candidate' =>
+                    (bool) (
+                        $scheduledDose
+                            ?->is_series_completion_candidate
+                        ?? false
+                    ),
+
+                'allocation_rank' =>
+                    $scheduledDose
+                        ?->allocation_rank,
+            ];
+        }
+
+        return $result;
+    }
+
+    public function getSchedulingOptions(
+        Patient $patient
+    ): array {
+        /*
+         * Inactive patients retain their immunization
+         * history and calculated schedule, but they
+         * cannot participate in actionable scheduling.
+         */
+        if ($patient->status !== 'Active') {
+            return [];
+        }
+
+        $today = Carbon::today();
+
+        $options =
+            collect(
+                $this->getSchedule(
+                    $patient
+                )
+            )
+                ->filter(
+                    fn ($item) =>
+                        ! $item['completed']
+                        &&
+                        $item['eligible']
+                )
+                ->sortBy(
+                    'recommended_date'
+                )
+                ->values();
+
+        if ($options->isEmpty()) {
+            return [];
+        }
+
+        /*
+         * Master schedule points must be calculated
+         * from the SAME applicable vaccine set.
+         *
+         * This prevents unassigned Optional vaccines
+         * from changing Current Age / Recent Due labels.
+         */
+        $reachedMasterDates =
+            $this
+                ->getMasterScheduleDates(
+                    $patient
+                )
+                ->filter(
+                    fn ($date) =>
+                        $date
+                            ->lessThanOrEqualTo(
+                                $today
+                            )
+                )
+                ->sortByDesc(
+                    fn ($date) =>
+                        $date->timestamp
+                )
+                ->values();
+
+        $currentDate =
+            $reachedMasterDates
+                ->get(0);
+
+        $recentDate =
+            $reachedMasterDates
+                ->get(1);
+
+        return $options
+            ->map(
+                function ($item) use (
+                    $currentDate,
+                    $recentDate
+                ) {
+                    $date =
+                        Carbon::parse(
+                            $item[
+                                'recommended_date'
+                            ]
+                        );
+
+                    if (
+                        $currentDate
+                        &&
+                        $date->isSameDay(
+                            $currentDate
+                        )
+                    ) {
+                        $label =
+                            'Current Age';
+                    } elseif (
+                        $recentDate
+                        &&
+                        $date->isSameDay(
+                            $recentDate
+                        )
+                    ) {
+                        $label =
+                            'Recent Due';
+                    } else {
+                        $label =
+                            'Overdue';
+                    }
+
+                    $item[
+                        'schedule_label'
+                    ] = $label;
+
+                    return $item;
+                }
+            )
+            ->all();
+    }
+
+    /**
+     * Return only vaccines that participate in this
+     * patient's structured immunization schedule.
+     *
+     * Routine:
+     * Automatically applies to every patient.
+     *
+     * Optional:
+     * Only applies when explicitly linked through
+     * the patient_vaccines table.
+     */
+    private function getApplicableVaccines(
+        Patient $patient
+    ): Collection {
+        $patient->loadMissing(
+            'optionalVaccines'
+        );
+
+        $optionalVaccineIds =
+            $patient
+                ->optionalVaccines
+                ->pluck('id')
+                ->all();
+
+        return Vaccine::query()
+            ->with([
+                'schedules' =>
+                    fn ($query) =>
+                        $query->orderBy(
+                            'dose_number'
+                        ),
+            ])
+            ->where(
+                function (
+                    $query
+                ) use (
+                    $optionalVaccineIds
+                ) {
+                    $query->where(
+                        'category',
+                        'routine'
+                    );
+
+                    if (
+                        ! empty(
+                            $optionalVaccineIds
+                        )
+                    ) {
+                        $query->orWhere(
+                            function (
+                                $optionalQuery
+                            ) use (
+                                $optionalVaccineIds
+                            ) {
+                                $optionalQuery
+                                    ->where(
+                                        'category',
+                                        'optional'
+                                    )
+                                    ->whereIn(
+                                        'id',
+                                        $optionalVaccineIds
+                                    );
+                            }
+                        );
+                    }
+                }
+            )
+            ->get();
+    }
+
+    /**
+     * Get the patient's reached master schedule points.
+     *
+     * Importantly, this uses only vaccines applicable
+     * to this patient so an unassigned Optional vaccine
+     * cannot influence schedule labels.
+     */
+    private function getMasterScheduleDates(
+        Patient $patient
+    ): Collection {
+        return $this
+            ->getApplicableVaccines(
+                $patient
+            )
+            ->flatMap(
+                function (
+                    $vaccine
+                ) use (
+                    $patient
+                ) {
+                    return $vaccine
+                        ->schedules
+                        ->map(
+                            fn ($schedule) =>
+                                $this
+                                    ->getRecommendedDate(
+                                        $patient
+                                            ->date_of_birth,
+                                        $schedule
+                                            ->recommended_age
+                                    )
+                        );
+                }
+            )
+            ->filter()
+            ->unique(
+                fn ($date) =>
+                    $date->toDateString()
+            );
+    }
+
+    private function getRecommendedDate(
+        Carbon $birthDate,
+        ?string $recommendedAge
+    ): ?Carbon {
+        if (! $recommendedAge) {
+            return null;
+        }
+
+        $parts =
+            preg_split(
+                '/\s+/',
+                trim(
+                    strtolower(
+                        $recommendedAge
+                    )
+                )
+            );
+
+        if (
+            ! $parts
+            ||
+            count($parts) < 2
+        ) {
+            return null;
+        }
+
+        $value =
+            (float) $parts[0];
+
+        $unit =
+            $parts[1];
+
+        $date =
+            $birthDate->copy();
+
+        return match ($unit) {
+            'day', 'days' =>
+                $date->addDays(
+                    (int) round(
+                        $value
+                    )
+                ),
+
+            'week', 'weeks' =>
+                $date->addDays(
+                    (int) round(
+                        $value * 7
+                    )
+                ),
+
+            'month', 'months' =>
+                $this->addMonths(
+                    $date,
+                    $value
+                ),
+
+            'year', 'years' =>
+                $this->addYears(
+                    $date,
+                    $value
+                ),
+
+            default =>
+                null,
+        };
+    }
+
+    private function addMonths(
+        Carbon $date,
+        float $months
+    ): Carbon {
+        $whole =
+            (int) floor(
+                $months
+            );
+
+        $fraction =
+            $months -
+            $whole;
+
+        $date->addMonthsNoOverflow(
+            $whole
+        );
+
+        if ($fraction > 0) {
+            $date->addDays(
+                (int) round(
+                    $fraction * 30
+                )
+            );
+        }
+
+        return $date;
+    }
+
+    private function addYears(
+        Carbon $date,
+        float $years
+    ): Carbon {
+        $whole =
+            (int) floor(
+                $years
+            );
+
+        $fraction =
+            $years -
+            $whole;
+
+        $date->addYears(
+            $whole
+        );
+
+        if ($fraction > 0) {
+            $date->addMonthsNoOverflow(
+                (int) round(
+                    $fraction * 12
+                )
+            );
+        }
+
+        return $date;
+    }
+
+    private function laterDate(
+        ?Carbon $recommendedDate,
+        ?Carbon $intervalDate
+    ): ?Carbon {
+        if (! $recommendedDate) {
+            return $intervalDate
+                ?->copy();
+        }
+
+        if (! $intervalDate) {
+            return $recommendedDate
+                ->copy();
+        }
+
+        return $recommendedDate
+            ->greaterThan(
+                $intervalDate
+            )
+                ? $recommendedDate
+                    ->copy()
+                : $intervalDate
+                    ->copy();
+    }
+
+    private function determineStatus(
+        Carbon $today,
+        ?Carbon $recommendedDate
+    ): string {
+        if (! $recommendedDate) {
+            return 'Upcoming';
+        }
+
+        if (
+            $today->lessThan(
+                $recommendedDate
+            )
+        ) {
+            return 'Upcoming';
+        }
+
+        if (
+            $today->isSameDay(
+                $recommendedDate
+            )
+        ) {
+            return 'Due';
+        }
+
+        return 'Catch-up';
+    }
+}
