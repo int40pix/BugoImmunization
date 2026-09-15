@@ -1,14 +1,15 @@
 # Database Schemas
 
-This directory contains database schema exports, SQL dumps, and data dictionary references for the **Barangay Bugo Immunization Management System**.
+This directory contains database schema exports, SQL dumps, restore utilities, and data dictionary references for the **Barangay Bugo Immunization Management System**.
 
 ## Contents
 
-* `bugo_immunization_schema.sql`: Full MySQL/MariaDB database dump including table definitions, default roles, system vaccines, sample inventories, and test accounts.
+* `bugo_schema.sql`: Full MySQL/MariaDB database dump for the dedicated `bugo` database, including all 21 tables, default roles, system vaccines, sample inventory lots, test guardian/patient accounts, and clinical schedules.
+* `restore_database.bat`: Single-click automated database restore script targeting XAMPP MySQL.
 
 ## Schema Architecture
 
-The database is managed primarily through Laravel Eloquent Migrations located in [`../migrations/`](../migrations/).
+The database is managed through Laravel Eloquent Migrations located in [`../migrations/`](../migrations/).
 
 ### Core Entity Relationships
 1. **Users & Roles**: `roles` -> `users` (Admin, Nurse, Midwife, BHW, Guardian).
@@ -21,16 +22,19 @@ The database is managed primarily through Laravel Eloquent Migrations located in
 8. **Notifications**: Clinical reminder alerts for health staff and parents.
 9. **Password Reset Requests**: Staff-assisted guardian password recovery queue.
 
-## Importing the Schema
+## Importing & Restoring the Database
 
-To initialize the database from the SQL dump using MySQL CLI:
+### Option 1: Using the Restore Script (Recommended)
+Simply double-click `restore_database.bat` in this folder.
 
+### Option 2: Using the MySQL CLI
 ```bash
-mysql -u root -p bugo_immunization < database/schemas/bugo_immunization_schema.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS bugo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root bugo < database/schemas/bugo_schema.sql
 ```
 
-Alternatively, run fresh migrations with seeders:
-
+### Option 3: Using Laravel Artisan Migrations & Seeders
+From the `backend/` directory:
 ```bash
 php artisan migrate:fresh --seed
 ```
