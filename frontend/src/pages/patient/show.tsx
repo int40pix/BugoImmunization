@@ -211,7 +211,6 @@ export default function PatientShow() {
                                     <InfoItem label="Date of Birth" value={formatDate(patient.date_of_birth)} />
                                     <InfoItem label="Age" value={calculateAge(patient.date_of_birth)} />
                                     <InfoItem label="Sex" value={patient.sex} />
-                                    <InfoItem label="Status" value={patient.status} />
                                     <InfoItem label="Address" value={patient.address || 'Not provided'} wide />
                                 </InfoGrid>
                             </InfoSection>

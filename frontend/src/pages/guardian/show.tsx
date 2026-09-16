@@ -1043,20 +1043,6 @@ export default function GuardianShow() {
                                                     </div>
 
                                                     <div className="mt-3 flex flex-wrap items-center gap-2">
-                                                        <Badge
-                                                            variant={
-                                                                patient.status ===
-                                                                'Active'
-                                                                    ? 'default'
-                                                                    : 'secondary'
-                                                            }
-                                                            className="text-[10px]"
-                                                        >
-                                                            {
-                                                                patient.status
-                                                            }
-                                                        </Badge>
-
                                                         <span className="text-xs text-muted-foreground">
                                                             {
                                                                 patient.sex

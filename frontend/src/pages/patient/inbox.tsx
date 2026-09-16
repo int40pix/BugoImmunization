@@ -98,7 +98,7 @@ export default function PatientInbox() {
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        <Badge variant="default">{patient.status}</Badge>
+                        <Badge variant="outline">Pediatric Record</Badge>
                     </div>
                 </div>
 
@@ -106,7 +106,7 @@ export default function PatientInbox() {
                     <CardHeader>
                         <CardTitle className="flex items-center justify-between">
                             <span>Patient Profile Summary</span>
-                            <Badge variant="outline">Active Record</Badge>
+                            <Badge variant="outline">Health Record</Badge>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -127,12 +127,12 @@ export default function PatientInbox() {
                             <p className="mt-1 font-semibold">{patient.address}</p>
                         </div>
                         <div className="rounded-lg border bg-muted/20 p-3">
-                            <p className="text-sm text-muted-foreground">Email</p>
-                            <p className="mt-1 font-semibold">{patient.user?.email ?? 'Not available'}</p>
+                            <p className="text-sm text-muted-foreground">Guardian Contact</p>
+                            <p className="mt-1 font-semibold">{patient.guardian_contact ?? 'Not provided'}</p>
                         </div>
                         <div className="rounded-lg border bg-muted/20 p-3">
-                            <p className="text-sm text-muted-foreground">Account Status</p>
-                            <p className="mt-1 font-semibold">{patient.status}</p>
+                            <p className="text-sm text-muted-foreground">Relationship</p>
+                            <p className="mt-1 font-semibold">{patient.guardian_relationship ?? 'Not provided'}</p>
                         </div>
                     </CardContent>
                 </Card>

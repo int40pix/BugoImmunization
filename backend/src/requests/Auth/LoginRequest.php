@@ -49,6 +49,23 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $user = Auth::user();
+
+        if ($user) {
+            $isInactive = strtolower((string) $user->status) === 'inactive'
+                || strtolower((string) $user->account_status) === 'inactive';
+
+            if ($isInactive) {
+                Auth::logout();
+                $this->session()->invalidate();
+                $this->session()->regenerateToken();
+
+                throw ValidationException::withMessages([
+                    'email' => 'This account has been deactivated. Please contact an administrator.',
+                ]);
+            }
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

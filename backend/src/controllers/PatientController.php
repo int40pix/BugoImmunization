@@ -1070,17 +1070,19 @@ class PatientController extends Controller
 
     public function toggleStatus(Patient $patient)
     {
+        $newStatus = strtolower((string) $patient->status) === 'active'
+            ? 'Inactive'
+            : 'Active';
+
         $patient->update([
-            'status' => $patient->status === 'Active'
-                ? 'Inactive'
-                : 'Active',
+            'status' => $newStatus,
         ]);
 
         return redirect()
-            ->route('patients.index')
+            ->back()
             ->with(
                 'success',
-                'Patient status updated successfully.'
+                "Patient record status updated to {$newStatus}."
             );
     }
 

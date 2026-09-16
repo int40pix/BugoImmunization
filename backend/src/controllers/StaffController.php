@@ -12,6 +12,7 @@ class StaffController extends Controller
     public function index(Request $request)
     {
         $query = User::whereIn('role', [
+            'admin',
             'nurse',
             'midwife',
             'bhw',
@@ -85,15 +86,25 @@ class StaffController extends Controller
 
             'role' => [
                 'required',
-                'in:nurse,midwife,bhw',
+                'in:admin,nurse,midwife,bhw',
             ],
         ]);
+
+        $roleIdMap = [
+            'admin' => 1,
+            'nurse' => 2,
+            'midwife' => 3,
+            'bhw' => 4,
+        ];
 
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
+            'role_id' => $roleIdMap[$validated['role']] ?? null,
+            'status' => 'active',
+            'account_status' => 'active',
         ]);
 
         return redirect()
@@ -142,14 +153,23 @@ class StaffController extends Controller
     // Activates or deactivates a staff account
     public function toggleStatus(User $user)
     {
+        if (auth()->id() === $user->id) {
+            return redirect()
+                ->back()
+                ->with('error', 'You cannot deactivate your own account.');
+        }
+
+        $newStatus = (strtolower((string) $user->status) === 'active' || strtolower((string) $user->account_status) === 'active')
+            ? 'inactive'
+            : 'active';
+
         $user->update([
-            'status' => $user->status === 'active'
-                ? 'inactive'
-                : 'active',
+            'status' => $newStatus,
+            'account_status' => $newStatus,
         ]);
 
         return redirect()
-            ->route('staff.index')
+            ->back()
             ->with('success', 'Staff account status updated successfully.');
     }
 }

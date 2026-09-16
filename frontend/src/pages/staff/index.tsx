@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,20 +6,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -33,8 +18,6 @@ import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
 import {
     Eye,
-    MoreHorizontal,
-    Pencil,
     Plus,
     Search,
     ShieldCheck,
@@ -144,9 +127,6 @@ export default function StaffIndex({
             },
         );
     };
-
-    const [statusDialogMember, setStatusDialogMember] = useState<Staff | null>(null);
-    const [statusUpdating, setStatusUpdating] = useState(false);
 
     const activeCount = staff.filter((s) => s.status === 'active').length;
     const inactiveCount = staff.filter((s) => s.status === 'inactive').length;
@@ -364,60 +344,18 @@ export default function StaffIndex({
                                                     })}
                                                 </td>
 
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center justify-end gap-1.5">
-                                                        <Button
-                                                            asChild
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="h-8 gap-1.5 text-xs font-medium"
-                                                        >
-                                                            <Link href={`/staff/${member.id}`}>
-                                                                <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                                                                View
-                                                            </Link>
-                                                        </Button>
-
-                                                        <Button
-                                                            asChild
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="h-8 gap-1.5 text-xs font-medium"
-                                                        >
-                                                            <Link href={`/staff/${member.id}/edit`}>
-                                                                <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                                                                Edit
-                                                            </Link>
-                                                        </Button>
-
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                                                >
-                                                                    <MoreHorizontal className="h-4 w-4" />
-                                                                    <span className="sr-only">Open actions menu</span>
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-
-                                                            <DropdownMenuContent align="end">
-                                                                <DropdownMenuItem
-                                                                    onClick={() => setStatusDialogMember(member)}
-                                                                    className={
-                                                                        member.status === 'active'
-                                                                            ? 'text-destructive focus:text-destructive'
-                                                                            : ''
-                                                                    }
-                                                                >
-                                                                    {member.status === 'active'
-                                                                        ? 'Deactivate Account'
-                                                                        : 'Activate Account'}
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </div>
+                                                <td className="px-6 py-4 text-right">
+                                                    <Button
+                                                        asChild
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-8 gap-1.5 text-xs font-medium"
+                                                    >
+                                                        <Link href={`/staff/${member.id}`}>
+                                                            <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                                                            View Details
+                                                        </Link>
+                                                    </Button>
                                                 </td>
                                             </tr>
                                         ))
@@ -428,70 +366,6 @@ export default function StaffIndex({
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Staff Status Confirmation Dialog */}
-            <Dialog
-                open={!!statusDialogMember}
-                onOpenChange={(open) => {
-                    if (!open) setStatusDialogMember(null);
-                }}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>
-                            {statusDialogMember?.status === 'active'
-                                ? 'Deactivate Staff Account?'
-                                : 'Activate Staff Account?'}
-                        </DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to {statusDialogMember?.status === 'active' ? 'deactivate' : 'activate'} the account for{' '}
-                            <span className="font-semibold text-foreground">
-                                {statusDialogMember?.name}
-                            </span>{' '}
-                            ({statusDialogMember?.email})?{' '}
-                            {statusDialogMember?.status === 'active'
-                                ? 'They will no longer be able to log in to the clinic management system.'
-                                : 'Their account access will be restored.'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter className="gap-2 sm:gap-0">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setStatusDialogMember(null)}
-                            disabled={statusUpdating}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="button"
-                            variant={statusDialogMember?.status === 'active' ? 'destructive' : 'default'}
-                            onClick={() => {
-                                if (!statusDialogMember) return;
-                                setStatusUpdating(true);
-                                router.put(
-                                    `/staff/${statusDialogMember.id}/status`,
-                                    {},
-                                    {
-                                        preserveScroll: true,
-                                        onFinish: () => {
-                                            setStatusUpdating(false);
-                                            setStatusDialogMember(null);
-                                        },
-                                    },
-                                );
-                            }}
-                            disabled={statusUpdating}
-                        >
-                            {statusUpdating
-                                ? 'Updating...'
-                                : statusDialogMember?.status === 'active'
-                                  ? 'Deactivate Staff'
-                                  : 'Activate Staff'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </AppLayout>
     );
 }

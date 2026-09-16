@@ -215,14 +215,6 @@ export default function VaccinationManagement({
     const getVaccinationStatus = (
         option: VaccinationOption,
     ) => {
-        if (patient.status !== 'Active') {
-            return {
-                text: 'Patient inactive',
-                className:
-                    'text-muted-foreground',
-            };
-        }
-
         if (option.is_scheduled) {
             return {
                 text: 'Scheduled',
@@ -249,10 +241,6 @@ export default function VaccinationManagement({
     const canShowAdministerButton = (
         option: VaccinationOption,
     ) => {
-        if (patient.status !== 'Active') {
-            return false;
-        }
-
         return option.can_administer;
     };
 
@@ -839,23 +827,6 @@ export default function VaccinationManagement({
                                 </Button>
                             </div>
                         </div>
-                    </div>
-                )}
-
-                {patient.status !==
-                    'Active' && (
-                    <div className="rounded-lg border border-dashed p-4">
-                        <p className="font-medium">
-                            Vaccination administration
-                            is disabled.
-                        </p>
-
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            This patient is currently
-                            inactive. Historical
-                            immunization records remain
-                            available.
-                        </p>
                     </div>
                 )}
 

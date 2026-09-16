@@ -12,10 +12,12 @@ import {
 
 import {
     ArrowLeft,
+    Pencil,
     Printer,
     QrCode,
     ScanLine,
 } from 'lucide-react';
+import { router } from '@inertiajs/react';
 
 import {
     useRef,
@@ -33,7 +35,7 @@ type PatientHeaderProps = {
     patientId: string;
     dateOfBirth: string;
     age: string;
-    status: string;
+    status?: string;
 };
 
 
@@ -288,16 +290,8 @@ export default function PatientHeader({
                             </h1>
 
 
-                            <Badge
-                                variant={
-                                    status === 'Active'
-                                        ? 'default'
-                                        : 'secondary'
-                                }
-                            >
-
-                                {status}
-
+                            <Badge variant="outline" className="text-muted-foreground font-normal">
+                                Pediatric Record
                             </Badge>
 
                         </div>
@@ -340,12 +334,14 @@ export default function PatientHeader({
 
                         </Button>
 
-
-                        <p className="hidden text-sm text-muted-foreground lg:block">
-
-                            Pediatric Patient Record
-
-                        </p>
+                        <Button
+                            type="button"
+                            variant="default"
+                            onClick={() => router.visit(`/patients/${patientRecordId}/edit`)}
+                        >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit Record
+                        </Button>
 
                     </div>
 
@@ -496,7 +492,6 @@ export default function PatientHeader({
                 </DialogContent>
 
             </Dialog>
-
         </>
     );
 }

@@ -9,14 +9,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -33,6 +25,7 @@ import {
     Eye,
     Keyboard,
     Plus,
+    Pencil,
     QrCode,
     Search,
     ScanLine,
@@ -319,31 +312,6 @@ export default function PatientIndex() {
         return `${yearText} ${months}${fractionCharacter} mos`;
     };
 
-    const [statusDialogPatient, setStatusDialogPatient] = useState<Patient | null>(null);
-    const [statusUpdating, setStatusUpdating] = useState(false);
-
-    const handleConfirmStatusToggle = () => {
-        if (!statusDialogPatient) return;
-        setStatusUpdating(true);
-        router.put(
-            `/patients/${statusDialogPatient.id}/status`,
-            {},
-            {
-                preserveScroll: true,
-                onFinish: () => {
-                    setStatusUpdating(false);
-                    setStatusDialogPatient(null);
-                },
-            },
-        );
-    };
-
-    const getPatientStatusVariant = (
-        status: string,
-    ): 'default' | 'secondary' | 'outline' | 'destructive' => {
-        return status === 'Active' ? 'default' : 'secondary';
-    };
-
     return (
         <AppLayout>
             <Head title="Patient Management" />
@@ -472,28 +440,25 @@ export default function PatientIndex() {
                                     <table className="w-full table-fixed text-left text-xs">
                                         <thead className="bg-muted/30">
                                             <tr className="border-b">
-                                                <th className="w-[9%] border-r px-2.5 py-3 font-medium">
+                                                <th className="w-[12%] border-r px-2.5 py-3 font-medium">
                                                     Patient ID
                                                 </th>
-                                                <th className="w-[17%] border-r px-2.5 py-3 font-medium">
+                                                <th className="w-[24%] border-r px-2.5 py-3 font-medium">
                                                     Patient Name
                                                 </th>
-                                                <th className="w-[9%] border-r px-2.5 py-3 font-medium">
+                                                <th className="w-[10%] border-r px-2.5 py-3 font-medium">
                                                     DOB
                                                 </th>
-                                                <th className="w-[8%] border-r px-2.5 py-3 font-medium">
+                                                <th className="w-[10%] border-r px-2.5 py-3 font-medium">
                                                     Age
                                                 </th>
-                                                <th className="w-[16%] border-r px-2.5 py-3 font-medium">
+                                                <th className="w-[18%] border-r px-2.5 py-3 font-medium">
                                                     Guardian
                                                 </th>
                                                 <th className="w-[12%] border-r px-2.5 py-3 font-medium">
                                                     Vaccination
                                                 </th>
-                                                <th className="w-[10%] border-r px-2.5 py-3 font-medium">
-                                                    Status
-                                                </th>
-                                                <th className="w-[19%] px-3 py-3 text-center font-medium">
+                                                <th className="w-[14%] px-3 py-3 text-center font-medium">
                                                     Actions
                                                 </th>
                                             </tr>
@@ -503,7 +468,7 @@ export default function PatientIndex() {
                                             {patients.length === 0 ? (
                                                 <tr>
                                                     <td
-                                                        colSpan={8}
+                                                        colSpan={7}
                                                         className="px-3 py-12 text-center"
                                                     >
                                                         <div className="flex flex-col items-center justify-center space-y-2.5">
@@ -568,30 +533,20 @@ export default function PatientIndex() {
                                                                 {placeholderVaccinationStatus}
                                                             </Badge>
                                                         </td>
-                                                        <td className="border-r px-2.5 py-3">
-                                                            <Badge
-                                                                variant={getPatientStatusVariant(
-                                                                    patient.status,
-                                                                )}
-                                                                className="text-[11px]"
-                                                            >
-                                                                {patient.status}
-                                                            </Badge>
-                                                        </td>
                                                         <td className="px-3 py-3">
-                                                            <div className="flex items-center justify-center gap-2.5">
+                                                            <div className="flex items-center justify-center gap-1.5">
                                                                 <Button
                                                                     variant="outline"
                                                                     size="sm"
                                                                     type="button"
-                                                                    className="h-8 min-w-[76px] px-3 text-xs"
+                                                                    className="h-8 min-w-[65px] px-2.5 text-xs font-medium"
                                                                     onClick={() =>
                                                                         router.visit(
                                                                             `/patients/${patient.id}`,
                                                                         )
                                                                     }
                                                                 >
-                                                                    <Eye className="mr-1.5 h-3.5 w-3.5" />
+                                                                    <Eye className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
                                                                     View
                                                                 </Button>
 
@@ -599,17 +554,15 @@ export default function PatientIndex() {
                                                                     variant="outline"
                                                                     size="sm"
                                                                     type="button"
-                                                                    className="h-8 min-w-[88px] px-3 text-xs"
+                                                                    className="h-8 min-w-[65px] px-2.5 text-xs font-medium"
                                                                     onClick={() =>
-                                                                        setStatusDialogPatient(
-                                                                            patient,
+                                                                        router.visit(
+                                                                            `/patients/${patient.id}/edit`,
                                                                         )
                                                                     }
                                                                 >
-                                                                    {patient.status ===
-                                                                    'Active'
-                                                                        ? 'Deactivate'
-                                                                        : 'Activate'}
+                                                                    <Pencil className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
+                                                                    Edit
                                                                 </Button>
                                                             </div>
                                                         </td>
@@ -779,56 +732,6 @@ export default function PatientIndex() {
                 title="Scan Patient QR Code"
                 description="Scan a patient's physical or digital QR code, upload a QR image, or enter their Patient ID."
             />
-
-            {/* Patient Status Toggle Confirmation Dialog */}
-            <Dialog
-                open={!!statusDialogPatient}
-                onOpenChange={(open) => {
-                    if (!open) setStatusDialogPatient(null);
-                }}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>
-                            {statusDialogPatient?.status === 'Active'
-                                ? 'Deactivate Patient Record?'
-                                : 'Activate Patient Record?'}
-                        </DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to {statusDialogPatient?.status === 'Active' ? 'deactivate' : 'activate'} the record for{' '}
-                            <span className="font-semibold text-foreground">
-                                {statusDialogPatient?.first_name} {statusDialogPatient?.last_name}
-                            </span>
-                            ?{' '}
-                            {statusDialogPatient?.status === 'Active'
-                                ? 'Inactive patients will be hidden from active immunization scheduling and clinic rosters.'
-                                : 'Active patients will be restored to clinic rosters and immunization scheduling.'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter className="gap-2 sm:gap-0">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setStatusDialogPatient(null)}
-                            disabled={statusUpdating}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="button"
-                            variant={statusDialogPatient?.status === 'Active' ? 'destructive' : 'default'}
-                            onClick={handleConfirmStatusToggle}
-                            disabled={statusUpdating}
-                        >
-                            {statusUpdating
-                                ? 'Updating...'
-                                : statusDialogPatient?.status === 'Active'
-                                  ? 'Deactivate Patient'
-                                  : 'Activate Patient'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </AppLayout>
     );
 }

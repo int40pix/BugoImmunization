@@ -138,10 +138,6 @@ export default function GuardianChildShow({
                                         <Badge variant="outline">
                                             {patient.patient_id}
                                         </Badge>
-
-                                        <Badge variant="secondary">
-                                            {patient.status}
-                                        </Badge>
                                     </div>
                                 </div>
 

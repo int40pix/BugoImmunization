@@ -107,11 +107,6 @@ export default function GeneralInformation({
                             value={patient.sex}
                         />
 
-                        <InfoItem
-                            label="Patient Status"
-                            value={patient.status}
-                        />
-
                         <div className="sm:col-span-2 lg:col-span-3">
                             <InfoItem
                                 label="Address"
@@ -151,29 +146,6 @@ export default function GeneralInformation({
                                 patient.guardian_relationship ??
                                 'Not provided'
                             }
-                        />
-                    </div>
-                </section>
-
-                <div className="border-t" />
-
-                <section>
-                    <h3 className="mb-4 font-semibold">
-                        Account Information
-                    </h3>
-
-                    <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-                        <InfoItem
-                            label="Email Address"
-                            value={
-                                patient.user?.email ??
-                                'Not available'
-                            }
-                        />
-
-                        <InfoItem
-                            label="Account Status"
-                            value={patient.status}
                         />
                     </div>
                 </section>
