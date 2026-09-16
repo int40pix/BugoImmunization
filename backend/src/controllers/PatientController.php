@@ -413,6 +413,7 @@ class PatientController extends Controller
             'guardian',
             'immunizationRecords.vaccine',
             'immunizationRecords.administeredBy',
+            'immunizationRecords.inventoryTransaction',
             'optionalVaccines',
             'immunizationCardRows',
         ]);
@@ -423,6 +424,7 @@ class PatientController extends Controller
             'guardian_contact',
             $patient->guardian?->contact_number
         );
+        $patient->setAttribute('immunizationRecords', $patient->immunizationRecords);
 
         /*
         |--------------------------------------------------------------------------

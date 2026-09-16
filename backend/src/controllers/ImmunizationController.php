@@ -111,8 +111,11 @@ class ImmunizationController extends Controller
             ->with([
                 'patient',
                 'vaccine',
+                'administeredBy',
+                'inventoryTransaction',
             ])
             ->orderByDesc('date_administered')
+            ->orderByDesc('id')
             ->get()
             ->map(function ($record) {
                 return [
@@ -135,9 +138,18 @@ class ImmunizationController extends Controller
                     'vaccine_name' => $record->vaccine?->name,
 
                     'dose_number' => $record->dose_number,
+                    'batch_number' => $record->batch_number ?: $record->inventoryTransaction?->batch_number ?: '—',
 
                     'date_administered' =>
                         $record->date_administered?->toDateString(),
+
+                    'administered_by_id' => $record->administered_by,
+                    'administered_by_name' => $record->administeredBy?->name ?? 'Clinic Staff',
+
+                    'consent_given_by' => $record->consent_given_by,
+                    'injection_site' => $record->injection_site,
+                    'source' => $record->source,
+                    'remarks' => $record->remarks,
                 ];
             })
             ->values();
@@ -173,6 +185,24 @@ class ImmunizationController extends Controller
                 'exists:vaccines,id',
             ],
 
+            'consent_obtained' => [
+                'required',
+                'boolean',
+                'accepted',
+            ],
+
+            'consent_given_by' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'injection_site' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
             'remarks' => [
                 'nullable',
                 'string',
@@ -182,10 +212,12 @@ class ImmunizationController extends Controller
 
         try {
             $administrationService->administer(
-                $patient,
-                (int) $validated['vaccine_id'],
-                $request->user()?->id,
-                $validated['remarks'] ?? null
+                patient: $patient,
+                vaccineId: (int) $validated['vaccine_id'],
+                administeredBy: $request->user()?->id,
+                remarks: $validated['remarks'] ?? null,
+                consentGivenBy: $validated['consent_given_by'] ?? null,
+                injectionSite: $validated['injection_site'] ?? null,
             );
         } catch (DomainException $exception) {
             return back()->withErrors([

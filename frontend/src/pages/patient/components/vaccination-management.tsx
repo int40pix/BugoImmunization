@@ -1,5 +1,15 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
     Card,
@@ -9,8 +19,12 @@ import {
 } from '@/components/ui/card';
 import { router } from '@inertiajs/react';
 import {
+    AlertCircle,
     CalendarDays,
     CheckCircle2,
+    History,
+    Info,
+    ShieldCheck,
     Syringe,
     X,
 } from 'lucide-react';
@@ -62,10 +76,37 @@ export type OptionalVaccine = {
     schedules: OptionalVaccineSchedule[];
 };
 
+type VaccinationRecord = {
+    id: number;
+    vaccine_id: number;
+    dose_number: number;
+    batch_number?: string | null;
+    date_administered: string;
+    source: string;
+    remarks: string | null;
+    consent_given_by?: string | null;
+    injection_site?: string | null;
+    vaccine?: { id: number; name: string };
+    administeredBy?: { id: number; name: string };
+    administered_by?: { id: number; name: string } | number | null;
+    inventoryTransaction?: { batch_number?: string };
+    inventory_transaction?: { batch_number?: string };
+};
+
 type VaccinationManagementProps = {
     patient: {
         id: number;
         status: string;
+        patient_id?: string;
+        date_of_birth?: string;
+        sex?: string;
+        guardian_name?: string | null;
+        guardian?: {
+            name?: string;
+            contact_number?: string | null;
+        } | null;
+        immunizationRecords?: VaccinationRecord[];
+        immunization_records?: VaccinationRecord[];
     };
     patientName: string;
     vaccinationOptions: VaccinationOption[];
@@ -95,6 +136,13 @@ export default function VaccinationManagement({
 
     const [administrationRemarks, setAdministrationRemarks] =
         useState('');
+
+    const [consentObtained, setConsentObtained] = useState(false);
+    const [consentGivenBy, setConsentGivenBy] = useState('');
+    const [healthScreened, setHealthScreened] = useState(false);
+    const [allergyChecked, setAllergyChecked] = useState(false);
+    const [fiveRightsVerified, setFiveRightsVerified] = useState(false);
+    const [injectionSite, setInjectionSite] = useState('Anterolateral Right Thigh (IM)');
 
     const [assigningOptionalVaccineId, setAssigningOptionalVaccineId] =
         useState<number | null>(null);
@@ -253,6 +301,19 @@ export default function VaccinationManagement({
 
         setSelectedAdministration(option);
         setAdministrationRemarks('');
+        setConsentObtained(false);
+        setConsentGivenBy(
+            patient.guardian?.name || patient.guardian_name || ''
+        );
+        setHealthScreened(false);
+        setAllergyChecked(false);
+        setFiveRightsVerified(false);
+
+        const isOral =
+            option.vaccine_name.toLowerCase().includes('opv') ||
+            option.vaccine_name.toLowerCase().includes('oral') ||
+            option.vaccine_name.toLowerCase().includes('rotavirus');
+        setInjectionSite(isOral ? 'Oral (Drops)' : 'Anterolateral Right Thigh (IM)');
     };
 
     const handleCloseAdministration = () => {
@@ -262,10 +323,22 @@ export default function VaccinationManagement({
 
         setSelectedAdministration(null);
         setAdministrationRemarks('');
+        setConsentObtained(false);
+        setConsentGivenBy('');
+        setHealthScreened(false);
+        setAllergyChecked(false);
+        setFiveRightsVerified(false);
     };
 
+    const isAdministrationReady =
+        consentObtained &&
+        consentGivenBy.trim().length > 0 &&
+        healthScreened &&
+        allergyChecked &&
+        fiveRightsVerified;
+
     const handleSubmitAdministration = () => {
-        if (!selectedAdministration || administeringKey) {
+        if (!selectedAdministration || administeringKey || !isAdministrationReady) {
             return;
         }
 
@@ -279,6 +352,9 @@ export default function VaccinationManagement({
             {
                 vaccine_id:
                     selectedAdministration.vaccine_id,
+                consent_obtained: true,
+                consent_given_by: consentGivenBy.trim(),
+                injection_site: injectionSite,
                 remarks:
                     administrationRemarks.trim() ||
                     null,
@@ -287,8 +363,7 @@ export default function VaccinationManagement({
                 preserveScroll: true,
 
                 onSuccess: () => {
-                    setSelectedAdministration(null);
-                    setAdministrationRemarks('');
+                    handleCloseAdministration();
                 },
 
                 onFinish: () => {
@@ -397,6 +472,20 @@ export default function VaccinationManagement({
                 selectedOptionalVaccineId,
         ) ?? null;
 
+    const rawHistoryRecords =
+        patient.immunization_records ||
+        patient.immunizationRecords ||
+        [];
+
+    const historyRecords = [...rawHistoryRecords].sort((a, b) => {
+        const dateA = a.date_administered ? new Date(a.date_administered).getTime() : 0;
+        const dateB = b.date_administered ? new Date(b.date_administered).getTime() : 0;
+        if (dateB !== dateA) {
+            return dateB - dateA;
+        }
+        return b.id - a.id;
+    });
+
     return (
         <Card>
             <CardHeader className="border-b">
@@ -445,205 +534,335 @@ export default function VaccinationManagement({
                     </div>
                 )}
 
-                <div className="rounded-xl border">
-                    <div className="flex flex-col gap-2 border-b bg-muted/20 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h3 className="font-semibold">
-                                Optional Vaccines
-                            </h3>
-
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Add an optional vaccine to this patient's
-                                structured immunization tracking.
-                            </p>
+                {/* TWO-COLUMN WORKSPACE: LEFT (ELIGIBLE FOR ADMINISTRATION) / RIGHT (ADMINISTRATION HISTORY) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    {/* LEFT COLUMN: VACCINES DUE / ELIGIBLE FOR ADMINISTRATION */}
+                    <div className="rounded-xl border bg-card overflow-hidden shadow-sm flex flex-col">
+                        <div className="flex items-center justify-between border-b bg-muted/20 px-5 py-3.5">
+                            <div className="flex items-center gap-2">
+                                <Syringe className="h-4 w-4 text-primary" />
+                                <h3 className="font-semibold text-sm text-foreground">
+                                    Eligible for Administration
+                                </h3>
+                            </div>
+                            <Badge
+                                variant={vaccinationOptions.length > 0 ? 'default' : 'outline'}
+                                className="text-xs"
+                            >
+                                {vaccinationOptions.length}{' '}
+                                {vaccinationOptions.length === 1 ? 'Dose Due' : 'Doses Due'}
+                            </Badge>
                         </div>
 
-                        {assignedOptionalVaccines.length > 0 && (
-                            <Badge
-                                variant="outline"
-                                className="w-fit"
-                            >
-                                {assignedOptionalVaccines.length}{' '}
-                                assigned
-                            </Badge>
-                        )}
-                    </div>
-
-                    <div className="space-y-4 p-4">
-                        {availableOptionalVaccines.length > 0 ? (
-                            <div className="flex flex-col gap-2 sm:flex-row">
-                                <select
-                                    className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                    value={selectedOptionalVaccineId}
-                                    disabled={assigningOptionalVaccineId !== null}
-                                    onChange={(event) =>
-                                        setSelectedOptionalVaccineId(
-                                            event.target.value,
-                                        )
-                                    }
-                                >
-                                    <option value="">
-                                        Select an optional vaccine
-                                    </option>
-
-                                    {availableOptionalVaccines.map(
-                                        (vaccine) => (
-                                            <option
-                                                key={vaccine.id}
-                                                value={String(
-                                                    vaccine.id,
-                                                )}
-                                            >
-                                                {vaccine.name} —{' '}
-                                                {vaccine.required_doses}{' '}
-                                                {vaccine.required_doses === 1
-                                                    ? 'dose'
-                                                    : 'doses'}
-                                            </option>
-                                        ),
-                                    )}
-                                </select>
-
-                                <Button
-                                    type="button"
-                                    className="shrink-0"
-                                    disabled={
-                                        !selectedOptionalVaccine ||
-                                        assigningOptionalVaccineId !== null
-                                    }
-                                    onClick={() => {
-                                        if (
-                                            selectedOptionalVaccine
-                                        ) {
-                                            handleAssignOptionalVaccine(
-                                                selectedOptionalVaccine,
-                                            );
-                                        }
-                                    }}
-                                >
-                                    <Syringe className="mr-2 h-4 w-4" />
-
-                                    {assigningOptionalVaccineId
-                                        ? 'Adding...'
-                                        : 'Add Vaccine'}
-                                </Button>
-                            </div>
-                        ) : optionalVaccines.length === 0 ? (
-                            <div className="rounded-lg border border-dashed px-4 py-5 text-center">
-                                <p className="text-sm font-medium">
-                                    No optional vaccines are currently
-                                    available.
+                        {vaccinationOptions.length === 0 ? (
+                            <div className="p-8 text-center flex flex-col items-center justify-center my-auto">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 mb-3">
+                                    <CheckCircle2 className="h-6 w-6" />
+                                </div>
+                                <p className="font-semibold text-sm text-foreground">
+                                    Up to Date
                                 </p>
-
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                    Optional vaccines can be added from
-                                    the Vaccine Master List.
+                                <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                                    No vaccines currently require administration. The patient is up to date for their current age schedule.
                                 </p>
                             </div>
                         ) : (
-                            <div className="rounded-lg border border-dashed px-4 py-4">
-                                <p className="text-sm text-muted-foreground">
-                                    All currently available optional
-                                    vaccines have already been assigned.
-                                </p>
-                            </div>
-                        )}
+                            <div className="divide-y">
+                                {vaccinationOptions.map((option) => {
+                                    const key = `${option.vaccine_id}-${option.dose_number}`;
+                                    const canAdminister = canShowAdministerButton(option);
 
-                        {assignedOptionalVaccines.length > 0 && (
-                            <div>
-                                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                    Assigned Optional Vaccines
-                                </p>
-
-                                <div className="divide-y rounded-lg border">
-                                    {assignedOptionalVaccines.map(
-                                        (vaccine) => {
-                                            const isRemoving =
-                                                removingOptionalVaccineId ===
-                                                vaccine.id;
-
-                                            const removalMessage =
-                                                getOptionalVaccineRemovalMessage(
-                                                    vaccine,
-                                                );
-
-                                            return (
-                                                <div
-                                                    key={vaccine.id}
-                                                    className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-                                                >
-                                                    <div className="min-w-0">
-                                                        <div className="flex flex-wrap items-center gap-2">
-                                                            <p className="font-medium">
-                                                                {
-                                                                    vaccine.name
-                                                                }
-                                                            </p>
-
-                                                            <Badge variant="outline">
-                                                                Assigned
-                                                            </Badge>
-                                                        </div>
-
-                                                        {removalMessage && (
-                                                            <p className="mt-1 text-xs text-muted-foreground">
-                                                                {
-                                                                    removalMessage
-                                                                }
-                                                            </p>
-                                                        )}
-                                                    </div>
-
-                                                    {vaccine.can_remove ? (
-                                                        <Button
-                                                            type="button"
-                                                            size="sm"
-                                                            variant="outline"
-                                                            className="shrink-0"
-                                                            disabled={
-                                                                isRemoving ||
-                                                                assigningOptionalVaccineId !==
-                                                                    null
-                                                            }
-                                                            onClick={() =>
-                                                                handleRemoveOptionalVaccine(
-                                                                    vaccine,
-                                                                )
-                                                            }
+                                    return (
+                                        <div
+                                            key={key}
+                                            className="p-4 transition-colors hover:bg-muted/10 flex flex-col gap-3"
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className="font-semibold text-sm text-foreground">
+                                                            {option.vaccine_name}
+                                                        </span>
+                                                        <span className="inline-flex items-center rounded border border-primary/20 bg-primary/5 px-2 py-0.5 text-xs font-medium text-primary">
+                                                            Dose {option.dose_number} of {option.required_doses}
+                                                        </span>
+                                                        <span
+                                                            className={`text-xs font-semibold ${getPriorityClass(
+                                                                option.schedule_label,
+                                                            )}`}
                                                         >
-                                                            <X className="mr-1.5 h-4 w-4" />
+                                                            {option.schedule_label}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground mt-0.5 capitalize">
+                                                        Category: {option.category}
+                                                        {option.scheduled_date &&
+                                                            ` • Scheduled: ${formatDate(
+                                                                option.scheduled_date,
+                                                            )}`}
+                                                    </p>
+                                                </div>
 
-                                                            {isRemoving
-                                                                ? 'Removing...'
-                                                                : 'Remove'}
-                                                        </Button>
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    disabled={!canAdminister || Boolean(administeringKey)}
+                                                    onClick={() => handleOpenAdministration(option)}
+                                                    className="shrink-0"
+                                                >
+                                                    <Syringe className="mr-1.5 h-3.5 w-3.5" />
+                                                    Administer
+                                                </Button>
+                                            </div>
+
+                                            {/* STOCK & BATCH STATUS */}
+                                            <div className="flex items-center justify-between text-xs rounded-md bg-muted/40 px-3 py-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-muted-foreground">Stock:</span>
+                                                    {option.inventory_available ? (
+                                                        <span className="inline-flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-400">
+                                                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                                            In Stock ({option.available_stock}{' '}
+                                                            {option.available_stock === 1
+                                                                ? 'dose'
+                                                                : 'doses'}
+                                                            )
+                                                            {option.reserved_batch_number && (
+                                                                <span className="font-mono text-[11px] text-muted-foreground">
+                                                                    • Batch: {option.reserved_batch_number}
+                                                                </span>
+                                                            )}
+                                                        </span>
                                                     ) : (
-                                                        <span className="shrink-0 text-xs text-muted-foreground">
-                                                            Locked
+                                                        <span className="inline-flex items-center gap-1.5 font-medium text-destructive">
+                                                            <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+                                                            Out of Stock
                                                         </span>
                                                     )}
                                                 </div>
-                                            );
-                                        },
+
+                                                {option.reserved_batch_expiration_date && (
+                                                    <span className="text-muted-foreground text-[11px]">
+                                                        Exp: {formatDate(option.reserved_batch_expiration_date)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* OPTIONAL VACCINES (Rendered only if optional vaccines exist in master list) */}
+                        {optionalVaccines.length > 0 && (
+                            <div className="border-t p-4 bg-muted/10 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                        Optional Vaccines
+                                    </span>
+                                    {assignedOptionalVaccines.length > 0 && (
+                                        <Badge variant="outline" className="text-[11px]">
+                                            {assignedOptionalVaccines.length} assigned
+                                        </Badge>
                                     )}
                                 </div>
+
+                                {availableOptionalVaccines.length > 0 && (
+                                    <div className="flex flex-col sm:flex-row gap-2">
+                                        <select
+                                            className="h-9 flex-1 rounded-md border border-input bg-background px-3 text-xs shadow-sm outline-none"
+                                            value={selectedOptionalVaccineId}
+                                            disabled={assigningOptionalVaccineId !== null}
+                                            onChange={(e) => setSelectedOptionalVaccineId(e.target.value)}
+                                        >
+                                            <option value="">Select optional vaccine to add</option>
+                                            {availableOptionalVaccines.map((vaccine) => (
+                                                <option key={vaccine.id} value={String(vaccine.id)}>
+                                                    {vaccine.name} — {vaccine.required_doses}{' '}
+                                                    {vaccine.required_doses === 1 ? 'dose' : 'doses'}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            className="shrink-0 h-9 text-xs"
+                                            disabled={
+                                                !selectedOptionalVaccine ||
+                                                assigningOptionalVaccineId !== null
+                                            }
+                                            onClick={() => {
+                                                if (selectedOptionalVaccine) {
+                                                    handleAssignOptionalVaccine(selectedOptionalVaccine);
+                                                }
+                                            }}
+                                        >
+                                            {assigningOptionalVaccineId ? 'Adding...' : 'Add Vaccine'}
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {assignedOptionalVaccines.length > 0 && (
+                                    <div className="divide-y rounded-md border bg-background text-xs">
+                                        {assignedOptionalVaccines.map((vaccine) => (
+                                            <div
+                                                key={vaccine.id}
+                                                className="flex items-center justify-between p-2.5"
+                                            >
+                                                <div>
+                                                    <span className="font-medium text-foreground">
+                                                        {vaccine.name}
+                                                    </span>
+                                                    {getOptionalVaccineRemovalMessage(vaccine) && (
+                                                        <p className="text-[11px] text-muted-foreground">
+                                                            {getOptionalVaccineRemovalMessage(vaccine)}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                {vaccine.can_remove && (
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="h-7 px-2 text-[11px] text-destructive hover:text-destructive"
+                                                        disabled={removingOptionalVaccineId === vaccine.id}
+                                                        onClick={() => handleRemoveOptionalVaccine(vaccine)}
+                                                    >
+                                                        <X className="mr-1 h-3 w-3" />
+                                                        Remove
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* RIGHT COLUMN: IMMUNIZATION & ADMINISTRATION HISTORY */}
+                    <div className="rounded-xl border bg-card overflow-hidden shadow-sm flex flex-col">
+                        <div className="flex items-center justify-between border-b bg-muted/20 px-5 py-3.5">
+                            <div className="flex items-center gap-2">
+                                <History className="h-4 w-4 text-primary" />
+                                <h3 className="font-semibold text-sm text-foreground">
+                                    Administration History
+                                </h3>
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                                {historyRecords.length} Recorded
+                            </Badge>
+                        </div>
+
+                        {historyRecords.length === 0 ? (
+                            <div className="p-8 text-center flex flex-col items-center justify-center my-auto">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground mb-3">
+                                    <History className="h-6 w-6" />
+                                </div>
+                                <p className="font-semibold text-sm text-foreground">
+                                    No Administration History
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                                    Vaccines administered to this patient will appear here along with batch lot numbers, injection site, and consent details.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-xs">
+                                    <thead className="bg-muted/30 border-b text-muted-foreground font-semibold">
+                                        <tr>
+                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Date</th>
+                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Vaccine & Dose</th>
+                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Batch #</th>
+                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Site / Route</th>
+                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Vaccinator</th>
+                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Consent By</th>
+                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y">
+                                        {historyRecords.map((record) => {
+                                            const batchNo =
+                                                record.batch_number ||
+                                                (typeof record.inventory_transaction === 'object' && record.inventory_transaction !== null
+                                                    ? record.inventory_transaction.batch_number
+                                                    : null) ||
+                                                (typeof record.inventoryTransaction === 'object' && record.inventoryTransaction !== null
+                                                    ? record.inventoryTransaction.batch_number
+                                                    : null) ||
+                                                '—';
+
+                                            const vaccinator =
+                                                (typeof record.administered_by === 'object' && record.administered_by !== null
+                                                    ? record.administered_by.name
+                                                    : null) ||
+                                                (typeof record.administeredBy === 'object' && record.administeredBy !== null
+                                                    ? record.administeredBy.name
+                                                    : null) ||
+                                                'Clinic Staff';
+
+                                            return (
+                                                <tr key={record.id} className="hover:bg-muted/20 transition-colors">
+                                                    <td className="px-3.5 py-3 font-medium whitespace-nowrap">
+                                                        {formatDate(record.date_administered)}
+                                                    </td>
+                                                    <td className="px-3.5 py-3 whitespace-nowrap">
+                                                        <div className="font-semibold text-foreground">
+                                                            {record.vaccine?.name ?? 'Vaccine'}
+                                                        </div>
+                                                        <div className="text-[11px] text-muted-foreground">
+                                                            Dose {record.dose_number}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3.5 py-3 font-mono font-medium whitespace-nowrap">
+                                                        {batchNo}
+                                                    </td>
+                                                    <td
+                                                        className="px-3.5 py-3 text-muted-foreground max-w-[130px] truncate"
+                                                        title={record.injection_site || undefined}
+                                                    >
+                                                        {record.injection_site || '—'}
+                                                    </td>
+                                                    <td className="px-3.5 py-3 whitespace-nowrap">
+                                                        {vaccinator}
+                                                    </td>
+                                                    <td className="px-3.5 py-3 text-muted-foreground whitespace-nowrap">
+                                                        {record.consent_given_by || '—'}
+                                                    </td>
+                                                    <td
+                                                        className="px-3.5 py-3 text-muted-foreground max-w-[140px] truncate"
+                                                        title={record.remarks || undefined}
+                                                    >
+                                                        {record.remarks || '—'}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
                         )}
                     </div>
                 </div>
 
+                {/* INTERACTIVE CLINICAL ADMINISTRATION MODAL */}
                 {selectedAdministration && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-                        <div className="w-full max-w-2xl rounded-xl border bg-background shadow-xl">
-                            <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
+                        <div className="w-full max-w-2xl max-h-[92vh] flex flex-col rounded-xl border bg-background shadow-2xl overflow-hidden">
+                            {/* MODAL HEADER */}
+                            <div className="flex items-start justify-between gap-4 border-b px-5 py-4 bg-muted/20">
                                 <div>
-                                    <h3 className="text-lg font-semibold">
-                                        Confirm Vaccine Administration
-                                    </h3>
+                                    <div className="flex items-center gap-2 text-primary">
+                                        <Syringe className="h-5 w-5 text-primary" />
+                                        <h3 className="text-lg font-semibold text-foreground">
+                                            Confirm Vaccine Administration
+                                        </h3>
+                                    </div>
 
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        Review the details before recording this
-                                        administration for {patientName}.
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        Patient: <span className="font-semibold text-foreground">{patientName}</span>
+                                        {patient.patient_id ? ` • ID: ${patient.patient_id}` : ''}
+                                        {patient.date_of_birth ? ` • DOB: ${formatDate(patient.date_of_birth)}` : ''}
                                     </p>
                                 </div>
 
@@ -658,374 +877,254 @@ export default function VaccinationManagement({
                                 </Button>
                             </div>
 
-                            <div className="space-y-5 p-5">
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    <div className="rounded-lg border bg-muted/10 p-3">
-                                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                            Vaccine
+                            {/* MODAL BODY (SCROLLABLE) */}
+                            <div className="flex-1 overflow-y-auto space-y-5 p-5 text-sm">
+                                {/* DOSE & INVENTORY SUMMARY */}
+                                <div className="grid gap-3 sm:grid-cols-3">
+                                    <div className="rounded-lg border bg-muted/20 p-3">
+                                        <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                            Vaccine & Dose
                                         </p>
-                                        <p className="mt-1 font-semibold">
+                                        <p className="mt-1 font-semibold text-sm text-foreground">
                                             {selectedAdministration.vaccine_name}
                                         </p>
-                                    </div>
-
-                                    <div className="rounded-lg border bg-muted/10 p-3">
-                                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                            Dose
-                                        </p>
-                                        <p className="mt-1 font-semibold">
-                                            Dose {selectedAdministration.dose_number}{' '}
-                                            of {selectedAdministration.required_doses}
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                            Dose {selectedAdministration.dose_number} of {selectedAdministration.required_doses}
                                         </p>
                                     </div>
 
-                                    <div className="rounded-lg border bg-muted/10 p-3">
-                                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                            Schedule
+                                    <div className="rounded-lg border bg-muted/20 p-3">
+                                        <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                            Inventory Batch
                                         </p>
-                                        <p className="mt-1 font-semibold">
-                                            {selectedAdministration.is_scheduled &&
-                                            selectedAdministration.scheduled_date
-                                                ? formatDate(
-                                                      selectedAdministration.scheduled_date,
-                                                  )
-                                                : 'Walk-in / unscheduled'}
+                                        <p className="mt-1 font-mono font-semibold text-sm text-foreground">
+                                            {selectedAdministration.reserved_batch_number || 'Next FEFO Batch'}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                            {selectedAdministration.is_scheduled && selectedAdministration.reserved_batch_expiration_date
+                                                ? `Exp: ${formatDate(selectedAdministration.reserved_batch_expiration_date)}`
+                                                : `${selectedAdministration.available_stock} doses in stock`}
                                         </p>
                                     </div>
 
-                                    {!selectedAdministration.is_scheduled && (
-                                        <div className="rounded-lg border bg-muted/10 p-3">
-                                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                Available Stock
-                                            </p>
-                                            <p className="mt-1 font-semibold">
-                                                {selectedAdministration.available_stock}{' '}
-                                                doses
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {selectedAdministration.is_scheduled &&
-                                    selectedAdministration.reserved_batch_number ? (
-                                        <>
-                                            <div className="rounded-lg border bg-muted/10 p-3">
-                                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                    Reserved Batch
-                                                </p>
-                                                <p className="mt-1 font-semibold">
-                                                    {
-                                                        selectedAdministration.reserved_batch_number
-                                                    }
-                                                </p>
-                                            </div>
-
-                                            <div className="rounded-lg border bg-muted/10 p-3">
-                                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                    Batch Expiration
-                                                </p>
-                                                <p className="mt-1 font-semibold">
-                                                    {formatDate(
-                                                        selectedAdministration.reserved_batch_expiration_date,
-                                                    )}
-                                                </p>
-                                            </div>
-                                        </>
-                                    ) : selectedAdministration.is_scheduled ? (
-                                        <div className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3 sm:col-span-2">
-                                            <p className="text-sm font-semibold text-orange-700 dark:text-orange-400">
-                                                No batch currently reserved
-                                            </p>
-                                            <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                                                This appointment exists, but it does not
-                                                currently have an exact inventory batch
-                                                assigned.
-                                            </p>
-                                        </div>
-                                    ) : null}
-
-                                    {selectedAdministration.priority_reason && (
-                                        <div className="rounded-lg border bg-muted/10 p-3 sm:col-span-2">
-                                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                Allocation Priority
-                                            </p>
-                                            <div className="mt-1 flex flex-wrap items-center gap-2">
-                                                <p className="font-semibold">
-                                                    {selectedAdministration.priority_reason}
-                                                </p>
-
-                                                {selectedAdministration.is_series_completion_candidate && (
-                                                    <Badge variant="outline">
-                                                        Series Completion Candidate
-                                                    </Badge>
-                                                )}
-
-                                                {selectedAdministration.allocation_rank !== null && (
-                                                    <span className="text-xs text-muted-foreground">
-                                                        Rank #{selectedAdministration.allocation_rank}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
+                                    <div className="rounded-lg border bg-muted/20 p-3">
+                                        <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                            Appointment Status
+                                        </p>
+                                        <p className="mt-1 font-semibold text-sm text-foreground">
+                                            {selectedAdministration.is_scheduled && selectedAdministration.scheduled_date
+                                                ? formatDate(selectedAdministration.scheduled_date)
+                                                : 'Walk-in / Unscheduled'}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                            {selectedAdministration.priority_reason || 'Standard Care'}
+                                        </p>
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <label
-                                        htmlFor="administration-remarks"
-                                        className="text-sm font-medium"
-                                    >
-                                        Remarks
-                                    </label>
+                                {/* SECTION 1: PARENT / GUARDIAN INFORMED CONSENT */}
+                                <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 space-y-3">
+                                    <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                                        <ShieldCheck className="h-5 w-5" />
+                                        <h4 className="font-semibold text-sm">
+                                            1. Parent / Guardian Informed Consent
+                                        </h4>
+                                    </div>
 
-                                    <Textarea
-                                        id="administration-remarks"
-                                        className="mt-2 min-h-24"
-                                        value={administrationRemarks}
-                                        maxLength={1000}
-                                        placeholder="Optional notes about this administration"
-                                        disabled={Boolean(administeringKey)}
-                                        onChange={(event) =>
-                                            setAdministrationRemarks(
-                                                event.target.value,
-                                            )
-                                        }
-                                    />
+                                    <div className="flex items-start space-x-2.5 pt-1">
+                                        <Checkbox
+                                            id="consent-checkbox"
+                                            checked={consentObtained}
+                                            onCheckedChange={(checked) => setConsentObtained(Boolean(checked))}
+                                            disabled={Boolean(administeringKey)}
+                                        />
+                                        <div className="grid gap-1 leading-none">
+                                            <label
+                                                htmlFor="consent-checkbox"
+                                                className="text-xs font-medium leading-normal cursor-pointer select-none text-foreground"
+                                            >
+                                                Informed Consent Verified and Granted <span className="text-destructive">*</span>
+                                            </label>
+                                            <p className="text-[11px] text-muted-foreground leading-normal">
+                                                I confirm that the parent/guardian or authorized representative was informed about the vaccine purpose, expected benefits, and possible mild adverse reactions, and has granted consent.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1.5 pt-1">
+                                        <Label htmlFor="consent-given-by" className="text-xs font-medium">
+                                            Consent Given By (Name of Parent / Guardian / Caregiver) <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="consent-given-by"
+                                            type="text"
+                                            value={consentGivenBy}
+                                            onChange={(e) => setConsentGivenBy(e.target.value)}
+                                            placeholder="e.g. Maria Santos (Mother)"
+                                            className="h-9 text-xs bg-background"
+                                            disabled={Boolean(administeringKey)}
+                                            required
+                                        />
+                                    </div>
                                 </div>
 
-                                <div className="rounded-lg border border-dashed px-4 py-3">
-                                    <p className="text-xs leading-5 text-muted-foreground">
-                                        {selectedAdministration.is_scheduled &&
-                                        selectedAdministration.reserved_batch_number
-                                            ? 'Confirming will create the official immunization record, deduct one dose from the reserved batch, and complete this scheduled appointment.'
-                                            : selectedAdministration.is_scheduled
-                                              ? 'This scheduled appointment needs a valid reserved batch before administration can be recorded.'
-                                              : 'Confirming will create the official immunization record and deduct one unreserved usable dose from inventory.'}
+                                {/* SECTION 2: PRE-VACCINATION CLINICAL SAFETY SCREENING */}
+                                <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+                                    <div className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
+                                        <CheckCircle2 className="h-5 w-5" />
+                                        <h4 className="font-semibold text-sm">
+                                            2. Pre-Vaccination Clinical Safety Checklist
+                                        </h4>
+                                    </div>
+
+                                    <div className="space-y-2.5 pt-1">
+                                        <div className="flex items-start space-x-2.5">
+                                            <Checkbox
+                                                id="health-screened"
+                                                checked={healthScreened}
+                                                onCheckedChange={(checked) => setHealthScreened(Boolean(checked))}
+                                                disabled={Boolean(administeringKey)}
+                                            />
+                                            <div className="grid gap-0.5 leading-none">
+                                                <label
+                                                    htmlFor="health-screened"
+                                                    className="text-xs font-medium leading-normal cursor-pointer select-none text-foreground"
+                                                >
+                                                    Health Assessment Cleared <span className="text-destructive">*</span>
+                                                </label>
+                                                <p className="text-[11px] text-muted-foreground">
+                                                    Child has been physically evaluated today with no acute high fever, moderate-to-severe illness, or active contraindications.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start space-x-2.5">
+                                            <Checkbox
+                                                id="allergy-checked"
+                                                checked={allergyChecked}
+                                                onCheckedChange={(checked) => setAllergyChecked(Boolean(checked))}
+                                                disabled={Boolean(administeringKey)}
+                                            />
+                                            <div className="grid gap-0.5 leading-none">
+                                                <label
+                                                    htmlFor="allergy-checked"
+                                                    className="text-xs font-medium leading-normal cursor-pointer select-none text-foreground"
+                                                >
+                                                    Allergy & Adverse Reaction Check <span className="text-destructive">*</span>
+                                                </label>
+                                                <p className="text-[11px] text-muted-foreground">
+                                                    Verified no prior severe anaphylactic or hypersensitivity reaction to previous doses of this vaccine or vaccine components.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start space-x-2.5">
+                                            <Checkbox
+                                                id="five-rights"
+                                                checked={fiveRightsVerified}
+                                                onCheckedChange={(checked) => setFiveRightsVerified(Boolean(checked))}
+                                                disabled={Boolean(administeringKey)}
+                                            />
+                                            <div className="grid gap-0.5 leading-none">
+                                                <label
+                                                    htmlFor="five-rights"
+                                                    className="text-xs font-medium leading-normal cursor-pointer select-none text-foreground"
+                                                >
+                                                    Five Rights of Medication Verified <span className="text-destructive">*</span>
+                                                </label>
+                                                <p className="text-[11px] text-muted-foreground">
+                                                    Right Patient, Right Vaccine, Right Dose Number, Right Route, and Right Time (batch not expired and cold chain maintained).
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* SECTION 3: ADMINISTRATION DETAILS & REMARKS */}
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium">
+                                            Injection Site & Route
+                                        </Label>
+                                        <Select
+                                            value={injectionSite}
+                                            onValueChange={setInjectionSite}
+                                            disabled={Boolean(administeringKey)}
+                                        >
+                                            <SelectTrigger className="h-9 text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Anterolateral Right Thigh (IM)">Anterolateral Right Thigh (IM)</SelectItem>
+                                                <SelectItem value="Anterolateral Left Thigh (IM)">Anterolateral Left Thigh (IM)</SelectItem>
+                                                <SelectItem value="Right Deltoid (IM/SC)">Right Deltoid (IM/SC)</SelectItem>
+                                                <SelectItem value="Left Deltoid (IM/SC)">Left Deltoid (IM/SC)</SelectItem>
+                                                <SelectItem value="Oral (Drops)">Oral (Drops)</SelectItem>
+                                                <SelectItem value="Subcutaneous Right Arm">Subcutaneous Right Arm</SelectItem>
+                                                <SelectItem value="Subcutaneous Left Arm">Subcutaneous Left Arm</SelectItem>
+                                                <SelectItem value="Other (Specified in Remarks)">Other (Specified in Remarks)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="administration-remarks" className="text-xs font-medium">
+                                            Clinical Remarks / Observations (Optional)
+                                        </Label>
+                                        <Input
+                                            id="administration-remarks"
+                                            type="text"
+                                            value={administrationRemarks}
+                                            maxLength={1000}
+                                            placeholder="e.g. Child calm, advised on fever monitoring"
+                                            className="h-9 text-xs"
+                                            disabled={Boolean(administeringKey)}
+                                            onChange={(e) => setAdministrationRemarks(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* INVENTORY & AUDIT NOTICE */}
+                                <div className="rounded-lg border border-dashed bg-muted/20 px-3.5 py-2.5 text-xs text-muted-foreground">
+                                    <p>
+                                        Confirming will create the official immunization record, log an archival reduction of 1 dose in the transaction ledger, and fulfill the appointment.
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col-reverse gap-2 border-t px-5 py-4 sm:flex-row sm:justify-end">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    disabled={Boolean(administeringKey)}
-                                    onClick={handleCloseAdministration}
-                                >
-                                    Cancel
-                                </Button>
+                            {/* MODAL FOOTER */}
+                            <div className="flex flex-col-reverse gap-2 border-t px-5 py-3.5 bg-muted/20 sm:flex-row sm:justify-between sm:items-center">
+                                <div className="text-xs text-muted-foreground">
+                                    {!isAdministrationReady && (
+                                        <span className="text-amber-600 dark:text-amber-400 font-medium">
+                                            * Complete consent & checklist to proceed
+                                        </span>
+                                    )}
+                                </div>
 
-                                <Button
-                                    type="button"
-                                    disabled={Boolean(administeringKey)}
-                                    onClick={handleSubmitAdministration}
-                                >
-                                    <Syringe className="mr-2 h-4 w-4" />
+                                <div className="flex items-center gap-2 justify-end">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={Boolean(administeringKey)}
+                                        onClick={handleCloseAdministration}
+                                    >
+                                        Cancel
+                                    </Button>
 
-                                    {administeringKey
-                                        ? 'Recording...'
-                                        : 'Confirm Administration'}
-                                </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        disabled={!isAdministrationReady || Boolean(administeringKey)}
+                                        onClick={handleSubmitAdministration}
+                                    >
+                                        <Syringe className="mr-1.5 h-4 w-4" />
+                                        {administeringKey ? 'Recording...' : 'Confirm & Administer Dose'}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-
-                {vaccinationOptions.length ===
-                0 ? (
-                    <div className="rounded-lg border border-dashed p-8 text-center">
-                        <Syringe className="mx-auto h-8 w-8 text-muted-foreground" />
-
-                        <p className="mt-3 font-medium">
-                            No vaccines currently require
-                            administration.
-                        </p>
-
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            The patient may have completed
-                            the applicable vaccines or may
-                            not yet be eligible for the
-                            next dose.
-                        </p>
-                    </div>
-                ) : (
-                    <div className="overflow-hidden rounded-lg border">
-                        <table className="w-full table-fixed text-sm">
-                            <thead className="bg-muted/30">
-                                <tr className="border-b">
-                                    <th className="w-[23%] border-r px-3 py-3 text-left font-semibold">
-                                        Vaccine
-                                    </th>
-
-                                    <th className="w-[13%] border-r px-3 py-3 text-center font-semibold">
-                                        Dose
-                                    </th>
-
-                                    <th className="w-[15%] border-r px-3 py-3 text-center font-semibold">
-                                        Priority
-                                    </th>
-
-                                    <th className="w-[20%] border-r px-3 py-3 text-center font-semibold">
-                                        Status
-                                    </th>
-
-                                    <th className="w-[13%] border-r px-3 py-3 text-center font-semibold">
-                                        Stock
-                                    </th>
-
-                                    <th className="w-[16%] px-3 py-3 text-center font-semibold">
-                                        Action
-                                    </th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {vaccinationOptions.map(
-                                    (
-                                        option,
-                                    ) => {
-                                        const status =
-                                            getVaccinationStatus(
-                                                option,
-                                            );
-
-                                        const key =
-                                            `${option.vaccine_id}-${option.dose_number}`;
-
-                                        const isAdministering =
-                                            administeringKey ===
-                                            key;
-
-                                        return (
-                                            <tr
-                                                key={
-                                                    key
-                                                }
-                                                className="border-b last:border-b-0"
-                                            >
-                                                <td className="border-r px-3 py-3">
-                                                    <p className="font-semibold">
-                                                        {
-                                                            option.vaccine_name
-                                                        }
-                                                    </p>
-
-                                                    <p className="mt-1 text-xs capitalize text-muted-foreground">
-                                                        {
-                                                            option.category
-                                                        }
-                                                    </p>
-                                                </td>
-
-                                                <td className="border-r px-3 py-3 text-center">
-                                                    <p className="font-medium">
-                                                        Dose{' '}
-                                                        {
-                                                            option.dose_number
-                                                        }
-                                                    </p>
-
-                                                    <p className="mt-1 text-xs text-muted-foreground">
-                                                        {
-                                                            option.completed_doses
-                                                        }
-                                                        /
-                                                        {
-                                                            option.required_doses
-                                                        }{' '}
-                                                        completed
-                                                    </p>
-                                                </td>
-
-                                                <td className="border-r px-3 py-3 text-center">
-                                                    <span
-                                                        className={`font-semibold ${getPriorityClass(
-                                                            option.schedule_label,
-                                                        )}`}
-                                                    >
-                                                        {
-                                                            option.schedule_label
-                                                        }
-                                                    </span>
-                                                </td>
-
-                                                <td className="border-r px-3 py-3 text-center">
-                                                    <p
-                                                        className={`font-medium ${status.className}`}
-                                                    >
-                                                        {
-                                                            status.text
-                                                        }
-                                                    </p>
-
-                                                    {option.is_scheduled &&
-                                                        option.scheduled_date && (
-                                                            <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                                                <CalendarDays className="h-3.5 w-3.5" />
-
-                                                                {formatDate(
-                                                                    option.scheduled_date,
-                                                                )}
-                                                            </p>
-                                                        )}
-                                                </td>
-
-                                                <td className="border-r px-3 py-3 text-center">
-                                                    {option.inventory_available ? (
-                                                        <>
-                                                            <p className="font-medium">
-                                                                {
-                                                                    option.available_stock
-                                                                }
-                                                            </p>
-
-                                                            <p className="text-xs text-muted-foreground">
-                                                                available
-                                                            </p>
-                                                        </>
-                                                    ) : (
-                                                        <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
-                                                            Out
-                                                            of
-                                                            stock
-                                                        </span>
-                                                    )}
-                                                </td>
-
-                                                <td className="px-3 py-3 text-center">
-                                                    {canShowAdministerButton(
-                                                        option,
-                                                    ) ? (
-                                                        <Button
-                                                            type="button"
-                                                            size="sm"
-                                                            disabled={
-                                                                isAdministering
-                                                            }
-                                                            onClick={() =>
-                                                                handleOpenAdministration(
-                                                                    option,
-                                                                )
-                                                            }
-                                                        >
-                                                            <Syringe className="mr-1.5 h-4 w-4" />
-
-                                                            {isAdministering
-                                                                ? 'Recording...'
-                                                                : 'Administer'}
-                                                        </Button>
-                                                    ) : (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            Not
-                                                            available
-                                                        </span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    },
-                                )}
-                            </tbody>
-                        </table>
                     </div>
                 )}
             </CardContent>

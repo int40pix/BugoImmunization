@@ -16,8 +16,10 @@ import {
     ChevronDown,
     ChevronRight,
     Eye,
+    History,
     Search,
     SearchX,
+    ShieldCheck,
 } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 
@@ -56,7 +58,14 @@ type CompletedRow = {
     vaccine_id: number | null;
     vaccine_name: string | null;
     dose_number: number;
+    batch_number: string;
     date_administered: string | null;
+    administered_by_id?: number | null;
+    administered_by_name: string;
+    consent_given_by?: string | null;
+    injection_site?: string | null;
+    source?: string | null;
+    remarks?: string | null;
 };
 
 type Vaccine = {
@@ -98,7 +107,7 @@ export default function ImmunizationIndex({
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [vaccineFilter, setVaccineFilter] = useState('all');
-    const [viewMode, setViewMode] = useState<'tcl' | 'scheduled'>('tcl');
+    const [viewMode, setViewMode] = useState<'tcl' | 'scheduled' | 'history'>('tcl');
 
     const [expandedPatients, setExpandedPatients] = useState<Set<number>>(
         new Set(),
@@ -538,6 +547,10 @@ export default function ImmunizationIndex({
     };
 
     const getTrackingTitle = () => {
+        if (viewMode === 'history') {
+            return 'Administration History';
+        }
+
         if (viewMode === 'scheduled') {
             return 'Scheduled Vaccinations';
         }
@@ -546,6 +559,10 @@ export default function ImmunizationIndex({
     };
 
     const getTrackingDescription = () => {
+        if (viewMode === 'history') {
+            return 'Complete audit log of all administered pediatric vaccination doses with consent and clinical details.';
+        }
+
         if (viewMode === 'scheduled') {
             return 'Upcoming vaccination appointments generated from the scheduling system.';
         }
@@ -630,7 +647,14 @@ export default function ImmunizationIndex({
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card
+                        className={`cursor-pointer transition-all ${
+                            viewMode === 'history'
+                                ? 'border-primary ring-2 ring-primary/20 bg-primary/5'
+                                : 'hover:border-primary/50'
+                        }`}
+                        onClick={() => setViewMode('history')}
+                    >
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Completed
@@ -781,6 +805,20 @@ export default function ImmunizationIndex({
                                     }`}
                                 >
                                     Scheduled
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setViewMode('history')
+                                    }
+                                    className={`border-l px-5 py-2 text-sm font-medium transition-colors ${
+                                        viewMode === 'history'
+                                            ? 'bg-foreground text-background'
+                                            : 'hover:bg-muted'
+                                    }`}
+                                >
+                                    Administration History
                                 </button>
                             </div>
                         </div>
@@ -1207,7 +1245,7 @@ export default function ImmunizationIndex({
                                     </div>
                                 )}
                             </div>
-                        ) : (
+                        ) : viewMode === 'scheduled' ? (
                             <div className="overflow-hidden rounded-lg border">
                                 <div className="overflow-x-auto">
                                     <table className="w-full table-fixed text-sm">
@@ -1418,6 +1456,134 @@ export default function ImmunizationIndex({
                                                         );
                                                     },
                                                 )
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="overflow-hidden rounded-lg border">
+                                <div className="flex flex-wrap items-center justify-between gap-4 border-b bg-muted/20 px-5 py-4">
+                                    <div className="flex items-center gap-2">
+                                        <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                                        <span className="text-sm font-semibold">
+                                            Vaccination Administration Audit Log
+                                        </span>
+                                        <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                            {filteredCompletedRows.length}{' '}
+                                            {filteredCompletedRows.length === 1 ? 'dose' : 'doses'}
+                                        </span>
+                                    </div>
+
+                                    <p className="text-xs text-muted-foreground">
+                                        Verified informed consent, batch lot numbers, and vaccinating staff records
+                                    </p>
+                                </div>
+
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead className="border-b bg-muted/40 text-xs uppercase font-medium text-muted-foreground">
+                                            <tr>
+                                                <th className="px-4 py-3.5 text-left font-semibold">Date Administered</th>
+                                                <th className="px-4 py-3.5 text-left font-semibold">Patient</th>
+                                                <th className="px-4 py-3.5 text-left font-semibold">Vaccine & Dose</th>
+                                                <th className="px-4 py-3.5 text-left font-semibold">Batch No.</th>
+                                                <th className="px-4 py-3.5 text-left font-semibold">Injection Site</th>
+                                                <th className="px-4 py-3.5 text-left font-semibold">Administered By</th>
+                                                <th className="px-4 py-3.5 text-left font-semibold">Consent Given By</th>
+                                                <th className="px-4 py-3.5 text-left font-semibold">Remarks</th>
+                                                <th className="px-4 py-3.5 text-right font-semibold">Action</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody className="divide-y">
+                                            {filteredCompletedRows.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={9} className="px-6 py-14">
+                                                        <div className="flex flex-col items-center justify-center text-center">
+                                                            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                                                                <History className="h-5 w-5 text-muted-foreground" />
+                                                            </div>
+                                                            <p className="font-medium">No administration records found</p>
+                                                            <p className="mt-1 text-sm text-muted-foreground">
+                                                                {normalizedSearch || vaccineFilter !== 'all'
+                                                                    ? 'No administered vaccinations match your search or filter criteria.'
+                                                                    : 'No pediatric vaccinations have been recorded as administered yet.'}
+                                                            </p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                filteredCompletedRows.map((row) => (
+                                                    <tr key={row.id} className="hover:bg-muted/30 transition-colors">
+                                                        <td className="px-4 py-3.5 whitespace-nowrap text-xs font-medium">
+                                                            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                                                                <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                                                                {formatDate(row.date_administered)}
+                                                            </span>
+                                                        </td>
+
+                                                        <td className="px-4 py-3.5">
+                                                            <div className="font-medium leading-snug">
+                                                                {row.patient_name}
+                                                            </div>
+                                                            <div className="text-xs text-muted-foreground font-mono">
+                                                                {row.patient_code ?? 'PID —'}
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="px-4 py-3.5 whitespace-nowrap">
+                                                            <div className="font-medium text-foreground">
+                                                                {row.vaccine_name ?? 'Unknown vaccine'}
+                                                            </div>
+                                                            <div className="inline-flex items-center mt-0.5 rounded border border-primary/20 bg-primary/5 px-1.5 py-0.5 text-[11px] font-medium text-primary">
+                                                                Dose {row.dose_number}
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="px-4 py-3.5 whitespace-nowrap">
+                                                            <span className="rounded bg-muted px-2 py-1 font-mono text-xs font-medium">
+                                                                {row.batch_number || '—'}
+                                                            </span>
+                                                        </td>
+
+                                                        <td className="px-4 py-3.5 text-xs text-muted-foreground max-w-[160px] truncate" title={row.injection_site || undefined}>
+                                                            {row.injection_site || '—'}
+                                                        </td>
+
+                                                        <td className="px-4 py-3.5 whitespace-nowrap text-xs">
+                                                            <span className="font-medium text-foreground">
+                                                                {row.administered_by_name}
+                                                            </span>
+                                                        </td>
+
+                                                        <td className="px-4 py-3.5 whitespace-nowrap text-xs">
+                                                            {row.consent_given_by ? (
+                                                                <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300 font-medium">
+                                                                    <CheckCircle2 className="h-3 w-3" />
+                                                                    {row.consent_given_by}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-muted-foreground">—</span>
+                                                            )}
+                                                        </td>
+
+                                                        <td className="px-4 py-3.5 text-xs text-muted-foreground max-w-[180px] truncate" title={row.remarks || undefined}>
+                                                            {row.remarks || '—'}
+                                                        </td>
+
+                                                        <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => router.visit(route('patients.show', row.patient_id))}
+                                                                className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
+                                                            >
+                                                                <Eye className="h-3.5 w-3.5" />
+                                                                View
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))
                                             )}
                                         </tbody>
                                     </table>

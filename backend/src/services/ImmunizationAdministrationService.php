@@ -22,13 +22,17 @@ class ImmunizationAdministrationService
         Patient $patient,
         int $vaccineId,
         ?int $administeredBy = null,
-        ?string $remarks = null
+        ?string $remarks = null,
+        ?string $consentGivenBy = null,
+        ?string $injectionSite = null
     ): ImmunizationRecord {
         return DB::transaction(function () use (
             $patient,
             $vaccineId,
             $administeredBy,
-            $remarks
+            $remarks,
+            $consentGivenBy,
+            $injectionSite
         ) {
             /*
              * Lock the patient so two requests cannot
@@ -307,11 +311,20 @@ class ImmunizationAdministrationService
                         'dose_number' =>
                             $doseNumber,
 
+                        'batch_number' =>
+                            $inventory->batch_number,
+
                         'date_administered' =>
                             Carbon::today(),
 
                         'administered_by' =>
                             $administeredBy,
+
+                        'consent_given_by' =>
+                            $consentGivenBy,
+
+                        'injection_site' =>
+                            $injectionSite,
 
                         'source' =>
                             'local',
