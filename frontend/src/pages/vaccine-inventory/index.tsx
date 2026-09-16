@@ -6,7 +6,6 @@ import {
     usePage,
 } from '@inertiajs/react';
 import {
-    Archive,
     ChevronDown,
     ChevronRight,
     List,

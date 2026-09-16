@@ -352,6 +352,11 @@ class ImmunizationAdministrationService
                     ]);
             }
 
+            // Automatically archive batch if it became depleted
+            if ((int) $inventory->fresh()->quantity <= 0) {
+                app(VaccineInventoryService::class)->autoArchiveExpiredAndDepletedBatches();
+            }
+
             return $record->fresh([
                 'patient',
                 'vaccine',

@@ -16,6 +16,18 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 
+import { Label } from '@/components/ui/label';
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+
+import { Textarea } from '@/components/ui/textarea';
+
 import { router } from '@inertiajs/react';
 
 import {
@@ -25,7 +37,6 @@ import {
     PackageSearch,
     Pencil,
     Settings2,
-    Trash2,
     TriangleAlert,
 } from 'lucide-react';
 
@@ -80,7 +91,6 @@ type InventoryTableProps = {
 
 type ConfirmationType =
     | 'archive'
-    | 'delete'
     | null;
 
 
@@ -151,6 +161,16 @@ export default function InventoryTable({
         setProcessing,
     ] = useState(false);
 
+    const [
+        archiveReason,
+        setArchiveReason,
+    ] = useState<string>('manual');
+
+    const [
+        archiveRemarks,
+        setArchiveRemarks,
+    ] = useState<string>('');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -212,6 +232,11 @@ export default function InventoryTable({
         setConfirmationBatch(
             inventory,
         );
+
+        if (type === 'archive') {
+            setArchiveReason('manual');
+            setArchiveRemarks('');
+        }
     }
 
 
@@ -234,6 +259,9 @@ export default function InventoryTable({
         setConfirmationBatch(
             null,
         );
+
+        setArchiveReason('manual');
+        setArchiveRemarks('');
     }
 
 
@@ -465,15 +493,7 @@ export default function InventoryTable({
         inventory: VaccineInventory,
     ) {
 
-        return (
-            !inventory.is_archived &&
-            (
-                isBatchExpired(
-                    inventory,
-                ) ||
-                inventory.quantity <= 0
-            )
-        );
+        return !inventory.is_archived;
     }
 
 
@@ -513,7 +533,10 @@ export default function InventoryTable({
                 confirmationBatch.id,
             ),
 
-            {},
+            {
+                archive_reason: archiveReason,
+                remarks: archiveRemarks,
+            },
 
             {
                 preserveScroll: true,
@@ -526,6 +549,14 @@ export default function InventoryTable({
 
                     setConfirmationBatch(
                         null,
+                    );
+
+                    setArchiveReason(
+                        'manual',
+                    );
+
+                    setArchiveRemarks(
+                        '',
                     );
 
                     setManageOpen(
@@ -548,61 +579,6 @@ export default function InventoryTable({
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | DELETE BATCH
-    |--------------------------------------------------------------------------
-    */
-
-    function deleteBatch() {
-
-        if (!confirmationBatch) {
-            return;
-        }
-
-
-        setProcessing(
-            true,
-        );
-
-
-        router.delete(
-            route(
-                'vaccine-inventory.destroy',
-                confirmationBatch.id,
-            ),
-
-            {
-                preserveScroll: true,
-
-                onSuccess: () => {
-
-                    setConfirmationType(
-                        null,
-                    );
-
-                    setConfirmationBatch(
-                        null,
-                    );
-
-                    setManageOpen(
-                        false,
-                    );
-
-                    setSelectedBatch(
-                        null,
-                    );
-                },
-
-                onFinish: () => {
-
-                    setProcessing(
-                        false,
-                    );
-                },
-            },
-        );
-    }
 
 
     /*
@@ -1529,7 +1505,7 @@ export default function InventoryTable({
 
                                     <p className="mt-2 text-sm text-muted-foreground">
 
-                                        Archive preserves this batch for historical records.
+                                        Archive preserves this batch for historical records. If any remaining stock exists, it will be zeroed out in the transaction ledger and appointments reconciled.
 
                                     </p>
 
@@ -1565,7 +1541,7 @@ export default function InventoryTable({
 
                                     <p className="text-sm text-muted-foreground">
 
-                                        Archiving is unavailable because this batch is active, still has remaining stock, and is not expired.
+                                        This batch is already archived.
 
                                     </p>
 
@@ -1575,60 +1551,6 @@ export default function InventoryTable({
                             </div>
 
 
-                            {/* DELETE */}
-
-                            <div className="space-y-3 rounded-lg border border-destructive/30 p-4">
-
-
-                                <div>
-
-                                    <div className="flex items-center gap-2">
-
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-
-                                        <h3 className="font-semibold">
-
-                                            Delete Permanently
-
-                                        </h3>
-
-                                    </div>
-
-
-                                    <p className="mt-2 text-sm text-muted-foreground">
-
-                                        Use Delete only when this batch was created by mistake.
-
-                                        This action cannot be undone.
-
-                                    </p>
-
-                                </div>
-
-
-                                <Button
-                                    type="button"
-                                    variant="destructive"
-                                    className="w-full"
-                                    disabled={
-                                        processing
-                                    }
-                                    onClick={() =>
-                                        openConfirmation(
-                                            'delete',
-                                            selectedBatch,
-                                        )
-                                    }
-                                >
-
-                                    <Trash2 className="mr-2 h-4 w-4" />
-
-                                    Delete Batch Permanently
-
-                                </Button>
-
-
-                            </div>
 
 
                             <DialogFooter>
@@ -1695,48 +1617,17 @@ export default function InventoryTable({
                             <DialogHeader>
 
 
-                                <div
-                                    className={`mb-2 flex h-11 w-11 items-center justify-center rounded-full ${
-                                        confirmationType ===
-                                        'delete'
-                                            ? 'bg-destructive/10 text-destructive'
-                                            : 'bg-muted'
-                                    }`}
-                                >
-
-                                    {confirmationType ===
-                                    'delete' ? (
-
-                                        <TriangleAlert className="h-5 w-5" />
-
-                                    ) : (
-
-                                        <Archive className="h-5 w-5" />
-
-                                    )}
-
+                                <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-full bg-muted">
+                                    <Archive className="h-5 w-5" />
                                 </div>
 
-
                                 <DialogTitle>
-
-                                    {confirmationType ===
-                                    'delete'
-                                        ? 'Permanently delete this batch?'
-                                        : 'Archive this vaccine batch?'}
-
+                                    Archive this vaccine batch?
                                 </DialogTitle>
 
-
                                 <DialogDescription>
-
-                                    {confirmationType ===
-                                    'delete'
-                                        ? 'This action permanently removes the batch record and cannot be undone.'
-                                        : 'The batch will be moved to archived records and preserved for historical reference.'}
-
+                                    The batch will be moved to archived records and preserved for historical reference.
                                 </DialogDescription>
-
 
                             </DialogHeader>
 
@@ -1809,24 +1700,56 @@ export default function InventoryTable({
                             </div>
 
 
-                            {confirmationType ===
-                                'delete' && (
-
-                                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
-
-                                    <p className="text-sm text-destructive">
-
-                                        Only continue if this batch record was created by mistake.
-
-                                    </p>
-
+                            <div className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="archive-reason" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        Reason for Archiving <span className="text-destructive">*</span>
+                                    </Label>
+                                    <Select
+                                        value={archiveReason}
+                                        onValueChange={setArchiveReason}
+                                        disabled={processing}
+                                    >
+                                        <SelectTrigger id="archive-reason" className="w-full">
+                                            <SelectValue placeholder="Select reason" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="manual">Manual Archive / Discontinued</SelectItem>
+                                            <SelectItem value="recalled">Manufacturer / Authority Recall</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
-                            )}
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="archive-remarks" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        Notes / Remarks (Optional)
+                                    </Label>
+                                    <Textarea
+                                        id="archive-remarks"
+                                        value={archiveRemarks}
+                                        onChange={(e) => setArchiveRemarks(e.target.value)}
+                                        placeholder="Add audit notes or context..."
+                                        className="h-20 resize-none text-sm"
+                                        disabled={processing}
+                                    />
+                                </div>
 
+                                {confirmationBatch.quantity > 0 && (
+                                    <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+                                        <div className="flex items-start gap-2">
+                                            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                                            <div className="text-xs text-amber-800 dark:text-amber-300">
+                                                <p className="font-semibold">Notice: Remaining stock will be zeroed out</p>
+                                                <p className="mt-0.5">
+                                                    This batch currently has {confirmationBatch.quantity} {confirmationBatch.quantity === 1 ? 'dose' : 'doses'}. Archiving it will record an archival reduction in the ledger and reconcile any dependent appointments.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
 
                             <DialogFooter className="gap-2 sm:gap-0">
-
 
                                 <Button
                                     type="button"
@@ -1843,69 +1766,32 @@ export default function InventoryTable({
 
                                 </Button>
 
+                                <Button
+                                    type="button"
+                                    disabled={
+                                        processing
+                                    }
+                                    onClick={
+                                        archiveBatch
+                                    }
+                                >
 
-                                {confirmationType ===
-                                'archive' ? (
+                                    {processing ? (
 
-                                    <Button
-                                        type="button"
-                                        disabled={
-                                            processing
-                                        }
-                                        onClick={
-                                            archiveBatch
-                                        }
-                                    >
+                                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
 
-                                        {processing ? (
+                                    ) : (
 
-                                            <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                        <Archive className="mr-2 h-4 w-4" />
 
-                                        ) : (
-
-                                            <Archive className="mr-2 h-4 w-4" />
-
-                                        )}
+                                    )}
 
 
-                                        {processing
-                                            ? 'Archiving...'
-                                            : 'Confirm Archive'}
+                                    {processing
+                                        ? 'Archiving...'
+                                        : 'Confirm Archive'}
 
-                                    </Button>
-
-                                ) : (
-
-                                    <Button
-                                        type="button"
-                                        variant="destructive"
-                                        disabled={
-                                            processing
-                                        }
-                                        onClick={
-                                            deleteBatch
-                                        }
-                                    >
-
-                                        {processing ? (
-
-                                            <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-
-                                        ) : (
-
-                                            <Trash2 className="mr-2 h-4 w-4" />
-
-                                        )}
-
-
-                                        {processing
-                                            ? 'Deleting...'
-                                            : 'Delete Permanently'}
-
-                                    </Button>
-
-                                )}
-
+                                </Button>
 
                             </DialogFooter>
 

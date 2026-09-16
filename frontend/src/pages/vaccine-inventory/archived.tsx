@@ -17,6 +17,14 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+
 import AppLayout from '@/layouts/app-layout';
 
 import {
@@ -29,7 +37,13 @@ import {
 import {
     Archive,
     ArrowLeft,
+    Clock,
+    Eye,
+    History,
+    Info,
     Search,
+    ShieldAlert,
+    User,
 } from 'lucide-react';
 
 import { InventorySubnav } from './components/inventory-subnav';
@@ -88,6 +102,19 @@ type ArchivedVaccineInventory = {
 
     archive_reason:
         string | null;
+
+    archive_transaction?: {
+        id: number;
+        transaction_type: string;
+        quantity_change: number;
+        balance_after: number;
+        remarks: string | null;
+        created_at: string;
+        user?: {
+            id: number;
+            name: string;
+        } | null;
+    } | null;
 };
 
 
@@ -120,15 +147,33 @@ export default function ArchivedVaccineInventory() {
             search?: string;
             vaccine_id?: string;
             archive_reason?: string;
+            highlighted_batch_id?: string;
         };
     }>().props;
 
 
     /*
     |--------------------------------------------------------------------------
-    | FILTER STATES
+    | FILTER & SELECTION STATES
     |--------------------------------------------------------------------------
     */
+
+    const highlightedBatchId =
+        filters.highlighted_batch_id ||
+        (typeof window !== 'undefined'
+            ? new URLSearchParams(window.location.search).get('highlighted_batch_id') ||
+              new URLSearchParams(window.location.search).get('batch_id')
+            : null);
+
+    const [
+        selectedBatch,
+        setSelectedBatch,
+    ] = useState<ArchivedVaccineInventory | null>(null);
+
+    const [
+        sheetOpen,
+        setSheetOpen,
+    ] = useState(false);
 
     const [
         search,
@@ -152,6 +197,27 @@ export default function ArchivedVaccineInventory() {
     ] = useState(
         filters.archive_reason || 'all'
     );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | AUTO-SELECT / HIGHLIGHT ON LOAD
+    |--------------------------------------------------------------------------
+    */
+
+    useEffect(() => {
+        if (highlightedBatchId && vaccines.length > 0) {
+            const match = vaccines.find(
+                (v) =>
+                    String(v.id) === String(highlightedBatchId) ||
+                    v.batch_number.toLowerCase() === String(highlightedBatchId).toLowerCase()
+            );
+            if (match) {
+                setSelectedBatch(match);
+                setSheetOpen(true);
+            }
+        }
+    }, [highlightedBatchId, vaccines]);
 
 
     /*
@@ -275,6 +341,37 @@ export default function ArchivedVaccineInventory() {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
+            }
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FORMAT DATE TIME
+    |--------------------------------------------------------------------------
+    */
+
+    function formatDateTime(
+        date: string | null
+    ) {
+
+        if (!date) {
+            return '—';
+        }
+
+
+        return new Date(
+            date
+        ).toLocaleString(
+            'en-PH',
+            {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
             }
         );
     }
@@ -576,6 +673,10 @@ export default function ArchivedVaccineInventory() {
                                                 Archived On
                                             </th>
 
+                                            <th className="px-4 py-3 text-right font-medium">
+                                                Action
+                                            </th>
+
                                         </tr>
 
                                     </thead>
@@ -593,7 +694,7 @@ export default function ArchivedVaccineInventory() {
                                             <tr>
 
                                                 <td
-                                                    colSpan={6}
+                                                    colSpan={7}
                                                     className="px-4 py-12 text-center"
                                                 >
 
@@ -624,13 +725,24 @@ export default function ArchivedVaccineInventory() {
                                             vaccines.map(
                                                 (
                                                     inventory
-                                                ) => (
+                                                ) => {
+                                                    const isHighlighted =
+                                                        (highlightedBatchId &&
+                                                            (String(inventory.id) === String(highlightedBatchId) ||
+                                                                inventory.batch_number.toLowerCase() === String(highlightedBatchId).toLowerCase())) ||
+                                                        selectedBatch?.id === inventory.id;
+
+                                                    return (
 
                                                     <tr
                                                         key={
                                                             inventory.id
                                                         }
-                                                        className="border-b last:border-b-0"
+                                                        className={`border-b last:border-b-0 transition-colors ${
+                                                            isHighlighted
+                                                                ? 'bg-primary/10 ring-1 ring-inset ring-primary/40'
+                                                                : 'hover:bg-muted/40'
+                                                        }`}
                                                     >
 
 
@@ -672,7 +784,7 @@ export default function ArchivedVaccineInventory() {
 
                                                         <td className="px-4 py-4">
 
-                                                            <span className="font-medium">
+                                                            <span className="font-mono font-medium">
 
                                                                 {
                                                                     inventory.batch_number
@@ -719,8 +831,11 @@ export default function ArchivedVaccineInventory() {
                                                                 className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
                                                                     inventory.archive_reason ===
                                                                     'expired'
-                                                                        ? 'bg-red-100 text-red-700'
-                                                                        : 'bg-gray-100 text-gray-700'
+                                                                        ? 'border border-destructive/25 bg-destructive/15 text-destructive'
+                                                                        : inventory.archive_reason ===
+                                                                          'out_of_stock'
+                                                                        ? 'border border-amber-500/25 bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                                                                        : 'border bg-muted text-muted-foreground'
                                                                 }`}
                                                             >
 
@@ -748,9 +863,33 @@ export default function ArchivedVaccineInventory() {
                                                         </td>
 
 
+                                                        {/* ACTION */}
+
+                                                        <td className="px-4 py-4 text-right">
+
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setSelectedBatch(inventory);
+                                                                    setSheetOpen(true);
+                                                                }}
+                                                            >
+
+                                                                <Eye className="mr-1.5 h-3.5 w-3.5" />
+
+                                                                View Details
+
+                                                            </Button>
+
+                                                        </td>
+
+
                                                     </tr>
 
-                                                )
+                                                    );
+                                                }
                                             )
 
                                         )}
@@ -775,6 +914,290 @@ export default function ArchivedVaccineInventory() {
 
 
             </div>
+
+
+            {/* ============================================================= */}
+            {/* ARCHIVED BATCH DETAILS SHEET */}
+            {/* ============================================================= */}
+
+            <Sheet
+                open={sheetOpen}
+                onOpenChange={setSheetOpen}
+            >
+
+                <SheetContent className="overflow-y-auto sm:max-w-md">
+
+                    <SheetHeader className="border-b pb-4">
+
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+
+                            <Archive className="h-4 w-4" />
+
+                            Archived Vaccine Record
+
+                        </div>
+
+                        <SheetTitle className="text-xl font-bold">
+
+                            {selectedBatch?.vaccine?.name ?? 'Unknown Vaccine'}
+
+                        </SheetTitle>
+
+                        <SheetDescription className="text-xs">
+
+                            Archived on {formatDateTime(selectedBatch?.archived_at ?? null)}
+
+                        </SheetDescription>
+
+                    </SheetHeader>
+
+
+                    {selectedBatch && (
+
+                        <div className="space-y-5 py-5 text-sm">
+
+                            {/* BADGES */}
+
+                            <div className="flex flex-wrap items-center gap-2">
+
+                                <span
+                                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                                        selectedBatch.archive_reason === 'expired'
+                                            ? 'border border-destructive/30 bg-destructive/15 text-destructive'
+                                            : selectedBatch.archive_reason === 'out_of_stock'
+                                            ? 'border border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                                            : 'border bg-secondary text-secondary-foreground'
+                                    }`}
+                                >
+
+                                    Reason: {formatArchiveReason(selectedBatch.archive_reason)}
+
+                                </span>
+
+                                <span className="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+
+                                    Status: Archived
+
+                                </span>
+
+                            </div>
+
+
+                            {/* AUDIT ATTRIBUTION */}
+
+                            <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
+
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+
+                                    Audit Trail
+
+                                </h4>
+
+                                <div className="grid grid-cols-2 gap-3 text-xs">
+
+                                    <div>
+
+                                        <span className="block text-muted-foreground">
+                                            Action Logged By
+                                        </span>
+
+                                        <span className="mt-0.5 flex items-center gap-1.5 font-semibold text-foreground">
+
+                                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+
+                                            {selectedBatch.archive_transaction?.user?.name
+                                                ? selectedBatch.archive_transaction.user.name
+                                                : 'System (Automated)'}
+
+                                        </span>
+
+                                    </div>
+
+                                    <div>
+
+                                        <span className="block text-muted-foreground">
+                                            Archived Timestamp
+                                        </span>
+
+                                        <span className="mt-0.5 block font-medium text-foreground">
+
+                                            {formatDateTime(selectedBatch.archived_at)}
+
+                                        </span>
+
+                                    </div>
+
+                                    <div>
+
+                                        <span className="block text-muted-foreground">
+                                            Stock at Archival
+                                        </span>
+
+                                        <span className="mt-0.5 block font-semibold text-foreground">
+
+                                            {selectedBatch.archive_transaction
+                                                ? Math.abs(selectedBatch.archive_transaction.quantity_change)
+                                                : selectedBatch.quantity}{' '}
+                                            doses deducted
+
+                                        </span>
+
+                                    </div>
+
+                                    <div>
+
+                                        <span className="block text-muted-foreground">
+                                            Current Active Stock
+                                        </span>
+
+                                        <span className="mt-0.5 block font-semibold text-foreground">
+
+                                            0 doses (Archived)
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                {(selectedBatch.archive_transaction?.remarks || selectedBatch.remarks) && (
+
+                                    <div className="border-t pt-2 text-xs">
+
+                                        <span className="block font-medium text-muted-foreground">
+                                            Audit Remarks:
+                                        </span>
+
+                                        <p className="mt-1 whitespace-pre-wrap rounded border border-border/50 bg-background/60 p-2.5 text-foreground">
+
+                                            {selectedBatch.archive_transaction?.remarks || selectedBatch.remarks}
+
+                                        </p>
+
+                                    </div>
+
+                                )}
+
+                            </div>
+
+
+                            {/* BATCH DETAILS */}
+
+                            <div className="space-y-3 rounded-lg border p-4">
+
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+
+                                    Batch Details
+
+                                </h4>
+
+                                <div className="space-y-2.5 text-xs">
+
+                                    <div className="flex items-center justify-between border-b border-border/50 py-1">
+
+                                        <span className="text-muted-foreground">
+                                            Batch Number
+                                        </span>
+
+                                        <span className="font-mono font-semibold">
+
+                                            {selectedBatch.batch_number}
+
+                                        </span>
+
+                                    </div>
+
+                                    <div className="flex items-center justify-between border-b border-border/50 py-1">
+
+                                        <span className="text-muted-foreground">
+                                            Expiration Date
+                                        </span>
+
+                                        <span className="font-medium">
+
+                                            {formatDate(selectedBatch.expiration_date)}
+
+                                        </span>
+
+                                    </div>
+
+                                    <div className="flex items-center justify-between border-b border-border/50 py-1">
+
+                                        <span className="text-muted-foreground">
+                                            Manufacturer
+                                        </span>
+
+                                        <span className="font-medium">
+
+                                            {selectedBatch.manufacturer || '—'}
+
+                                        </span>
+
+                                    </div>
+
+                                    <div className="flex items-center justify-between py-1">
+
+                                        <span className="text-muted-foreground">
+                                            Supplier
+                                        </span>
+
+                                        <span className="font-medium">
+
+                                            {selectedBatch.supplier || '—'}
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            {/* ACTIONS */}
+
+                            <div className="space-y-2 pt-2">
+
+                                <Button
+                                    type="button"
+                                    variant="default"
+                                    className="w-full"
+                                    onClick={() => {
+                                        router.visit(
+                                            route('vaccine-inventory.transactions', {
+                                                search: selectedBatch.batch_number,
+                                            })
+                                        );
+                                    }}
+                                >
+
+                                    <History className="mr-2 h-4 w-4" />
+
+                                    View Full Transaction Ledger
+
+                                </Button>
+
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => setSheetOpen(false)}
+                                >
+
+                                    Close
+
+                                </Button>
+
+                            </div>
+
+                        </div>
+
+                    )}
+
+                </SheetContent>
+
+            </Sheet>
 
 
         </AppLayout>

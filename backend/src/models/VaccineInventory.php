@@ -33,4 +33,16 @@ class VaccineInventory extends Model
     {
         return $this->belongsTo(Vaccine::class);
     }
+
+    public function transactions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(VaccineInventoryTransaction::class, 'vaccine_inventory_id');
+    }
+
+    public function archiveTransaction(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(VaccineInventoryTransaction::class, 'vaccine_inventory_id')
+            ->where('transaction_type', 'archived')
+            ->latestOfMany();
+    }
 }

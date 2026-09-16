@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\PatientVaccineSchedule;
+use App\Models\User;
 use App\Models\Vaccine;
 use App\Models\VaccineInventory;
 use App\Models\VaccineInventoryTransaction;
+use App\Notifications\StockAdjustedNotification;
+use App\Services\VaccineInventoryService;
 use App\Services\VaccineSchedulingPriorityService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 
 class VaccineInventoryController extends Controller
@@ -21,8 +25,12 @@ class VaccineInventoryController extends Controller
 
     public function index(
         Request $request,
-        VaccineSchedulingPriorityService $priorityService
+        VaccineSchedulingPriorityService $priorityService,
+        VaccineInventoryService $inventoryService
     ) {
+        // Automatically move any expired or 0-stock batches to archived records
+        $inventoryService->autoArchiveExpiredAndDepletedBatches();
+
         $today = \Carbon\Carbon::today();
         $lowStockThreshold = 20;
 
@@ -646,11 +654,14 @@ class VaccineInventoryController extends Controller
     |
     */
 
-    public function archived(Request $request)
+    public function archived(Request $request, VaccineInventoryService $inventoryService)
     {
+        // Ensure any expired or 0-stock batches are archived before displaying records
+        $inventoryService->autoArchiveExpiredAndDepletedBatches();
+
         $query =
             VaccineInventory::query()
-                ->with('vaccine')
+                ->with(['vaccine', 'archiveTransaction.user'])
                 ->where(
                     'is_archived',
                     true
@@ -794,6 +805,9 @@ class VaccineInventoryController extends Controller
 
                     'archive_reason' =>
                         $request->archive_reason,
+
+                    'highlighted_batch_id' =>
+                        $request->highlighted_batch_id,
                 ],
             ]
         );
@@ -1145,112 +1159,43 @@ class VaccineInventoryController extends Controller
     */
 
     public function archive(
+        Request $request,
         VaccineInventory $vaccineInventory,
-        VaccineSchedulingPriorityService $schedulingService
+        VaccineInventoryService $inventoryService
     ) {
-        /*
-         * Don't archive the same batch twice.
-         */
-
-        if (
-            $vaccineInventory->is_archived
-        ) {
-
+        if ($vaccineInventory->is_archived) {
             return redirect()
-                ->route(
-                    'vaccine-inventory.index'
-                )
+                ->route('vaccine-inventory.index')
                 ->with(
                     'error',
                     'This vaccine batch is already archived.'
                 );
         }
 
+        $validated = $request->validate([
+            'archive_reason' => ['nullable', 'string', 'max:100'],
+            'remarks' => ['nullable', 'string', 'max:500'],
+        ]);
 
-        $isExpired =
-            $vaccineInventory
-                ->expiration_date
-                ->isPast();
-
-
-        $isOutOfStock =
-            $vaccineInventory
-                ->quantity <= 0;
-
-
-        /*
-         * Currently, legitimate active stock
-         * cannot be archived.
-         */
-
-        if (
-            !$isExpired &&
-            !$isOutOfStock
-        ) {
-
-            return redirect()
-                ->route(
-                    'vaccine-inventory.index'
-                )
-                ->with(
-                    'error',
-                    'Only expired or out-of-stock batches can currently be archived.'
-                );
+        $reason = $validated['archive_reason'] ?? null;
+        if (! $reason) {
+            $isExpired = $vaccineInventory->expiration_date && \Carbon\Carbon::parse($vaccineInventory->expiration_date)->isPast();
+            $isOutOfStock = $vaccineInventory->quantity <= 0;
+            $reason = $isExpired ? 'expired' : ($isOutOfStock ? 'out_of_stock' : 'manual');
         }
 
-
-        /*
-         * Determine the reason automatically.
-         */
-
-        $archiveReason =
-            $isExpired
-                ? 'expired'
-                : 'out_of_stock';
-
-        $remainingQuantity = (int) $vaccineInventory->quantity;
-
-        $vaccineInventory->update([
-            'is_archived' =>
-                true,
-
-            'archived_at' =>
-                now(),
-
-            'archive_reason' =>
-                $archiveReason,
-        ]);
-
-        VaccineInventoryTransaction::create([
-            'vaccine_id' => $vaccineInventory->vaccine_id,
-            'vaccine_inventory_id' => $vaccineInventory->id,
-            'user_id' => request()->user()?->id,
-            'patient_id' => null,
-            'immunization_record_id' => null,
-            'transaction_type' => $archiveReason === 'expired' ? 'expired' : 'archived',
-            'quantity_change' => -$remainingQuantity,
-            'balance_after' => 0,
-            'batch_number' => $vaccineInventory->batch_number,
-            'remarks' => "Batch archived: {$archiveReason}",
-        ]);
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | RECONCILE SCHEDULES AFTER ARCHIVE
-        |--------------------------------------------------------------------------
-        */
-
-        $schedulingService->generateSchedules();
-
+        $inventoryService->archiveBatch(
+            batch: $vaccineInventory,
+            reason: $reason,
+            userId: $request->user()?->id,
+            remarks: $validated['remarks'] ?? null
+        );
 
         return redirect()
-            ->route(
-                'vaccine-inventory.index'
-            )
+            ->route('vaccine-inventory.index')
             ->with(
                 'success',
-                'Vaccine batch archived successfully.'
+                "Vaccine batch {$vaccineInventory->batch_number} archived successfully."
             );
     }
 
@@ -1420,7 +1365,8 @@ class VaccineInventoryController extends Controller
     public function adjustStock(
         Request $request,
         VaccineInventory $vaccineInventory,
-        VaccineSchedulingPriorityService $schedulingService
+        VaccineSchedulingPriorityService $schedulingService,
+        VaccineInventoryService $inventoryService
     ) {
         $validated = $request->validate([
             'type' => ['required', 'in:adjustment,wastage'],
@@ -1451,6 +1397,36 @@ class VaccineInventoryController extends Controller
         ]);
 
         $schedulingService->generateSchedules();
+
+        // Dispatch interactive notification to all active staff members
+        $staffUsers = User::query()
+            ->whereIn('role', ['admin', 'nurse', 'midwife', 'bhw'])
+            ->where('status', 'active')
+            ->get();
+
+        if ($staffUsers->isNotEmpty()) {
+            Notification::send(
+                $staffUsers,
+                new StockAdjustedNotification(
+                    batch: $vaccineInventory,
+                    type: $validated['type'],
+                    quantityChange: $change,
+                    newQuantity: $newQuantity,
+                    staffName: $request->user()?->name ?? 'Staff Member',
+                    remarks: $validated['remarks']
+                )
+            );
+        }
+
+        // If batch reaches 0 through adjustment/wastage, auto-archive it
+        if ($newQuantity <= 0 && ! $vaccineInventory->is_archived) {
+            $inventoryService->archiveBatch(
+                batch: $vaccineInventory,
+                reason: 'out_of_stock',
+                userId: null,
+                remarks: 'Automatically archived: Batch stock depleted through adjustment / wastage.'
+            );
+        }
 
         return back()->with('success', 'Stock adjustment recorded successfully.');
     }
