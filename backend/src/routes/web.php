@@ -615,6 +615,22 @@ Route::middleware([
         'vaccine-inventory.archived'
     );
 
+    /*
+    |--------------------------------------------------------------------------
+    | Inventory Transaction History
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        'vaccine-inventory/transactions',
+        [
+            VaccineInventoryController::class,
+            'transactions',
+        ]
+    )->name(
+        'vaccine-inventory.transactions'
+    );
+
 
     Route::get(
         'vaccine-inventory/create',
@@ -674,6 +690,16 @@ Route::middleware([
         ]
     )->name(
         'vaccine-inventory.archive'
+    );
+
+    Route::post(
+        'vaccine-inventory/{vaccineInventory}/adjust-stock',
+        [
+            VaccineInventoryController::class,
+            'adjustStock',
+        ]
+    )->name(
+        'vaccine-inventory.adjust-stock'
     );
 
 

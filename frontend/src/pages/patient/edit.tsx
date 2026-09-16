@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import {
     ArrowLeft,
     Baby,
@@ -43,6 +43,9 @@ type Patient = {
     sex: string;
     address: string;
     guardian_relationship: string | null;
+
+    mother_name?: string | null;
+    father_name?: string | null;
 
     birth_type: string | null;
     is_full_term: boolean | null;
@@ -110,6 +113,8 @@ export default function PatientEdit({
         ),
         sex: patient.sex ?? '',
         address: patient.address ?? '',
+        mother_name: patient.mother_name ?? '',
+        father_name: patient.father_name ?? '',
 
         birth_type: patient.birth_type ?? '',
         is_full_term:
@@ -164,23 +169,29 @@ export default function PatientEdit({
         });
     }
 
+    const breadcrumbs = [
+        { title: 'Patients', href: '/patients' },
+        { title: `${patient.first_name} ${patient.last_name}`, href: `/patients/${patient.id}` },
+        { title: 'Edit', href: `/patients/${patient.id}/edit` },
+    ];
+
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head
                 title={`Edit ${patient.first_name} ${patient.last_name}`}
             />
 
-            <div className="mx-auto max-w-6xl space-y-6 p-6">
+            <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6 lg:p-8">
                 <div>
                     <Button
-                        type="button"
+                        asChild
                         variant="ghost"
-                        onClick={() =>
-                            window.history.back()
-                        }
+                        className="-ml-3 mb-2 text-muted-foreground hover:text-foreground"
                     >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Patient Profile
+                        <Link href={`/patients/${patient.id}`}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Patient Profile
+                        </Link>
                     </Button>
 
                     <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -433,6 +444,40 @@ export default function PatientEdit({
                                     }
                                 />
                             </Field>
+
+                            <div className="grid gap-4 border-t pt-4 md:grid-cols-2">
+                                <Field
+                                    label="Mother's Maiden Name"
+                                    error={errors.mother_name}
+                                >
+                                    <Input
+                                        value={data.mother_name}
+                                        onChange={(event) =>
+                                            setData(
+                                                'mother_name',
+                                                event.target.value,
+                                            )
+                                        }
+                                        placeholder="Mother's full maiden name"
+                                    />
+                                </Field>
+
+                                <Field
+                                    label="Father's Full Name"
+                                    error={errors.father_name}
+                                >
+                                    <Input
+                                        value={data.father_name}
+                                        onChange={(event) =>
+                                            setData(
+                                                'father_name',
+                                                event.target.value,
+                                            )
+                                        }
+                                        placeholder="Father's full name"
+                                    />
+                                </Field>
+                            </div>
                         </CardContent>
                     </Card>
 
@@ -608,6 +653,8 @@ export default function PatientEdit({
                                 <MetricField
                                     label="Birth Weight"
                                     unit="kg"
+                                    min="0"
+                                    max="20"
                                     value={
                                         data.birth_weight
                                     }
@@ -625,6 +672,8 @@ export default function PatientEdit({
                                 <MetricField
                                     label="Body Length"
                                     unit="cm"
+                                    min="0"
+                                    max="200"
                                     value={
                                         data.birth_length
                                     }
@@ -642,6 +691,8 @@ export default function PatientEdit({
                                 <MetricField
                                     label="Head Circumference"
                                     unit="cm"
+                                    min="0"
+                                    max="200"
                                     value={
                                         data.head_circumference
                                     }
@@ -659,6 +710,8 @@ export default function PatientEdit({
                                 <MetricField
                                     label="Chest Circumference"
                                     unit="cm"
+                                    min="0"
+                                    max="200"
                                     value={
                                         data.chest_circumference
                                     }
@@ -683,6 +736,11 @@ export default function PatientEdit({
                                 >
                                     <Input
                                         type="date"
+                                        max={
+                                            new Date()
+                                                .toISOString()
+                                                .split('T')[0]
+                                        }
                                         value={
                                             data.birth_registration_date
                                         }
@@ -819,13 +877,12 @@ export default function PatientEdit({
 
                     <div className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:justify-between">
                         <Button
-                            type="button"
+                            asChild
                             variant="outline"
-                            onClick={() =>
-                                window.history.back()
-                            }
                         >
-                            Cancel
+                            <Link href={`/patients/${patient.id}`}>
+                                Cancel
+                            </Link>
                         </Button>
 
                         <Button
@@ -976,12 +1033,16 @@ function MetricField({
     unit,
     value,
     error,
+    min = 0,
+    max,
     onChange,
 }: {
     label: string;
     unit: string;
     value: string;
     error?: string;
+    min?: number | string;
+    max?: number | string;
     onChange: (value: string) => void;
 }) {
     return (
@@ -991,7 +1052,8 @@ function MetricField({
         >
             <Input
                 type="number"
-                min="0"
+                min={min}
+                max={max}
                 step="0.01"
                 value={value}
                 onChange={(event) =>

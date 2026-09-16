@@ -1,17 +1,17 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
+import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
+    CardDescription,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-
 import {
     Select,
     SelectContent,
@@ -19,17 +19,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { ArrowLeft } from 'lucide-react';
-
 
 type VaccineOption = {
     id: number;
     name: string;
     category: string;
 };
-
 
 type AddBatchForm = {
     vaccine_id: string;
@@ -42,524 +39,230 @@ type AddBatchForm = {
     remarks: string;
 };
 
-
 export default function VaccineCreate() {
+    const today = new Date().toISOString().split('T')[0];
 
-    const {
-        vaccines,
-    } = usePage<{
+    const { vaccines } = usePage<{
         vaccines: VaccineOption[];
     }>().props;
 
-
-    const {
-        data,
-        setData,
-        post,
-        processing,
-        errors,
-    } = useForm<AddBatchForm>({
+    const { data, setData, post, processing, errors } = useForm<AddBatchForm>({
         vaccine_id: '',
         batch_number: '',
         quantity: '',
-        date_received: '',
+        date_received: today,
         expiration_date: '',
         manufacturer: '',
         supplier: '',
         remarks: '',
     });
 
+    const breadcrumbs = [
+        { title: 'Vaccine Inventory', href: '/vaccine-inventory' },
+        { title: 'Add Batch', href: '/vaccine-inventory/create' },
+    ];
 
-    function submit(
-        e: React.FormEvent
-    ) {
+    function submit(e: React.FormEvent) {
         e.preventDefault();
-
-        post(
-            route(
-                'vaccine-inventory.store'
-            )
-        );
+        post(route('vaccine-inventory.store'));
     }
 
-
     return (
-        <AppLayout>
-
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Add Vaccine Batch" />
 
-
-            <div className="max-w-4xl space-y-6 p-6">
-
-
-                {/* ======================================== */}
-                {/* HEADER */}
-                {/* ======================================== */}
-
+            <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6 lg:p-8">
                 <div>
-
                     <Button
+                        asChild
                         variant="ghost"
-                        type="button"
-                        onClick={() =>
-                            window.history.back()
-                        }
+                        className="-ml-3 mb-2 text-muted-foreground hover:text-foreground"
                     >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back
+                        <Link href="/vaccine-inventory">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Inventory
+                        </Link>
                     </Button>
 
-
-                    <h1 className="mt-4 text-2xl font-bold">
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">
                         Add Vaccine Batch
                     </h1>
-
-
-                    <p className="mt-2 text-muted-foreground">
-                        Add a new vaccine batch to the
-                        health center inventory.
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Record a new batch of vaccines received at the health center.
                     </p>
-
                 </div>
 
-
-                {/* ======================================== */}
-                {/* FORM CARD */}
-                {/* ======================================== */}
-
                 <Card>
-
                     <CardHeader>
-
-                        <CardTitle>
-                            Vaccine Information
-                        </CardTitle>
-
+                        <CardTitle className="text-lg">Batch Information</CardTitle>
+                        <CardDescription>
+                            Enter batch number, doses received, and critical expiration dates.
+                        </CardDescription>
                     </CardHeader>
 
-
                     <CardContent>
-
-                        <form
-                            onSubmit={submit}
-                            className="space-y-6"
-                        >
-
-
-                            {/* ==================================== */}
-                            {/* VACCINE + BATCH NUMBER */}
-                            {/* ==================================== */}
-
-                            <div className="grid gap-4 md:grid-cols-2">
-
-
-                                {/* VACCINE */}
-
+                        <form onSubmit={submit} className="space-y-6">
+                            {/* Vaccine + Batch Number */}
+                            <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-
-                                    <Label>
-                                        Vaccine
+                                    <Label htmlFor="vaccine_id">
+                                        Vaccine <span className="text-destructive">*</span>
                                     </Label>
-
-
                                     <Select
-                                        value={
-                                            data.vaccine_id
-                                        }
-                                        onValueChange={(
-                                            value
-                                        ) =>
-                                            setData(
-                                                'vaccine_id',
-                                                value
-                                            )
-                                        }
+                                        value={data.vaccine_id}
+                                        onValueChange={(value) => setData('vaccine_id', value)}
                                     >
-
-                                        <SelectTrigger>
-
+                                        <SelectTrigger id="vaccine_id">
                                             <SelectValue placeholder="Select Vaccine" />
-
                                         </SelectTrigger>
-
-
                                         <SelectContent>
-
                                             {vaccines.length === 0 ? (
-
-                                                <SelectItem
-                                                    value="no-vaccines"
-                                                    disabled
-                                                >
+                                                <SelectItem value="no-vaccines" disabled>
                                                     No vaccines available
                                                 </SelectItem>
-
                                             ) : (
-
-                                                vaccines.map(
-                                                    (
-                                                        vaccine
-                                                    ) => (
-
-                                                        <SelectItem
-                                                            key={
-                                                                vaccine.id
-                                                            }
-                                                            value={String(
-                                                                vaccine.id
-                                                            )}
-                                                        >
-                                                            {
-                                                                vaccine.name
-                                                            }
-                                                        </SelectItem>
-
-                                                    )
-                                                )
-
+                                                vaccines.map((v) => (
+                                                    <SelectItem key={v.id} value={String(v.id)}>
+                                                        {v.name} ({v.category})
+                                                    </SelectItem>
+                                                ))
                                             )}
-
                                         </SelectContent>
-
                                     </Select>
-
-
                                     {errors.vaccine_id && (
-
-                                        <p className="text-sm text-red-500">
-                                            {
-                                                errors.vaccine_id
-                                            }
-                                        </p>
-
+                                        <p className="text-xs text-destructive">{errors.vaccine_id}</p>
                                     )}
-
                                 </div>
-
-
-                                {/* BATCH NUMBER */}
 
                                 <div className="space-y-2">
-
-                                    <Label>
-                                        Batch Number
+                                    <Label htmlFor="batch_number">
+                                        Batch Number <span className="text-destructive">*</span>
                                     </Label>
-
                                     <Input
-                                        placeholder="e.g. BCG-2026-001"
-                                        value={
-                                            data.batch_number
-                                        }
-                                        onChange={(
-                                            e
-                                        ) =>
-                                            setData(
-                                                'batch_number',
-                                                e.target.value
-                                            )
-                                        }
+                                        id="batch_number"
+                                        value={data.batch_number}
+                                        onChange={(e) => setData('batch_number', e.target.value)}
+                                        placeholder="e.g. BATCH-2026-001"
+                                        required
                                     />
-
-
                                     {errors.batch_number && (
-
-                                        <p className="text-sm text-red-500">
-                                            {
-                                                errors.batch_number
-                                            }
-                                        </p>
-
+                                        <p className="text-xs text-destructive">{errors.batch_number}</p>
                                     )}
-
                                 </div>
-
                             </div>
 
-
-                            {/* ==================================== */}
-                            {/* QUANTITY + MANUFACTURER */}
-                            {/* ==================================== */}
-
-                            <div className="grid gap-4 md:grid-cols-2">
-
-
-                                {/* QUANTITY */}
-
+                            {/* Quantity + Dates */}
+                            <div className="grid gap-4 sm:grid-cols-3">
                                 <div className="space-y-2">
-
-                                    <Label>
-                                        Quantity Received
+                                    <Label htmlFor="quantity">
+                                        Quantity (Doses) <span className="text-destructive">*</span>
                                     </Label>
-
                                     <Input
+                                        id="quantity"
                                         type="number"
                                         min="1"
-                                        value={
-                                            data.quantity
-                                        }
-                                        onChange={(
-                                            e
-                                        ) =>
-                                            setData(
-                                                'quantity',
-                                                e.target.value
-                                            )
-                                        }
+                                        step="1"
+                                        value={data.quantity}
+                                        onChange={(e) => setData('quantity', e.target.value)}
+                                        placeholder="e.g. 50"
+                                        required
                                     />
-
-
                                     {errors.quantity && (
-
-                                        <p className="text-sm text-red-500">
-                                            {
-                                                errors.quantity
-                                            }
-                                        </p>
-
+                                        <p className="text-xs text-destructive">{errors.quantity}</p>
                                     )}
-
                                 </div>
 
-
-                                {/* MANUFACTURER */}
-
                                 <div className="space-y-2">
-
-                                    <Label>
-                                        Manufacturer
+                                    <Label htmlFor="date_received">
+                                        Date Received <span className="text-destructive">*</span>
                                     </Label>
-
                                     <Input
-                                        placeholder="e.g. Sanofi"
-                                        value={
-                                            data.manufacturer
-                                        }
-                                        onChange={(
-                                            e
-                                        ) =>
-                                            setData(
-                                                'manufacturer',
-                                                e.target.value
-                                            )
-                                        }
-                                    />
-
-
-                                    {errors.manufacturer && (
-
-                                        <p className="text-sm text-red-500">
-                                            {
-                                                errors.manufacturer
-                                            }
-                                        </p>
-
-                                    )}
-
-                                </div>
-
-                            </div>
-
-
-                            {/* ==================================== */}
-                            {/* DATES */}
-                            {/* ==================================== */}
-
-                            <div className="grid gap-4 md:grid-cols-2">
-
-
-                                {/* DATE RECEIVED */}
-
-                                <div className="space-y-2">
-
-                                    <Label>
-                                        Date Received
-                                    </Label>
-
-                                    <Input
+                                        id="date_received"
                                         type="date"
-                                        value={
-                                            data.date_received
-                                        }
-                                        onChange={(
-                                            e
-                                        ) =>
-                                            setData(
-                                                'date_received',
-                                                e.target.value
-                                            )
-                                        }
-                                        onClick={(
-                                            e
-                                        ) =>
-                                            e.currentTarget.showPicker?.()
-                                        }
+                                        max={today}
+                                        value={data.date_received}
+                                        onChange={(e) => setData('date_received', e.target.value)}
+                                        required
                                     />
-
-
                                     {errors.date_received && (
-
-                                        <p className="text-sm text-red-500">
-                                            {
-                                                errors.date_received
-                                            }
-                                        </p>
-
+                                        <p className="text-xs text-destructive">{errors.date_received}</p>
                                     )}
-
                                 </div>
-
-
-                                {/* EXPIRATION DATE */}
 
                                 <div className="space-y-2">
-
-                                    <Label>
-                                        Expiration Date
+                                    <Label htmlFor="expiration_date">
+                                        Expiration Date <span className="text-destructive">*</span>
                                     </Label>
-
                                     <Input
+                                        id="expiration_date"
                                         type="date"
-                                        value={
-                                            data.expiration_date
-                                        }
-                                        onChange={(
-                                            e
-                                        ) =>
-                                            setData(
-                                                'expiration_date',
-                                                e.target.value
-                                            )
-                                        }
-                                        onClick={(
-                                            e
-                                        ) =>
-                                            e.currentTarget.showPicker?.()
-                                        }
+                                        min={today}
+                                        value={data.expiration_date}
+                                        onChange={(e) => setData('expiration_date', e.target.value)}
+                                        required
                                     />
-
-
                                     {errors.expiration_date && (
-
-                                        <p className="text-sm text-red-500">
-                                            {
-                                                errors.expiration_date
-                                            }
-                                        </p>
-
+                                        <p className="text-xs text-destructive">{errors.expiration_date}</p>
                                     )}
+                                </div>
+                            </div>
 
+                            {/* Manufacturer + Supplier */}
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="manufacturer">Manufacturer</Label>
+                                    <Input
+                                        id="manufacturer"
+                                        value={data.manufacturer}
+                                        onChange={(e) => setData('manufacturer', e.target.value)}
+                                        placeholder="e.g. Sanofi Pasteur / GSK"
+                                    />
+                                    {errors.manufacturer && (
+                                        <p className="text-xs text-destructive">{errors.manufacturer}</p>
+                                    )}
                                 </div>
 
+                                <div className="space-y-2">
+                                    <Label htmlFor="supplier">Supplier / Source</Label>
+                                    <Input
+                                        id="supplier"
+                                        value={data.supplier}
+                                        onChange={(e) => setData('supplier', e.target.value)}
+                                        placeholder="e.g. DOH Region X / City Health Office"
+                                    />
+                                    {errors.supplier && (
+                                        <p className="text-xs text-destructive">{errors.supplier}</p>
+                                    )}
+                                </div>
                             </div>
 
-
-                            {/* ==================================== */}
-                            {/* SUPPLIER */}
-                            {/* ==================================== */}
-
+                            {/* Remarks */}
                             <div className="space-y-2">
-
-                                <Label>
-                                    Supplier
-                                </Label>
-
-                                <Input
-                                    placeholder="e.g. DOH Region X"
-                                    value={
-                                        data.supplier
-                                    }
-                                    onChange={(
-                                        e
-                                    ) =>
-                                        setData(
-                                            'supplier',
-                                            e.target.value
-                                        )
-                                    }
-                                />
-
-
-                                {errors.supplier && (
-
-                                    <p className="text-sm text-red-500">
-                                        {
-                                            errors.supplier
-                                        }
-                                    </p>
-
-                                )}
-
-                            </div>
-
-
-                            {/* ==================================== */}
-                            {/* REMARKS */}
-                            {/* ==================================== */}
-
-                            <div className="space-y-2">
-
-                                <Label>
-                                    Remarks
-                                </Label>
-
+                                <Label htmlFor="remarks">Remarks</Label>
                                 <Textarea
-                                    value={
-                                        data.remarks
-                                    }
-                                    onChange={(
-                                        e
-                                    ) =>
-                                        setData(
-                                            'remarks',
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder="Optional remarks..."
+                                    id="remarks"
+                                    value={data.remarks}
+                                    onChange={(e) => setData('remarks', e.target.value)}
+                                    placeholder="Storage condition details, delivery notes, or special handling..."
                                 />
-
-
                                 {errors.remarks && (
-
-                                    <p className="text-sm text-red-500">
-                                        {
-                                            errors.remarks
-                                        }
-                                    </p>
-
+                                    <p className="text-xs text-destructive">{errors.remarks}</p>
                                 )}
-
                             </div>
 
-
-                            {/* ==================================== */}
-                            {/* SUBMIT */}
-                            {/* ==================================== */}
-
-                            <div className="flex justify-end">
-
-                                <Button
-                                    type="submit"
-                                    disabled={
-                                        processing
-                                    }
-                                >
-
-                                    {processing
-                                        ? 'Saving...'
-                                        : 'Save Vaccine Batch'}
-
+                            {/* Form Actions */}
+                            <div className="flex items-center justify-end gap-3 border-t pt-4">
+                                <Button asChild variant="outline">
+                                    <Link href="/vaccine-inventory">Cancel</Link>
                                 </Button>
-
+                                <Button type="submit" disabled={processing}>
+                                    {processing ? 'Saving...' : 'Add Vaccine Batch'}
+                                </Button>
                             </div>
-
                         </form>
-
                     </CardContent>
-
                 </Card>
-
             </div>
-
         </AppLayout>
     );
 }

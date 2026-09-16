@@ -5,6 +5,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Link } from '@inertiajs/react';
 import {
     FileText,
     Pencil,
@@ -60,13 +61,12 @@ export default function GeneralInformation({
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() =>
-                            (window.location.href =
-                                `/patients/${patient.id}/edit`)
-                        }
+                        asChild
                     >
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Edit Information
+                        <Link href={`/patients/${patient.id}/edit`}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit Information
+                        </Link>
                     </Button>
                 </div>
             </CardHeader>

@@ -79,7 +79,7 @@ class PatientManagementTest extends TestCase
         $response = $this->get('/patients/'.$patient->id);
 
         $response->assertOk();
-        $response->assertSee('patient/show');
+        $response->assertSee('patient\/show', false);
         $response->assertSee('PT-000001');
         $response->assertSee('Ana');
         $response->assertSee('Rosa Lopez');

@@ -60,14 +60,8 @@ export default function PatientHeader({
 
     const patientUrl =
         typeof window !== 'undefined'
-            ? `${window.location.origin}${route(
-                  'patients.show',
-                  patientRecordId,
-              )}`
-            : route(
-                  'patients.show',
-                  patientRecordId,
-              );
+            ? `${window.location.origin}/patients/${patientRecordId}`
+            : `/patients/${patientRecordId}`;
 
 
     function printQrCode() {

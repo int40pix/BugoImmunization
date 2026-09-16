@@ -20,7 +20,8 @@ export function UserInfo({
     const getInitials = useInitials();
 
     const isOnline = true;
-    const role = 'Administrator';
+    const rawRole = user.account_role?.name || (user as any).role || 'Administrator';
+    const role = rawRole.charAt(0).toUpperCase() + rawRole.slice(1);
 
     return (
         <div className="flex min-w-0 flex-1 items-center gap-3">

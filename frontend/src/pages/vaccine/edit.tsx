@@ -23,6 +23,7 @@ import AppLayout from '@/layouts/app-layout';
 
 import {
     Head,
+    Link,
     useForm,
     usePage,
 } from '@inertiajs/react';
@@ -317,36 +318,29 @@ export default function VaccineEdit() {
     |--------------------------------------------------------------------------
     */
 
+    const breadcrumbs = [
+        { title: 'Vaccine Inventory', href: '/vaccine-inventory' },
+        { title: 'Vaccines', href: '/vaccine' },
+        { title: `Edit ${vaccine.name}`, href: `/vaccine/${vaccine.id}/edit` },
+    ];
+
     return (
-
-        <AppLayout>
-
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head
                 title={`Edit ${vaccine.name}`}
             />
 
-
-            <div className="max-w-5xl space-y-6 p-6">
-
-
-                {/* ========================================================= */}
-                {/* HEADER */}
-                {/* ========================================================= */}
-
+            <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6 lg:p-8">
                 <div>
-
                     <Button
-                        type="button"
+                        asChild
                         variant="ghost"
-                        onClick={
-                            cancelEdit
-                        }
+                        className="-ml-3 mb-2 text-muted-foreground hover:text-foreground"
                     >
-
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-
-                        Back
-
+                        <Link href="/vaccine">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Vaccine List
+                        </Link>
                     </Button>
 
 
@@ -443,7 +437,7 @@ export default function VaccineEdit() {
 
                                     {errors.name && (
 
-                                        <p className="text-sm text-red-500">
+                                        <p className="text-xs text-destructive">
 
                                             {
                                                 errors.name
@@ -487,7 +481,7 @@ export default function VaccineEdit() {
 
                                     {errors.required_doses && (
 
-                                        <p className="text-sm text-red-500">
+                                        <p className="text-xs text-destructive">
 
                                             {
                                                 errors.required_doses
@@ -571,7 +565,7 @@ export default function VaccineEdit() {
 
                                 {errors.category && (
 
-                                    <p className="text-sm text-red-500">
+                                    <p className="text-xs text-destructive">
 
                                         {
                                             errors.category
@@ -616,7 +610,7 @@ export default function VaccineEdit() {
 
                                 {errors.description && (
 
-                                    <p className="text-sm text-red-500">
+                                    <p className="text-xs text-destructive">
 
                                         {
                                             errors.description
@@ -656,18 +650,12 @@ export default function VaccineEdit() {
                             <div className="flex justify-end gap-3 border-t pt-4">
 
                                 <Button
-                                    type="button"
+                                    asChild
                                     variant="outline"
-                                    onClick={
-                                        cancelEdit
-                                    }
-                                    disabled={
-                                        processing
-                                    }
                                 >
-
-                                    Cancel
-
+                                    <Link href="/vaccine">
+                                        Cancel
+                                    </Link>
                                 </Button>
 
 

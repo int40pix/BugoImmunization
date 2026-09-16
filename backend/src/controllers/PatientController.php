@@ -141,6 +141,8 @@ class PatientController extends Controller
                 'name' => $guardian->name,
                 'email' => $guardian->email,
                 'contact_number' => $guardian->contact_number,
+                'mother_maiden_name' => $guardian->mother_maiden_name,
+                'father_name' => $guardian->father_name,
                 'status' => $guardian->status,
             ],
         ]);

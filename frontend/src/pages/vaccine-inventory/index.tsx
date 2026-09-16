@@ -1,6 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import {
     Head,
+    Link,
     router,
     usePage,
 } from '@inertiajs/react';
@@ -11,10 +12,16 @@ import {
     List,
     LoaderCircle,
     PackagePlus,
+    QrCode,
+    Scale,
     Search,
 } from 'lucide-react';
+import { BatchQrModal } from './components/batch-qr-modal';
+import { InventorySubnav } from './components/inventory-subnav';
+import { StockAdjustmentModal } from './components/stock-adjustment-modal';
 import {
     useEffect,
+    useRef,
     useState,
 } from 'react';
 
@@ -201,7 +208,33 @@ export default function VaccineInventoryIndex() {
         new Set(),
     );
 
+    const [selectedBatchForQr, setSelectedBatchForQr] = useState<{
+        id: number;
+        batch_number: string;
+        quantity: number;
+        expiration_date: string;
+        manufacturer?: string | null;
+        supplier?: string | null;
+        vaccine_name?: string;
+    } | null>(null);
+    const [batchQrOpen, setBatchQrOpen] = useState(false);
+
+    const [selectedBatchForAdj, setSelectedBatchForAdj] = useState<{
+        id: number;
+        batch_number: string;
+        quantity: number;
+        vaccine_name?: string;
+    } | null>(null);
+    const [adjustModalOpen, setAdjustModalOpen] = useState(false);
+
+    const isInitialMount = useRef(true);
+
     useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
         const timeout =
             setTimeout(() => {
                 router.get(
@@ -275,16 +308,18 @@ export default function VaccineInventoryIndex() {
 
             <div className="max-w-7xl space-y-6 p-6">
                 <div>
-                    <h1 className="text-2xl font-bold">
+                    <h1 className="text-2xl font-bold tracking-tight">
                         Vaccine Inventory
                     </h1>
 
-                    <p className="mt-2 text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                         Monitor vaccine-level stock,
                         batch availability, expiration
                         dates, and upcoming demand.
                     </p>
                 </div>
+
+                <InventorySubnav current="active" />
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                     <SummaryCard
@@ -326,52 +361,6 @@ export default function VaccineInventoryIndex() {
                         }
                         description="Vaccines with a batch ≤ 30 days"
                     />
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                    <Button
-                        type="button"
-                        onClick={() =>
-                            router.visit(
-                                route(
-                                    'vaccine.index',
-                                ),
-                            )
-                        }
-                    >
-                        <List className="mr-2 h-4 w-4" />
-                        Vaccine Master List
-                    </Button>
-
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() =>
-                            router.visit(
-                                route(
-                                    'vaccine-inventory.create',
-                                ),
-                            )
-                        }
-                    >
-                        <PackagePlus className="mr-2 h-4 w-4" />
-                        Add Batch
-                    </Button>
-
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() =>
-                            router.visit(
-                                route(
-                                    'vaccine-inventory.archived',
-                                ),
-                            )
-                        }
-                    >
-                        <Archive className="mr-2 h-4 w-4" />
-                        View Archived
-                    </Button>
                 </div>
 
                 <Card>
@@ -642,16 +631,12 @@ export default function VaccineInventoryIndex() {
                                                                     type="button"
                                                                     size="sm"
                                                                     className="mt-4"
-                                                                    onClick={() =>
-                                                                        router.visit(
-                                                                            route(
-                                                                                'vaccine-inventory.create',
-                                                                            ),
-                                                                        )
-                                                                    }
+                                                                    asChild
                                                                 >
-                                                                    <PackagePlus className="mr-2 h-4 w-4" />
-                                                                    Add Batch
+                                                                    <Link href={route('vaccine-inventory.create')}>
+                                                                        <PackagePlus className="mr-2 h-4 w-4" />
+                                                                        Add Batch
+                                                                    </Link>
                                                                 </Button>
                                                             </div>
                                                         ) : (
@@ -764,21 +749,65 @@ export default function VaccineInventoryIndex() {
                                                                                     </td>
 
                                                                                     <td className="px-4 py-3">
-                                                                                        <div className="flex justify-end gap-2">
+                                                                                        <div className="flex justify-end items-center gap-1.5">
                                                                                             <Button
                                                                                                 type="button"
                                                                                                 size="sm"
                                                                                                 variant="outline"
-                                                                                                onClick={() =>
-                                                                                                    router.visit(
-                                                                                                        route(
-                                                                                                            'vaccine-inventory.edit',
-                                                                                                            batch.id,
-                                                                                                        ),
-                                                                                                    )
-                                                                                                }
+                                                                                                className="h-8 px-2 text-xs gap-1"
+                                                                                                onClick={() => {
+                                                                                                    setSelectedBatchForQr({
+                                                                                                        id: batch.id,
+                                                                                                        batch_number: batch.batch_number,
+                                                                                                        quantity: batch.quantity,
+                                                                                                        expiration_date: batch.expiration_date,
+                                                                                                        manufacturer: batch.manufacturer,
+                                                                                                        supplier: batch.supplier,
+                                                                                                        vaccine_name: vaccine.name,
+                                                                                                    });
+                                                                                                    setBatchQrOpen(true);
+                                                                                                }}
+                                                                                                title="View or Print Batch QR"
                                                                                             >
-                                                                                                Edit
+                                                                                                <QrCode className="h-3.5 w-3.5 text-primary" />
+                                                                                                <span className="hidden sm:inline">QR</span>
+                                                                                            </Button>
+
+                                                                                            <Button
+                                                                                                type="button"
+                                                                                                size="sm"
+                                                                                                variant="outline"
+                                                                                                className="h-8 px-2 text-xs gap-1"
+                                                                                                onClick={() => {
+                                                                                                    setSelectedBatchForAdj({
+                                                                                                        id: batch.id,
+                                                                                                        batch_number: batch.batch_number,
+                                                                                                        quantity: batch.quantity,
+                                                                                                        vaccine_name: vaccine.name,
+                                                                                                    });
+                                                                                                    setAdjustModalOpen(true);
+                                                                                                }}
+                                                                                                title="Adjust Stock or Log Wastage"
+                                                                                            >
+                                                                                                <Scale className="h-3.5 w-3.5 text-amber-600" />
+                                                                                                <span className="hidden sm:inline">Adjust</span>
+                                                                                            </Button>
+
+                                                                                            <Button
+                                                                                                type="button"
+                                                                                                size="sm"
+                                                                                                variant="outline"
+                                                                                                className="h-8 px-2.5 text-xs"
+                                                                                                asChild
+                                                                                            >
+                                                                                                <Link
+                                                                                                    href={route(
+                                                                                                        'vaccine-inventory.edit',
+                                                                                                        batch.id
+                                                                                                    )}
+                                                                                                >
+                                                                                                    Edit
+                                                                                                </Link>
                                                                                             </Button>
                                                                                         </div>
                                                                                     </td>
@@ -801,6 +830,20 @@ export default function VaccineInventoryIndex() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Batch QR Modal */}
+            <BatchQrModal
+                open={batchQrOpen}
+                onOpenChange={setBatchQrOpen}
+                batch={selectedBatchForQr}
+            />
+
+            {/* Stock Adjustment / Wastage Modal */}
+            <StockAdjustmentModal
+                open={adjustModalOpen}
+                onOpenChange={setAdjustModalOpen}
+                batch={selectedBatchForAdj}
+            />
         </AppLayout>
     );
 }

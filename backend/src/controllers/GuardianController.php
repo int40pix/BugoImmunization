@@ -235,18 +235,12 @@ class GuardianController extends Controller
                 ],
 
                 'mother_maiden_name' => [
-                    Rule::requiredIf(
-                        ! $motherUnavailable
-                    ),
                     'nullable',
                     'string',
                     'max:255',
                 ],
 
                 'father_name' => [
-                    Rule::requiredIf(
-                        ! $fatherUnavailable
-                    ),
                     'nullable',
                     'string',
                     'max:255',
@@ -266,6 +260,28 @@ class GuardianController extends Controller
                     'required',
                     'array',
                     'min:1',
+                ],
+
+                'children.*.mother_name' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
+
+                'children.*.father_name' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
+
+                'children.*.mother_information_unavailable' => [
+                    'nullable',
+                    'boolean',
+                ],
+
+                'children.*.father_information_unavailable' => [
+                    'nullable',
+                    'boolean',
                 ],
 
                 'children.*.first_name' => [
@@ -645,6 +661,23 @@ class GuardianController extends Controller
                                         'address'
                                     ]
                                 ),
+
+                            'mother_name' =>
+                                $this
+                                    ->nullableTrim(
+                                        $child['mother_name']
+                                        ?? $child['mother_maiden_name']
+                                        ?? $validated['mother_maiden_name']
+                                        ?? null
+                                    ),
+
+                            'father_name' =>
+                                $this
+                                    ->nullableTrim(
+                                        $child['father_name']
+                                        ?? $validated['father_name']
+                                        ?? null
+                                    ),
 
                             'birth_type' =>
                                 $this

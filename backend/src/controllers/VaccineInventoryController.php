@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PatientVaccineSchedule;
 use App\Models\Vaccine;
 use App\Models\VaccineInventory;
+use App\Models\VaccineInventoryTransaction;
 use App\Services\VaccineSchedulingPriorityService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -889,8 +890,7 @@ class VaccineInventoryController extends Controller
             ]);
 
 
-        VaccineInventory::create([
-
+        $batch = VaccineInventory::create([
             'vaccine_id' =>
                 $validated['vaccine_id'],
 
@@ -926,6 +926,19 @@ class VaccineInventoryController extends Controller
 
             'archive_reason' =>
                 null,
+        ]);
+
+        VaccineInventoryTransaction::create([
+            'vaccine_id' => $batch->vaccine_id,
+            'vaccine_inventory_id' => $batch->id,
+            'user_id' => $request->user()?->id,
+            'patient_id' => null,
+            'immunization_record_id' => null,
+            'transaction_type' => 'received',
+            'quantity_change' => (int) $batch->quantity,
+            'balance_after' => (int) $batch->quantity,
+            'batch_number' => $batch->batch_number,
+            'remarks' => $validated['remarks'] ?? 'Initial stock received',
         ]);
 
 
@@ -1056,8 +1069,11 @@ class VaccineInventoryController extends Controller
             ]);
 
 
-        $vaccineInventory->update([
+        $oldQuantity = (int) $vaccineInventory->quantity;
+        $newQuantity = (int) $validated['quantity'];
+        $quantityDiff = $newQuantity - $oldQuantity;
 
+        $vaccineInventory->update([
             'vaccine_id' =>
                 $validated['vaccine_id'],
 
@@ -1085,6 +1101,21 @@ class VaccineInventoryController extends Controller
                 $validated['remarks']
                     ?? null,
         ]);
+
+        if ($quantityDiff !== 0) {
+            VaccineInventoryTransaction::create([
+                'vaccine_id' => $validated['vaccine_id'],
+                'vaccine_inventory_id' => $vaccineInventory->id,
+                'user_id' => $request->user()?->id,
+                'patient_id' => null,
+                'immunization_record_id' => null,
+                'transaction_type' => 'adjustment',
+                'quantity_change' => $quantityDiff,
+                'balance_after' => $newQuantity,
+                'batch_number' => $validated['batch_number'],
+                'remarks' => $validated['remarks'] ?? 'Quantity updated via batch edit',
+            ]);
+        }
 
 
         /*
@@ -1177,9 +1208,9 @@ class VaccineInventoryController extends Controller
                 ? 'expired'
                 : 'out_of_stock';
 
+        $remainingQuantity = (int) $vaccineInventory->quantity;
 
         $vaccineInventory->update([
-
             'is_archived' =>
                 true,
 
@@ -1188,6 +1219,19 @@ class VaccineInventoryController extends Controller
 
             'archive_reason' =>
                 $archiveReason,
+        ]);
+
+        VaccineInventoryTransaction::create([
+            'vaccine_id' => $vaccineInventory->vaccine_id,
+            'vaccine_inventory_id' => $vaccineInventory->id,
+            'user_id' => request()->user()?->id,
+            'patient_id' => null,
+            'immunization_record_id' => null,
+            'transaction_type' => $archiveReason === 'expired' ? 'expired' : 'archived',
+            'quantity_change' => -$remainingQuantity,
+            'balance_after' => 0,
+            'batch_number' => $vaccineInventory->batch_number,
+            'remarks' => "Batch archived: {$archiveReason}",
         ]);
 
 
@@ -1296,5 +1340,118 @@ class VaccineInventoryController extends Controller
                 'success',
                 'Vaccine batch permanently deleted.'
             );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | INVENTORY TRANSACTION HISTORY
+    |--------------------------------------------------------------------------
+    */
+    public function transactions(Request $request)
+    {
+        $query = VaccineInventoryTransaction::query()
+            ->with([
+                'vaccine:id,name,category',
+                'user:id,name,role',
+                'patient:id,patient_id,first_name,middle_name,last_name',
+            ])
+            ->latest('id');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('batch_number', 'like', "%{$search}%")
+                    ->orWhere('remarks', 'like', "%{$search}%")
+                    ->orWhereHas('vaccine', fn ($vq) => $vq->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('patient', fn ($pq) => $pq->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('patient_id', 'like', "%{$search}%")
+                    )
+                    ->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('type') && $request->type !== 'all') {
+            $query->where('transaction_type', $request->type);
+        }
+
+        if ($request->filled('vaccine_id') && $request->vaccine_id !== 'all') {
+            $query->where('vaccine_id', $request->vaccine_id);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $transactions = $query->paginate(25)->withQueryString();
+
+        $summary = [
+            'total_received' => (int) VaccineInventoryTransaction::where('transaction_type', 'received')->sum('quantity_change'),
+            'total_administered' => abs((int) VaccineInventoryTransaction::where('transaction_type', 'administered')->sum('quantity_change')),
+            'total_wastage' => abs((int) VaccineInventoryTransaction::whereIn('transaction_type', ['wastage', 'expired'])->sum('quantity_change')),
+            'total_transactions' => VaccineInventoryTransaction::count(),
+        ];
+
+        $vaccines = Vaccine::orderBy('name')->get(['id', 'name', 'category']);
+
+        return Inertia::render('vaccine-inventory/transactions', [
+            'transactions' => $transactions,
+            'summary' => $summary,
+            'vaccines' => $vaccines,
+            'filters' => [
+                'search' => $request->search,
+                'type' => $request->type ?? 'all',
+                'vaccine_id' => $request->vaccine_id ?? 'all',
+                'date_from' => $request->date_from,
+                'date_to' => $request->date_to,
+            ],
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADJUST STOCK / LOG WASTAGE
+    |--------------------------------------------------------------------------
+    */
+    public function adjustStock(
+        Request $request,
+        VaccineInventory $vaccineInventory,
+        VaccineSchedulingPriorityService $schedulingService
+    ) {
+        $validated = $request->validate([
+            'type' => ['required', 'in:adjustment,wastage'],
+            'quantity_change' => ['required', 'integer', 'not_in:0'],
+            'remarks' => ['required', 'string', 'max:500'],
+        ]);
+
+        $change = (int) $validated['quantity_change'];
+        $newQuantity = (int) $vaccineInventory->quantity + $change;
+
+        if ($newQuantity < 0) {
+            return back()->with('error', 'Quantity adjustment cannot reduce stock below zero.');
+        }
+
+        $vaccineInventory->update(['quantity' => $newQuantity]);
+
+        VaccineInventoryTransaction::create([
+            'vaccine_id' => $vaccineInventory->vaccine_id,
+            'vaccine_inventory_id' => $vaccineInventory->id,
+            'user_id' => $request->user()?->id,
+            'patient_id' => null,
+            'immunization_record_id' => null,
+            'transaction_type' => $validated['type'],
+            'quantity_change' => $change,
+            'balance_after' => $newQuantity,
+            'batch_number' => $vaccineInventory->batch_number,
+            'remarks' => $validated['remarks'],
+        ]);
+
+        $schedulingService->generateSchedules();
+
+        return back()->with('success', 'Stock adjustment recorded successfully.');
     }
 }

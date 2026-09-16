@@ -17,23 +17,43 @@ class VaccineSchedulingPriorityService
     }
 
     /**
+     * In-memory cache for candidate pool during the request lifecycle.
+     */
+    protected ?Collection $cachedCandidatePool = null;
+
+    /**
+     * Clear candidate pool cache.
+     */
+    public function clearCandidatePoolCache(): void
+    {
+        $this->cachedCandidatePool = null;
+    }
+
+    /**
      * Build the current scheduling candidate pool
      * across all Active patients.
      */
-    public function getCandidatePool(): Collection
+    public function getCandidatePool(bool $fresh = false): Collection
     {
+        if (! $fresh && $this->cachedCandidatePool !== null) {
+            return $this->cachedCandidatePool;
+        }
+
         $patients = Patient::query()
             ->where('status', 'Active')
             ->with([
                 'vaccineSchedules' => function ($query) {
                     $query->where('status', 'scheduled');
                 },
+                'immunizationRecords',
+                'optionalVaccines',
+                'vaccineSchedules.inventoryBatch',
             ])
             ->orderBy('last_name')
             ->orderBy('first_name')
             ->get();
 
-        return $patients
+        $this->cachedCandidatePool = $patients
             ->flatMap(function (Patient $patient) {
                 $options = $this->scheduleService
                     ->getSchedulingOptions($patient);
@@ -123,6 +143,8 @@ class VaccineSchedulingPriorityService
                 );
             })
             ->values();
+
+        return $this->cachedCandidatePool;
     }
 
     /**
@@ -260,6 +282,8 @@ class VaccineSchedulingPriorityService
      */
     public function generateSchedules(): Collection
     {
+        $this->clearCandidatePoolCache();
+
         return DB::transaction(
             function () {
                 /*
@@ -497,6 +521,8 @@ class VaccineSchedulingPriorityService
      */
     public function reconcileScheduledBatchReservations(): void
     {
+        $this->clearCandidatePoolCache();
+
         DB::transaction(
             function () {
                 $this

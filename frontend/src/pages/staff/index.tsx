@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -5,6 +6,14 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
@@ -21,13 +30,13 @@ import {
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
-import { MoreHorizontal, Plus, Search } from 'lucide-react';
+import { MoreHorizontal, Plus, Search, Users } from 'lucide-react';
 
 interface Staff {
     id: number;
     name: string;
     email: string;
-    role: 'nurse' | 'midwife' | 'bhw';
+    role: 'admin' | 'nurse' | 'midwife' | 'bhw';
     status: 'active' | 'inactive';
     created_at: string;
 }
@@ -64,6 +73,9 @@ export default function StaffIndex({
         },
     );
 };
+    const [statusDialogMember, setStatusDialogMember] = useState<Staff | null>(null);
+    const [statusUpdating, setStatusUpdating] = useState(false);
+
     return (
         <AppLayout>
             <Head title="Staff Management" />
@@ -79,12 +91,12 @@ export default function StaffIndex({
                     </p>
                 </div>
 
-                <Link href="/staff/create">
-                    <Button type="button">
+                <Button asChild>
+                    <Link href="/staff/create">
                         <Plus className="mr-2 h-4 w-4" />
                         Register Staff
-                    </Button>
-                </Link>
+                    </Link>
+                </Button>
 
                 <Card>
                     <CardContent className="pt-6">
@@ -202,9 +214,17 @@ export default function StaffIndex({
                                         <tr>
                                             <td
                                                 colSpan={6}
-                                                className="px-4 py-10 text-center text-muted-foreground"
+                                                className="px-4 py-12 text-center"
                                             >
-                                                No staff accounts found.
+                                                <div className="flex flex-col items-center justify-center space-y-2.5">
+                                                    <div className="rounded-full bg-muted p-3 text-muted-foreground">
+                                                        <Users className="h-6 w-6" />
+                                                    </div>
+                                                    <p className="font-medium text-foreground">No staff accounts found</p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Try adjusting your search query or role filter.
+                                                    </p>
+                                                </div>
                                             </td>
                                         </tr>
                                     ) : (
@@ -276,9 +296,7 @@ export default function StaffIndex({
 
                                                             <DropdownMenuItem
                                                                 onClick={() =>
-                                                                    router.put(
-                                                                        `/staff/${member.id}/status`,
-                                                                    )
+                                                                    setStatusDialogMember(member)
                                                                 }
                                                             >
                                                                 {member.status ===
@@ -298,6 +316,70 @@ export default function StaffIndex({
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Staff Status Confirmation Dialog */}
+            <Dialog
+                open={!!statusDialogMember}
+                onOpenChange={(open) => {
+                    if (!open) setStatusDialogMember(null);
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {statusDialogMember?.status === 'active'
+                                ? 'Deactivate Staff Account?'
+                                : 'Activate Staff Account?'}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to {statusDialogMember?.status === 'active' ? 'deactivate' : 'activate'} the account for{' '}
+                            <span className="font-semibold text-foreground">
+                                {statusDialogMember?.name}
+                            </span>{' '}
+                            ({statusDialogMember?.email})?{' '}
+                            {statusDialogMember?.status === 'active'
+                                ? 'They will no longer be able to log in to the clinic management system.'
+                                : 'Their account access will be restored.'}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setStatusDialogMember(null)}
+                            disabled={statusUpdating}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant={statusDialogMember?.status === 'active' ? 'destructive' : 'default'}
+                            onClick={() => {
+                                if (!statusDialogMember) return;
+                                setStatusUpdating(true);
+                                router.put(
+                                    `/staff/${statusDialogMember.id}/status`,
+                                    {},
+                                    {
+                                        preserveScroll: true,
+                                        onFinish: () => {
+                                            setStatusUpdating(false);
+                                            setStatusDialogMember(null);
+                                        },
+                                    },
+                                );
+                            }}
+                            disabled={statusUpdating}
+                        >
+                            {statusUpdating
+                                ? 'Updating...'
+                                : statusDialogMember?.status === 'active'
+                                  ? 'Deactivate Staff'
+                                  : 'Activate Staff'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

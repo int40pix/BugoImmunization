@@ -10,6 +10,45 @@ use Illuminate\Support\Collection;
 
 class PatientImmunizationScheduleService
 {
+    /**
+     * Cache active routine and optional vaccines with their ordered schedules
+     * in-memory for the current service lifecycle.
+     */
+    protected ?Collection $cachedVaccinesWithSchedules = null;
+
+    /**
+     * Cache usable stock amounts by vaccine_id in-memory for the current service lifecycle.
+     */
+    protected ?Collection $cachedStockByVaccine = null;
+
+    /**
+     * Clear in-memory caches if data is modified during a request.
+     */
+    public function clearCache(): void
+    {
+        $this->cachedVaccinesWithSchedules = null;
+        $this->cachedStockByVaccine = null;
+    }
+
+    /**
+     * Bulk-query and return usable stock for a vaccine from in-memory cache.
+     */
+    public function getAvailableStockForVaccine(int $vaccineId, Carbon $today): int
+    {
+        if ($this->cachedStockByVaccine === null) {
+            $this->cachedStockByVaccine = VaccineInventory::query()
+                ->where('is_archived', false)
+                ->where('quantity', '>', 0)
+                ->whereDate('expiration_date', '>=', $today)
+                ->selectRaw('vaccine_id, SUM(quantity) as total_quantity')
+                ->groupBy('vaccine_id')
+                ->pluck('total_quantity', 'vaccine_id')
+                ->map(fn ($qty) => (int) $qty);
+        }
+
+        return (int) ($this->cachedStockByVaccine->get($vaccineId, 0));
+    }
+
     public function getSchedule(Patient $patient): array
     {
         $patient->loadMissing([
@@ -55,12 +94,7 @@ class PatientImmunizationScheduleService
              * - quantity greater than zero
              * - not expired
              */
-            $availableStock = VaccineInventory::query()
-                ->where('vaccine_id', $vaccine->id)
-                ->where('is_archived', false)
-                ->where('quantity', '>', 0)
-                ->whereDate('expiration_date', '>=', $today)
-                ->sum('quantity');
+            $availableStock = $this->getAvailableStockForVaccine((int) $vaccine->id, $today);
 
             $inventoryAvailable =
                 $availableStock > 0;
@@ -583,53 +617,35 @@ class PatientImmunizationScheduleService
             $patient
                 ->optionalVaccines
                 ->pluck('id')
+                ->map(fn ($id) => (int) $id)
                 ->all();
 
-        return Vaccine::query()
-            ->with([
-                'schedules' =>
-                    fn ($query) =>
-                        $query->orderBy(
-                            'dose_number'
-                        ),
-            ])
-            ->where(
-                function (
-                    $query
-                ) use (
-                    $optionalVaccineIds
-                ) {
-                    $query->where(
-                        'category',
-                        'routine'
-                    );
+        if ($this->cachedVaccinesWithSchedules === null) {
+            $this->cachedVaccinesWithSchedules = Vaccine::query()
+                ->with([
+                    'schedules' =>
+                        fn ($query) =>
+                            $query->orderBy(
+                                'dose_number'
+                            ),
+                ])
+                ->whereIn('category', ['routine', 'optional'])
+                ->get();
+        }
 
-                    if (
-                        ! empty(
-                            $optionalVaccineIds
-                        )
-                    ) {
-                        $query->orWhere(
-                            function (
-                                $optionalQuery
-                            ) use (
-                                $optionalVaccineIds
-                            ) {
-                                $optionalQuery
-                                    ->where(
-                                        'category',
-                                        'optional'
-                                    )
-                                    ->whereIn(
-                                        'id',
-                                        $optionalVaccineIds
-                                    );
-                            }
-                        );
-                    }
+        return $this->cachedVaccinesWithSchedules
+            ->filter(function (Vaccine $vaccine) use ($optionalVaccineIds) {
+                if ($vaccine->category === 'routine') {
+                    return true;
                 }
-            )
-            ->get();
+
+                if ($vaccine->category === 'optional' && in_array((int) $vaccine->id, $optionalVaccineIds, true)) {
+                    return true;
+                }
+
+                return false;
+            })
+            ->values();
     }
 
     /**

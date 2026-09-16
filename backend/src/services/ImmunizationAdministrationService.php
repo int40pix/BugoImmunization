@@ -6,6 +6,7 @@ use App\Models\ImmunizationRecord;
 use App\Models\Patient;
 use App\Models\PatientVaccineSchedule;
 use App\Models\VaccineInventory;
+use App\Models\VaccineInventoryTransaction;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -326,6 +327,19 @@ class ImmunizationAdministrationService
             $inventory->decrement(
                 'quantity'
             );
+
+            VaccineInventoryTransaction::create([
+                'vaccine_id' => $vaccineId,
+                'vaccine_inventory_id' => $inventory->id,
+                'user_id' => $administeredBy,
+                'patient_id' => $lockedPatient->id,
+                'immunization_record_id' => $record->id,
+                'transaction_type' => 'administered',
+                'quantity_change' => -1,
+                'balance_after' => (int) $inventory->fresh()->quantity,
+                'batch_number' => $inventory->batch_number,
+                'remarks' => "Dose {$doseNumber} administered to {$lockedPatient->first_name} {$lockedPatient->last_name}",
+            ]);
 
             /*
              * Scheduled appointment is now fulfilled.

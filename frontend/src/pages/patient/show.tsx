@@ -11,7 +11,7 @@ import VaccinationManagement, {
 } from './components/vaccination-management';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Baby, HeartPulse, Pencil, UserRound, UsersRound } from 'lucide-react';
 import { useState } from 'react';
 
@@ -192,12 +192,12 @@ export default function PatientShow() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() =>
-                                        (window.location.href = `/patients/${patient.id}/edit`)
-                                    }
+                                    asChild
                                 >
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Edit Information
+                                    <Link href={`/patients/${patient.id}/edit`}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Edit Information
+                                    </Link>
                                 </Button>
                             </div>
                         </CardHeader>

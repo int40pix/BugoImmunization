@@ -18,14 +18,16 @@
 
         "skipLibCheck": true,
 
+        "types": ["vite/client"],
+
         "paths": {
-            "@/*": ["./resources/js/*"],
-            "ziggy-js": ["./vendor/tightenco/ziggy"]
+            "@/*": ["./src/*"]
         }
     },
 
     "include": [
-        "resources/js/**/*.ts",
-        "resources/js/**/*.tsx"
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.d.ts"
     ]
 }

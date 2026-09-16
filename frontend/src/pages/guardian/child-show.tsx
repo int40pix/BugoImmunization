@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import {
     ArrowLeft,
     CalendarDays,
@@ -114,13 +114,12 @@ export default function GuardianChildShow({
                     <Button
                         type="button"
                         variant="ghost"
-                        onClick={() =>
-                            (window.location.href =
-                                '/guardian/dashboard')
-                        }
+                        asChild
                     >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to My Children
+                        <Link href="/guardian/dashboard">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to My Children
+                        </Link>
                     </Button>
 
                     <Card>

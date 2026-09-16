@@ -110,7 +110,7 @@ class HandleInertiaRequests extends Middleware
                     ]
                     : null,
 
-                'notifications' =>
+                'notifications' => fn () =>
                     $user
                         ? $user
                             ->notifications()
@@ -175,7 +175,7 @@ class HandleInertiaRequests extends Middleware
                             )
                         : [],
 
-                'unread_notifications_count' =>
+                'unread_notifications_count' => fn () =>
                     $user
                         ? $user
                             ->unreadNotifications()

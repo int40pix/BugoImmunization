@@ -1,15 +1,10 @@
 import { Head, useForm } from '@inertiajs/react';
 import {
-    Eye,
-    EyeOff,
     KeyRound,
     LockKeyhole,
     ShieldCheck,
 } from 'lucide-react';
-import {
-    FormEventHandler,
-    useState,
-} from 'react';
+import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -24,14 +19,6 @@ interface PasswordForm {
 }
 
 export default function ChangeTemporaryPassword() {
-    const [showPassword, setShowPassword] =
-        useState(false);
-
-    const [
-        showConfirmation,
-        setShowConfirmation,
-    ] = useState(false);
-
     const {
         data,
         setData,
@@ -113,58 +100,20 @@ export default function ChangeTemporaryPassword() {
                                     New Password
                                 </Label>
 
-                                <div className="relative">
-                                    <Input
-                                        id="password"
-                                        type={
-                                            showPassword
-                                                ? 'text'
-                                                : 'password'
-                                        }
-                                        value={
-                                            data.password
-                                        }
-                                        autoComplete="new-password"
-                                        autoFocus
-                                        placeholder="Enter a new password"
-                                        className="pr-11"
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            setData(
-                                                'password',
-                                                event
-                                                    .target
-                                                    .value
-                                            )
-                                        }
-                                    />
-
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setShowPassword(
-                                                (
-                                                    current
-                                                ) =>
-                                                    !current
-                                            )
-                                        }
-                                        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground transition hover:text-foreground"
-                                        aria-label={
-                                            showPassword
-                                                ? 'Hide password'
-                                                : 'Show password'
-                                        }
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff className="h-4 w-4" />
-                                        ) : (
-                                            <Eye className="h-4 w-4" />
-                                        )}
-                                    </button>
-                                </div>
-
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    value={data.password}
+                                    autoComplete="new-password"
+                                    autoFocus
+                                    placeholder="Enter a new password"
+                                    onChange={(event) =>
+                                        setData(
+                                            'password',
+                                            event.target.value
+                                        )
+                                    }
+                                />
                                 <InputError
                                     message={
                                         errors.password
@@ -177,57 +126,21 @@ export default function ChangeTemporaryPassword() {
                                     Confirm New Password
                                 </Label>
 
-                                <div className="relative">
-                                    <Input
-                                        id="password_confirmation"
-                                        type={
-                                            showConfirmation
-                                                ? 'text'
-                                                : 'password'
-                                        }
-                                        value={
-                                            data
-                                                .password_confirmation
-                                        }
-                                        autoComplete="new-password"
-                                        placeholder="Re-enter your new password"
-                                        className="pr-11"
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            setData(
-                                                'password_confirmation',
-                                                event
-                                                    .target
-                                                    .value
-                                            )
-                                        }
-                                    />
-
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setShowConfirmation(
-                                                (
-                                                    current
-                                                ) =>
-                                                    !current
-                                            )
-                                        }
-                                        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground transition hover:text-foreground"
-                                        aria-label={
-                                            showConfirmation
-                                                ? 'Hide password confirmation'
-                                                : 'Show password confirmation'
-                                        }
-                                    >
-                                        {showConfirmation ? (
-                                            <EyeOff className="h-4 w-4" />
-                                        ) : (
-                                            <Eye className="h-4 w-4" />
-                                        )}
-                                    </button>
-                                </div>
+                                <Input
+                                    id="password_confirmation"
+                                    type="password"
+                                    value={
+                                        data.password_confirmation
+                                    }
+                                    autoComplete="new-password"
+                                    placeholder="Re-enter your new password"
+                                    onChange={(event) =>
+                                        setData(
+                                            'password_confirmation',
+                                            event.target.value
+                                        )
+                                    }
+                                />
                             </div>
 
                             <div className="rounded-lg border bg-muted/20 p-3 text-xs leading-relaxed text-muted-foreground">

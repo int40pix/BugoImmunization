@@ -1,17 +1,12 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
-    Eye,
-    EyeOff,
     HeartPulse,
     LockKeyhole,
     LogIn,
     ShieldCheck,
     UsersRound,
 } from 'lucide-react';
-import {
-    FormEventHandler,
-    useState,
-} from 'react';
+import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -36,9 +31,6 @@ export default function Login({
     status,
     canResetPassword,
 }: LoginProps) {
-    const [showPassword, setShowPassword] =
-        useState(false);
-
     const {
         data,
         setData,
@@ -234,49 +226,20 @@ export default function Login({
                                             )}
                                         </div>
 
-                                        <div className="relative">
-                                            <Input
-                                                id="password"
-                                                type={
-                                                    showPassword
-                                                        ? 'text'
-                                                        : 'password'
-                                                }
-                                                name="password"
-                                                value={data.password}
-                                                autoComplete="current-password"
-                                                placeholder="Enter your password"
-                                                className="pr-11"
-                                                onChange={(event) =>
-                                                    setData(
-                                                        'password',
-                                                        event.target.value,
-                                                    )
-                                                }
-                                            />
-
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setShowPassword(
-                                                        (current) =>
-                                                            !current,
-                                                    )
-                                                }
-                                                className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground transition hover:text-foreground"
-                                                aria-label={
-                                                    showPassword
-                                                        ? 'Hide password'
-                                                        : 'Show password'
-                                                }
-                                            >
-                                                {showPassword ? (
-                                                    <EyeOff className="h-4 w-4" />
-                                                ) : (
-                                                    <Eye className="h-4 w-4" />
-                                                )}
-                                            </button>
-                                        </div>
+                                        <Input
+                                            id="password"
+                                            type="password"
+                                            name="password"
+                                            value={data.password}
+                                            autoComplete="current-password"
+                                            placeholder="Enter your password"
+                                            onChange={(event) =>
+                                                setData(
+                                                    'password',
+                                                    event.target.value,
+                                                )
+                                            }
+                                        />
 
                                         <InputError
                                             message={errors.password}

@@ -21,6 +21,7 @@ import AppLayout from '@/layouts/app-layout';
 
 import {
     Head,
+    Link,
     router,
     usePage,
 } from '@inertiajs/react';
@@ -31,8 +32,11 @@ import {
     Search,
 } from 'lucide-react';
 
+import { InventorySubnav } from './components/inventory-subnav';
+
 import {
     useEffect,
+    useRef,
     useState,
 } from 'react';
 
@@ -156,7 +160,13 @@ export default function ArchivedVaccineInventory() {
     |--------------------------------------------------------------------------
     */
 
+    const isInitialMount = useRef(true);
+
     useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
 
         const timeout =
             setTimeout(() => {
@@ -291,56 +301,16 @@ export default function ArchivedVaccineInventory() {
                 {/* HEADER */}
                 {/* ========================================================= */}
 
-                <div className="space-y-4">
-
-
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() =>
-                            (
-                                window.location.href =
-                                    route(
-                                        'vaccine-inventory.index'
-                                    )
-                            )
-                        }
-                    >
-
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-
-                        Back to Active Inventory
-
-                    </Button>
-
-
-                    <div>
-
-                        <div className="flex items-center gap-3">
-
-                            <Archive className="h-6 w-6" />
-
-
-                            <h1 className="text-2xl font-bold">
-
-                                Archived Vaccine Batches
-
-                            </h1>
-
-                        </div>
-
-
-                        <p className="mt-2 text-muted-foreground">
-
-                            View historical vaccine batches
-                            that were archived after
-                            expiration or depletion.
-
-                        </p>
-
-                    </div>
-
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">
+                        Archived Vaccine Batches
+                    </h1>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        View historical vaccine batches that were archived after expiration, depletion, or recall.
+                    </p>
                 </div>
+
+                <InventorySubnav current="archived" />
 
 
                 {/* ========================================================= */}

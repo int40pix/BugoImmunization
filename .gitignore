@@ -15,12 +15,21 @@ yarn-error.log*
 .phpunit.result.cache
 .phpunit.cache/
 bootstrap/ssr/
+backend/bootstrap/cache/*.php
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/logs/*
 
 # Build Output
 dist/
 public/build/
+backend/public/build/
 public/hot/
 public/storage
+
+# Junctions
+backend/database/
 
 # OS Generated
 .DS_Store

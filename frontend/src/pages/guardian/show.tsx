@@ -1,4 +1,4 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     Baby,
@@ -7,6 +7,7 @@ import {
     Copy,
     KeyRound,
     Mail,
+    Pencil,
     Phone,
     Plus,
     ShieldCheck,
@@ -23,6 +24,14 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
@@ -129,6 +138,12 @@ export default function GuardianShow() {
     const [disabling, setDisabling] =
         useState(false);
 
+    const [showResetDialog, setShowResetDialog] =
+        useState(false);
+
+    const [showDisableDialog, setShowDisableDialog] =
+        useState(false);
+
     const [copied, setCopied] =
         useState(false);
 
@@ -222,42 +237,24 @@ export default function GuardianShow() {
         );
     };
 
-    const resetPassword =
-        () => {
-            if (
-                !window.confirm(
-                    'Reset this guardian\'s password? A temporary password will be generated and their current password will stop working.',
-                )
-            ) {
-                return;
-            }
+    const executeResetPassword = () => {
+        setShowResetDialog(false);
+        setResetting(true);
 
-            setResetting(true);
-
-            router.post(
-                `/guardians/${guardian.id}/portal/reset-password`,
-                {},
-                {
-                    preserveScroll: true,
-
-                    onFinish: () => {
-                        setResetting(
-                            false,
-                        );
-                    },
+        router.post(
+            `/guardians/${guardian.id}/portal/reset-password`,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setResetting(false);
                 },
-            );
-        };
+            },
+        );
+    };
 
-    const disablePortal = () => {
-        if (
-            !window.confirm(
-                'Disable portal access for this guardian?',
-            )
-        ) {
-            return;
-        }
-
+    const executeDisablePortal = () => {
+        setShowDisableDialog(false);
         setDisabling(true);
 
         router.patch(
@@ -265,11 +262,8 @@ export default function GuardianShow() {
             {},
             {
                 preserveScroll: true,
-
                 onFinish: () => {
-                    setDisabling(
-                        false,
-                    );
+                    setDisabling(false);
                 },
             },
         );
@@ -376,21 +370,30 @@ export default function GuardianShow() {
                             </p>
                         </div>
 
-                        <Button
-                            type="button"
-                            disabled={
-                                guardian.status !==
-                                'active'
-                            }
-                            onClick={() =>
-                                router.visit(
-                                    `/guardians/${guardian.id}/patients/create`,
-                                )
-                            }
-                        >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Child
-                        </Button>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button asChild variant="outline">
+                                <Link href={`/guardians/${guardian.id}/edit`}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit Family
+                                </Link>
+                            </Button>
+
+                            <Button
+                                type="button"
+                                disabled={
+                                    guardian.status !==
+                                    'active'
+                                }
+                                onClick={() =>
+                                    router.visit(
+                                        `/guardians/${guardian.id}/patients/create`,
+                                    )
+                                }
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Child
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
@@ -755,8 +758,8 @@ export default function GuardianShow() {
                                         disabled={
                                             resetting
                                         }
-                                        onClick={
-                                            resetPassword
+                                        onClick={() =>
+                                            setShowResetDialog(true)
                                         }
                                     >
                                         <KeyRound className="mr-2 h-4 w-4" />
@@ -777,8 +780,8 @@ export default function GuardianShow() {
                                         disabled={
                                             disabling
                                         }
-                                        onClick={
-                                            disablePortal
+                                        onClick={() =>
+                                            setShowDisableDialog(true)
                                         }
                                     >
                                         {disabling
@@ -1078,6 +1081,63 @@ export default function GuardianShow() {
                         )}
                     </CardContent>
                 </Card>
+
+                {/* Reset Password Confirmation Dialog */}
+                <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Reset Guardian Password?</DialogTitle>
+                            <DialogDescription>
+                                A new temporary password will be generated. The guardian's existing password will immediately stop working and they will be prompted to set a new password upon logging in.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="gap-2 sm:gap-0">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setShowResetDialog(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={executeResetPassword}
+                                disabled={resetting}
+                            >
+                                {resetting ? 'Generating...' : 'Confirm Reset'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Disable Portal Access Confirmation Dialog */}
+                <Dialog open={showDisableDialog} onOpenChange={setShowDisableDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Disable Guardian Portal Access?</DialogTitle>
+                            <DialogDescription>
+                                The guardian will no longer be able to log in or view their child's digital immunization record until their account is re-enabled by health center staff.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="gap-2 sm:gap-0">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setShowDisableDialog(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                onClick={executeDisablePortal}
+                                disabled={disabling}
+                            >
+                                {disabling ? 'Disabling...' : 'Disable Access'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AppLayout>
     );

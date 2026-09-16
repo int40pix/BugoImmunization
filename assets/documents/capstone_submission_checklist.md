@@ -1,9 +1,10 @@
 # Capstone Evaluation & Grading Checklist (100/100)
 
-**Project Title**: Barangay Bugo Immunization Management System (`Bugo`)  
-**Evaluation Standard**: Capstone Project Structure & Organization Guidelines  
-
-Use this checklist during academic evaluation to cross-reference rubric criteria against the repository's files.
+**Project Title**: Web-Based Pediatric Immunization Tracking, Vaccine Inventory Management, and Automated Reminder Notification System with QR Code-Enabled Patient Record Management (`Bugo`)  
+**Institution**: College of Information Technology, Tagoloan Community College  
+**Proponents (Team Catalyst)**: Justine V. Buico (PM), Brandolph O. Alerta, Adriana Alvarez, Jobert T. Cañeda, Mark Lourence B. Mata, Arron Gabriel T. Sumilla, Johnbert S. Urgello  
+**Client / Beneficiary**: Barangay Bugo Health Center, Cagayan de Oro City  
+**Evaluation Standard**: Capstone Project Structure & Organization Guidelines / ISO/IEC 25010  
 
 ---
 
@@ -45,7 +46,7 @@ Use this checklist during academic evaluation to cross-reference rubric criteria
 ### 1.5 Database Organization (10 Points)
 * [x] **Migrations** ([`database/migrations/`](../../database/migrations/)): 33 chronological, immutable migrations.
 * [x] **Seeders** ([`database/seeders/`](../../database/seeders/)): Initial seeders for roles, default admin, and childhood vaccine catalog.
-* [x] **Schemas** ([`database/schemas/`](../../database/schemas/)): Full SQL schema dump ([`bugo_immunization_schema.sql`](../../database/schemas/bugo_immunization_schema.sql)) with restore instructions.
+* [x] **Schemas** ([`database/schemas/`](../../database/schemas/)): Full SQL schema dump ([`bugo_schema.sql`](../../database/schemas/bugo_schema.sql)) with automated restore instructions ([`restore_database.bat`](../../database/schemas/restore_database.bat)).
 
 ### 1.6 Documentation (10 Points)
 * [x] Complete 6-section documentation library:
@@ -61,7 +62,7 @@ Use this checklist during academic evaluation to cross-reference rubric criteria
   * Unit: [`tests/unit/`](../../tests/unit/) (`DateHelperTest.php`, `PatientIdGeneratorTest.php`, `ExampleTest.php`)
   * Integration: [`tests/integration/`](../../tests/integration/) (`DashboardTest.php`, `Settings/`)
   * System: [`tests/system/`](../../tests/system/) (`Auth/`, `PatientManagementTest.php`)
-* [x] Automated test suite execution: **30 tests passed (84 assertions), 0 failures**.
+* [x] Automated test suite execution: **34 tests passed (89 assertions), 0 failures**.
 
 ### 1.8 Git/Version Control Practices (5 Points)
 * [x] Initialized Git repository on `main` branch.

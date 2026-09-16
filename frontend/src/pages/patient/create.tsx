@@ -1,5 +1,6 @@
-import { Head, useForm } from '@inertiajs/react';
-import { ArrowLeft, Baby, ClipboardList, HeartPulse, UserRound } from 'lucide-react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { ArrowLeft, Baby, ClipboardList, HeartPulse, UserRound, Users } from 'lucide-react';
+import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,8 @@ type Guardian = {
     name: string;
     email: string;
     contact_number: string | null;
+    mother_maiden_name?: string | null;
+    father_name?: string | null;
     status: string;
 };
 
@@ -22,6 +25,8 @@ type PatientCreateProps = {
 };
 
 export default function PatientCreate({ guardian }: PatientCreateProps) {
+    const today = new Date().toISOString().split('T')[0];
+
     const { data, setData, post, processing, errors } = useForm({
         guardian_relationship: '',
         first_name: '',
@@ -31,6 +36,8 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
         date_of_birth: '',
         sex: '',
         address: '',
+        mother_name: guardian.mother_maiden_name || '',
+        father_name: guardian.father_name || '',
 
         birth_type: '',
         is_full_term: '',
@@ -51,6 +58,12 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
         existing_conditions: '',
     });
 
+    const breadcrumbs = [
+        { title: 'Guardians', href: '/guardians' },
+        { title: guardian.name || guardian.guardian_no, href: `/guardians/${guardian.id}` },
+        { title: 'Add Child', href: `/guardians/${guardian.id}/patients/create` },
+    ];
+
     function submit(e: React.FormEvent) {
         e.preventDefault();
 
@@ -60,26 +73,28 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
     }
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Add Child - ${guardian.name}`} />
 
-            <div className="mx-auto max-w-6xl space-y-6 p-6">
+            <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6 lg:p-8">
                 <div>
                     <Button
+                        asChild
                         variant="ghost"
-                        type="button"
-                        onClick={() => window.history.back()}
+                        className="-ml-3 mb-2 text-muted-foreground hover:text-foreground"
                     >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back
+                        <Link href={`/guardians/${guardian.id}`}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Family Details
+                        </Link>
                     </Button>
 
-                    <div className="mt-4 flex flex-wrap items-center gap-2">
-                        <h1 className="text-2xl font-bold">Add Child</h1>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <h1 className="text-2xl font-bold tracking-tight text-foreground">Add Child</h1>
                         <Badge variant="secondary">Registered Family</Badge>
                     </div>
 
-                    <p className="mt-2 text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                         Add a complete pediatric patient record under this existing family.
                     </p>
                 </div>
@@ -88,166 +103,327 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
                     <CardHeader className="border-b">
                         <div className="flex items-start gap-3">
                             <div className="rounded-lg border p-2">
-                                <UserRound className="h-5 w-5" />
+                                <UserRound className="h-5 w-5 text-primary" />
                             </div>
 
                             <div>
-                                <CardTitle>{guardian.name}</CardTitle>
+                                <CardTitle className="text-base">{guardian.name}</CardTitle>
                                 <p className="mt-1 text-sm text-muted-foreground">
-                                    {guardian.guardian_no} · {guardian.email}
+                                    Family ID: <span className="font-mono font-medium">{guardian.guardian_no}</span> · {guardian.email || 'No email'}
                                 </p>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    {guardian.contact_number ?? 'No contact number provided'}
+                                <p className="text-sm text-muted-foreground">
+                                    Contact: {guardian.contact_number ?? 'No contact number provided'}
                                 </p>
                             </div>
                         </div>
                     </CardHeader>
 
-                    <CardContent className="pt-5">
-                        <p className="text-sm text-muted-foreground">
-                            This family is already selected. The child will be linked automatically.
+                    <CardContent className="pt-4">
+                        <p className="text-xs text-muted-foreground">
+                            This patient will automatically be registered under this family account.
                         </p>
                     </CardContent>
                 </Card>
 
-                <form onSubmit={submit} className="space-y-5">
+                <form onSubmit={submit} className="space-y-6">
+                    {/* Basic Patient Information */}
                     <Card>
                         <CardHeader className="border-b">
                             <div className="flex items-center gap-3">
-                                <Baby className="h-5 w-5" />
-                                <CardTitle>Basic Information</CardTitle>
+                                <Baby className="h-5 w-5 text-primary" />
+                                <CardTitle className="text-lg">Basic Information</CardTitle>
                             </div>
                         </CardHeader>
 
                         <CardContent className="space-y-5 pt-6">
                             <div className="grid gap-4 md:grid-cols-4">
-                                <Field label="First Name *" error={errors.first_name}>
-                                    <Input value={data.first_name} onChange={(e) => setData('first_name', e.target.value)} />
+                                <Field label="First Name" required error={errors.first_name}>
+                                    <Input
+                                        value={data.first_name}
+                                        onChange={(e) => setData('first_name', e.target.value)}
+                                        placeholder="Given name"
+                                        required
+                                    />
                                 </Field>
                                 <Field label="Middle Name" error={errors.middle_name}>
-                                    <Input value={data.middle_name} onChange={(e) => setData('middle_name', e.target.value)} />
+                                    <Input
+                                        value={data.middle_name}
+                                        onChange={(e) => setData('middle_name', e.target.value)}
+                                        placeholder="Middle name"
+                                    />
                                 </Field>
-                                <Field label="Last Name *" error={errors.last_name}>
-                                    <Input value={data.last_name} onChange={(e) => setData('last_name', e.target.value)} />
+                                <Field label="Last Name" required error={errors.last_name}>
+                                    <Input
+                                        value={data.last_name}
+                                        onChange={(e) => setData('last_name', e.target.value)}
+                                        placeholder="Surname"
+                                        required
+                                    />
                                 </Field>
                                 <Field label="Nickname" error={errors.nickname}>
-                                    <Input value={data.nickname} onChange={(e) => setData('nickname', e.target.value)} />
+                                    <Input
+                                        value={data.nickname}
+                                        onChange={(e) => setData('nickname', e.target.value)}
+                                        placeholder="e.g. Bunso"
+                                    />
                                 </Field>
                             </div>
 
                             <div className="grid gap-4 md:grid-cols-3">
-                                <Field label="Date of Birth *" error={errors.date_of_birth}>
-                                    <Input type="date" max={new Date().toISOString().split('T')[0]} value={data.date_of_birth} onChange={(e) => setData('date_of_birth', e.target.value)} />
+                                <Field label="Date of Birth" required error={errors.date_of_birth}>
+                                    <Input
+                                        type="date"
+                                        max={today}
+                                        value={data.date_of_birth}
+                                        onChange={(e) => setData('date_of_birth', e.target.value)}
+                                        required
+                                    />
                                 </Field>
 
-                                <Field label="Sex *" error={errors.sex}>
-                                    <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={data.sex} onChange={(e) => setData('sex', e.target.value)}>
+                                <Field label="Sex" required error={errors.sex}>
+                                    <select
+                                        className="h-10 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                        value={data.sex}
+                                        onChange={(e) => setData('sex', e.target.value)}
+                                        required
+                                    >
                                         <option value="">Select sex</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                     </select>
                                 </Field>
 
-                                <Field label="Relationship to Guardian *" error={errors.guardian_relationship}>
-                                    <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={data.guardian_relationship} onChange={(e) => setData('guardian_relationship', e.target.value)}>
+                                <Field label="Relationship to Guardian" required error={errors.guardian_relationship}>
+                                    <select
+                                        className="h-10 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                        value={data.guardian_relationship}
+                                        onChange={(e) => setData('guardian_relationship', e.target.value)}
+                                        required
+                                    >
                                         <option value="">Select relationship</option>
-                                        <option value="Mother">Mother</option>
-                                        <option value="Father">Father</option>
-                                        <option value="Grandmother">Grandmother</option>
-                                        <option value="Grandfather">Grandfather</option>
-                                        <option value="Aunt">Aunt</option>
-                                        <option value="Uncle">Uncle</option>
+                                        <option value="Child">Child (Son/Daughter)</option>
+                                        <option value="Grandchild">Grandchild</option>
+                                        <option value="Niece/Nephew">Niece/Nephew</option>
                                         <option value="Sibling">Sibling</option>
-                                        <option value="Legal Guardian">Legal Guardian</option>
+                                        <option value="Ward">Ward / Foster Child</option>
                                         <option value="Other">Other</option>
                                     </select>
                                 </Field>
                             </div>
 
-                            <Field label="Home Address *" error={errors.address}>
-                                <Input value={data.address} onChange={(e) => setData('address', e.target.value)} />
+                            <Field label="Home Address" required error={errors.address}>
+                                <Input
+                                    value={data.address}
+                                    onChange={(e) => setData('address', e.target.value)}
+                                    placeholder="Street, Purok/Sitio, Barangay Bugo, Cagayan de Oro City"
+                                    required
+                                />
                             </Field>
                         </CardContent>
                     </Card>
 
+                    {/* Parental Records */}
                     <Card>
                         <CardHeader className="border-b">
                             <div className="flex items-center gap-3">
-                                <ClipboardList className="h-5 w-5" />
-                                <CardTitle>Birth Information</CardTitle>
+                                <Users className="h-5 w-5 text-primary" />
+                                <CardTitle className="text-lg">Parental Information</CardTitle>
+                            </div>
+                        </CardHeader>
+
+                        <CardContent className="space-y-4 pt-6">
+                            <p className="text-xs text-muted-foreground">
+                                Pre-filled from family registry when available. Update if biological parents differ.
+                            </p>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <Field label="Mother's Maiden Name" error={errors.mother_name}>
+                                    <Input
+                                        value={data.mother_name}
+                                        onChange={(e) => setData('mother_name', e.target.value)}
+                                        placeholder="Mother's full maiden name"
+                                    />
+                                </Field>
+
+                                <Field label="Father's Full Name" error={errors.father_name}>
+                                    <Input
+                                        value={data.father_name}
+                                        onChange={(e) => setData('father_name', e.target.value)}
+                                        placeholder="Father's full name"
+                                    />
+                                </Field>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Birth Information */}
+                    <Card>
+                        <CardHeader className="border-b">
+                            <div className="flex items-center gap-3">
+                                <ClipboardList className="h-5 w-5 text-primary" />
+                                <CardTitle className="text-lg">Birth Information</CardTitle>
                             </div>
                         </CardHeader>
 
                         <CardContent className="space-y-5 pt-6">
                             <div className="grid gap-4 md:grid-cols-3">
-                                <SelectField label="Type of Delivery" value={data.birth_type} onChange={(v) => setData('birth_type', v)} options={['Normal', 'Cesarean', 'Assisted', 'Other']} />
-                                <SelectField label="Full Term" value={data.is_full_term} onChange={(v) => setData('is_full_term', v)} options={[['1', 'Yes'], ['0', 'No']]} />
-                                <SelectField label="Multiple Birth" value={data.multiple_birth} onChange={(v) => setData('multiple_birth', v)} options={['Single', 'Twin', 'Triplet', 'Other']} />
+                                <SelectField
+                                    label="Type of Delivery"
+                                    value={data.birth_type}
+                                    onChange={(v) => setData('birth_type', v)}
+                                    options={['Normal', 'Cesarean', 'Assisted', 'Other']}
+                                />
+                                <SelectField
+                                    label="Full Term"
+                                    value={data.is_full_term}
+                                    onChange={(v) => setData('is_full_term', v)}
+                                    options={[['1', 'Yes'], ['0', 'No']]}
+                                />
+                                <SelectField
+                                    label="Multiple Birth"
+                                    value={data.multiple_birth}
+                                    onChange={(v) => setData('multiple_birth', v)}
+                                    options={['Single', 'Twin', 'Triplet', 'Other']}
+                                />
                             </div>
 
                             <div className="grid gap-4 md:grid-cols-3">
                                 <Field label="Birth Attendant" error={errors.birth_attendant}>
-                                    <Input value={data.birth_attendant} onChange={(e) => setData('birth_attendant', e.target.value)} />
+                                    <Input
+                                        value={data.birth_attendant}
+                                        onChange={(e) => setData('birth_attendant', e.target.value)}
+                                        placeholder="Doctor / Midwife / Nurse"
+                                    />
                                 </Field>
 
-                                <SelectField label="Blood Type" value={data.blood_type} onChange={(v) => setData('blood_type', v)} options={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']} />
+                                <SelectField
+                                    label="Blood Type"
+                                    value={data.blood_type}
+                                    onChange={(v) => setData('blood_type', v)}
+                                    options={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']}
+                                />
 
                                 <Field label="Birth Order" error={errors.birth_order}>
-                                    <Input type="number" min="1" value={data.birth_order} onChange={(e) => setData('birth_order', e.target.value)} />
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        max="50"
+                                        value={data.birth_order}
+                                        onChange={(e) => setData('birth_order', e.target.value)}
+                                        placeholder="1"
+                                    />
                                 </Field>
                             </div>
 
                             <div className="grid gap-4 md:grid-cols-4">
-                                <NumberField label="Birth Weight (kg)" value={data.birth_weight} onChange={(v) => setData('birth_weight', v)} />
-                                <NumberField label="Body Length (cm)" value={data.birth_length} onChange={(v) => setData('birth_length', v)} />
-                                <NumberField label="Head Circumference (cm)" value={data.head_circumference} onChange={(v) => setData('head_circumference', v)} />
-                                <NumberField label="Chest Circumference (cm)" value={data.chest_circumference} onChange={(v) => setData('chest_circumference', v)} />
+                                <NumberField
+                                    label="Birth Weight (kg)"
+                                    min="0"
+                                    max="20"
+                                    value={data.birth_weight}
+                                    error={errors.birth_weight}
+                                    onChange={(v) => setData('birth_weight', v)}
+                                />
+                                <NumberField
+                                    label="Body Length (cm)"
+                                    min="0"
+                                    max="200"
+                                    value={data.birth_length}
+                                    error={errors.birth_length}
+                                    onChange={(v) => setData('birth_length', v)}
+                                />
+                                <NumberField
+                                    label="Head Circumference (cm)"
+                                    min="0"
+                                    max="200"
+                                    value={data.head_circumference}
+                                    error={errors.head_circumference}
+                                    onChange={(v) => setData('head_circumference', v)}
+                                />
+                                <NumberField
+                                    label="Chest Circumference (cm)"
+                                    min="0"
+                                    max="200"
+                                    value={data.chest_circumference}
+                                    error={errors.chest_circumference}
+                                    onChange={(v) => setData('chest_circumference', v)}
+                                />
                             </div>
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <Field label="Birth Registration Date" error={errors.birth_registration_date}>
-                                    <Input type="date" value={data.birth_registration_date} onChange={(e) => setData('birth_registration_date', e.target.value)} />
+                                    <Input
+                                        type="date"
+                                        max={today}
+                                        value={data.birth_registration_date}
+                                        onChange={(e) => setData('birth_registration_date', e.target.value)}
+                                    />
                                 </Field>
 
                                 <Field label="Birth Registration Place" error={errors.birth_registration_place}>
-                                    <Input value={data.birth_registration_place} onChange={(e) => setData('birth_registration_place', e.target.value)} />
+                                    <Input
+                                        value={data.birth_registration_place}
+                                        onChange={(e) => setData('birth_registration_place', e.target.value)}
+                                        placeholder="City / Municipality"
+                                    />
                                 </Field>
                             </div>
 
                             <Field label="Birth / Family Notes" error={errors.birth_family_notes}>
-                                <textarea className="min-h-24 w-full rounded-md border bg-background px-3 py-2 text-sm" value={data.birth_family_notes} onChange={(e) => setData('birth_family_notes', e.target.value)} />
+                                <textarea
+                                    className="min-h-24 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                    value={data.birth_family_notes}
+                                    onChange={(e) => setData('birth_family_notes', e.target.value)}
+                                    placeholder="Additional birth details or family background observations..."
+                                />
                             </Field>
                         </CardContent>
                     </Card>
 
+                    {/* Medical Background */}
                     <Card>
                         <CardHeader className="border-b">
                             <div className="flex items-center gap-3">
-                                <HeartPulse className="h-5 w-5" />
-                                <CardTitle>Medical Information</CardTitle>
+                                <HeartPulse className="h-5 w-5 text-primary" />
+                                <CardTitle className="text-lg">Medical Information</CardTitle>
                             </div>
                         </CardHeader>
 
                         <CardContent className="space-y-5 pt-6">
                             <Field label="Medical Background" error={errors.medical_background}>
-                                <textarea className="min-h-24 w-full rounded-md border bg-background px-3 py-2 text-sm" value={data.medical_background} onChange={(e) => setData('medical_background', e.target.value)} />
+                                <textarea
+                                    className="min-h-24 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                    value={data.medical_background}
+                                    onChange={(e) => setData('medical_background', e.target.value)}
+                                    placeholder="Past illnesses, hospitalizations, or newborn complications..."
+                                />
                             </Field>
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <Field label="Allergies" error={errors.allergies}>
-                                    <textarea className="min-h-24 w-full rounded-md border bg-background px-3 py-2 text-sm" value={data.allergies} onChange={(e) => setData('allergies', e.target.value)} />
+                                    <textarea
+                                        className="min-h-24 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                        value={data.allergies}
+                                        onChange={(e) => setData('allergies', e.target.value)}
+                                        placeholder="Known drug or food allergies..."
+                                    />
                                 </Field>
 
                                 <Field label="Existing Medical Conditions" error={errors.existing_conditions}>
-                                    <textarea className="min-h-24 w-full rounded-md border bg-background px-3 py-2 text-sm" value={data.existing_conditions} onChange={(e) => setData('existing_conditions', e.target.value)} />
+                                    <textarea
+                                        className="min-h-24 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                        value={data.existing_conditions}
+                                        onChange={(e) => setData('existing_conditions', e.target.value)}
+                                        placeholder="Chronic conditions or ongoing pediatric health issues..."
+                                    />
                                 </Field>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <div className="flex justify-between border-t pt-5">
-                        <Button type="button" variant="outline" onClick={() => window.history.back()}>
-                            Cancel
+                    {/* Form Actions */}
+                    <div className="flex items-center justify-end gap-3 border-t pt-5">
+                        <Button asChild variant="outline">
+                            <Link href={`/guardians/${guardian.id}`}>Cancel</Link>
                         </Button>
 
                         <Button type="submit" disabled={processing}>
@@ -263,17 +439,22 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
 function Field({
     label,
     error,
+    required = false,
     children,
 }: {
     label: string;
     error?: string;
+    required?: boolean;
     children: React.ReactNode;
 }) {
     return (
         <div className="space-y-2">
-            <Label>{label}</Label>
+            <Label>
+                {label}
+                {required && <span className="ml-1 text-destructive">*</span>}
+            </Label>
             {children}
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
     );
 }
@@ -291,7 +472,11 @@ function SelectField({
 }) {
     return (
         <Field label={label}>
-            <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={value} onChange={(e) => onChange(e.target.value)}>
+            <select
+                className="h-10 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+            >
                 <option value="">Not recorded</option>
                 {options.map((option) => {
                     const tuple = Array.isArray(option) ? option : [option, option];
@@ -309,15 +494,30 @@ function SelectField({
 function NumberField({
     label,
     value,
+    min = 0,
+    max,
+    step = '0.01',
+    error,
     onChange,
 }: {
     label: string;
     value: string;
+    min?: number | string;
+    max?: number | string;
+    step?: string;
+    error?: string;
     onChange: (value: string) => void;
 }) {
     return (
-        <Field label={label}>
-            <Input type="number" min="0" step="0.01" value={value} onChange={(e) => onChange(e.target.value)} />
+        <Field label={label} error={error}>
+            <Input
+                type="number"
+                min={min}
+                max={max}
+                step={step}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+            />
         </Field>
     );
 }

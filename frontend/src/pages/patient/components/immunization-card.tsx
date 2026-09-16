@@ -148,14 +148,8 @@ export default function ImmunizationCard({
 
     const patientUrl =
         typeof window !== 'undefined'
-            ? `${window.location.origin}${route(
-                  'patients.show',
-                  patient.id,
-              )}`
-            : route(
-                  'patients.show',
-                  patient.id,
-              );
+            ? `${window.location.origin}/patients/${patient.id}`
+            : `/patients/${patient.id}`;
 
 const parseDate = (date: string | null) => {
     if (!date) {

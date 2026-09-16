@@ -1,5 +1,4 @@
 import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
     SidebarContent,
@@ -8,10 +7,16 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
+import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { type SharedData } from '@/types';
-import { Bell, Folder, LayoutGrid } from 'lucide-react';
+import {
+    Baby,
+    Bell,
+    Boxes,
+    LayoutDashboard,
+    Syringe,
+    UserCog,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -25,12 +30,12 @@ export function AppSidebar() {
                   {
                       title: 'Staff Dashboard',
                       url: '/dashboard',
-                      icon: LayoutGrid,
+                      icon: LayoutDashboard,
                   },
                   {
                       title: 'Staff Management',
                       url: '/staff',
-                      icon: Folder,
+                      icon: UserCog,
                   },
               ]
             : []),
@@ -42,17 +47,17 @@ export function AppSidebar() {
                   {
                       title: 'Patient Management',
                       url: '/patients',
-                      icon: Folder,
+                      icon: Baby,
                   },
                   {
                       title: 'Immunization Tracking',
                       url: '/immunization',
-                      icon: Folder,
+                      icon: Syringe,
                   },
                   {
                       title: 'Vaccine Inventory',
                       url: '/vaccine-inventory',
-                      icon: Folder,
+                      icon: Boxes,
                   },
               ]
             : []),
@@ -62,7 +67,7 @@ export function AppSidebar() {
                   {
                       title: 'Patient Management',
                       url: '/patients',
-                      icon: Folder,
+                      icon: Baby,
                   },
               ]
             : []),
@@ -90,10 +95,6 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-
-                <div className="mt-2">
-                    <NavUser />
-                </div>
             </SidebarHeader>
 
             <SidebarContent>

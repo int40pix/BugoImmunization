@@ -29,9 +29,9 @@ import {
 } from 'lucide-react';
 
 function NotificationIcon({
-    type,
+    type = 'default',
 }: {
-    type: string;
+    type?: string;
 }) {
     switch (type) {
         case 'inventory':
@@ -54,7 +54,7 @@ function NotificationIcon({
     }
 }
 
-function getPriorityClass(priority: string) {
+function getPriorityClass(priority: string = 'normal') {
     switch (priority) {
         case 'critical':
             return 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300';

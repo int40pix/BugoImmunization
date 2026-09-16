@@ -1,3 +1,5 @@
+
+
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -6,8 +8,8 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { Head, usePage } from '@inertiajs/react';
-import { ArrowLeft, Pencil, Plus } from 'lucide-react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { ArrowLeft, Pencil, Plus, Syringe } from 'lucide-react';
 import { useState } from 'react';
 
 import AddVaccineForm from '../vaccine-inventory/components/add-vaccine-form';
@@ -127,14 +129,12 @@ export default function VaccineIndex() {
                     <Button
                         type="button"
                         variant="ghost"
-                        onClick={() =>
-                            window.location.href = route(
-                                'vaccine-inventory.index'
-                            )
-                        }
+                        asChild
                     >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Vaccine Inventory
+                        <Link href={route('vaccine-inventory.index')}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Vaccine Inventory
+                        </Link>
                     </Button>
 
 
@@ -236,16 +236,22 @@ export default function VaccineIndex() {
                                     <tbody>
 
                                         {vaccines.length === 0 ? (
-
                                             <tr>
                                                 <td
                                                     colSpan={5}
-                                                    className="px-4 py-12 text-center text-muted-foreground"
+                                                    className="px-4 py-12 text-center"
                                                 >
-                                                    No vaccines found.
+                                                    <div className="flex flex-col items-center justify-center space-y-2.5">
+                                                        <div className="rounded-full bg-muted p-3 text-muted-foreground">
+                                                            <Syringe className="h-6 w-6" />
+                                                        </div>
+                                                        <p className="font-medium text-foreground">No vaccines defined</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Click the Add Vaccine button above to register a new vaccine into the master catalog.
+                                                        </p>
+                                                    </div>
                                                 </td>
                                             </tr>
-
                                         ) : (
 
                                             vaccines.map((vaccine) => (
@@ -359,15 +365,17 @@ export default function VaccineIndex() {
                                                             type="button"
                                                             variant="outline"
                                                             size="sm"
-                                                            onClick={() =>
-                                                                window.location.href = route(
+                                                            asChild
+                                                        >
+                                                            <Link
+                                                                href={route(
                                                                     'vaccine.edit',
                                                                     vaccine.id
-                                                                )
-                                                            }
-                                                        >
-                                                            <Pencil className="mr-2 h-4 w-4" />
-                                                            Edit
+                                                                )}
+                                                            >
+                                                                <Pencil className="mr-2 h-4 w-4" />
+                                                                Edit
+                                                            </Link>
                                                         </Button>
 
                                                     </td>
