@@ -355,12 +355,12 @@ export default function VaccineInventoryTransactions() {
                         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                             {/* Search */}
                             <div className="relative lg:col-span-2">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Search batch, vaccine, patient, or staff..."
-                                    className="pl-9 h-9 text-xs"
+                                    className="pl-10 h-9 text-xs"
                                 />
                             </div>
 

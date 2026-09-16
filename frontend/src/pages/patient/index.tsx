@@ -415,11 +415,11 @@ export default function PatientIndex() {
                             <CardContent className="pt-5">
                                 <div className="grid gap-3 md:grid-cols-3">
                                     <div className="relative">
-                                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                         <Input
                                             type="search"
                                             placeholder="Search patient..."
-                                            className="h-10 pl-9"
+                                            className="h-10 pl-10"
                                             value={search}
                                             onChange={(event) =>
                                                 setSearch(event.target.value)
@@ -629,11 +629,11 @@ export default function PatientIndex() {
                         <Card>
                             <CardContent className="space-y-4 pt-5">
                                 <div className="relative max-w-xl">
-                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         type="search"
                                         placeholder="Search guardian, child, Family ID, or Patient ID..."
-                                        className="h-10 pl-9"
+                                        className="h-10 pl-10"
                                         value={familySearch}
                                         onChange={(event) =>
                                             setFamilySearch(event.target.value)
