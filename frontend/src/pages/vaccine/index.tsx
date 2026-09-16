@@ -120,7 +120,7 @@ export default function VaccineIndex() {
         <AppLayout>
             <Head title="Vaccine Master List" />
 
-            <div className="max-w-7xl space-y-6 p-6">
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
 
                 {/* HEADER */}
 

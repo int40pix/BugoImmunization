@@ -163,7 +163,7 @@ export default function PatientShow() {
         <AppLayout>
             <Head title={`${patientName} - Patient Profile`} />
 
-            <div className="max-w-6xl space-y-5 p-6">
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
                 <PatientHeader
                     patientRecordId={patient.id}
                     patientName={patientName}

@@ -20,12 +20,26 @@ use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
-| Home
+| Home / Entrypoint
 |--------------------------------------------------------------------------
 */
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    if (auth()->check()) {
+        $user = auth()->user();
+
+        if ($user->must_change_password) {
+            return redirect()->route('password.first-change');
+        }
+
+        if ($user->accountRole?->name === 'guardian' || $user->role === 'guardian') {
+            return redirect()->route('guardian.dashboard');
+        }
+
+        return redirect()->route('dashboard');
+    }
+
+    return redirect()->route('login');
 })->name('home');
 
 

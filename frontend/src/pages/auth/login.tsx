@@ -61,80 +61,82 @@ export default function Login({
             <div className="min-h-screen bg-muted/30">
                 <div className="grid min-h-screen lg:grid-cols-2">
                     {/* Left Side */}
-                    <div className="hidden border-r bg-background lg:flex lg:flex-col lg:justify-between lg:p-12">
-                        <div>
-                            <div className="flex items-center gap-3">
-                                <img
-                                    src="/images/bugo-health-center-logo.png"
-                                    alt="Barangay Bugo Health Center"
-                                    className="h-14 w-14 rounded-full object-contain"
-                                />
+                    <div className="hidden border-r bg-background lg:flex lg:justify-center lg:p-12">
+                        <div className="flex h-full w-full max-w-lg flex-col justify-between">
+                            <div>
+                                <div className="flex items-center gap-3">
+                                    <img
+                                        src="/images/bugo-health-center-logo.png"
+                                        alt="Barangay Bugo Health Center"
+                                        className="h-14 w-14 rounded-full object-contain"
+                                    />
 
-                                <div>
-                                    <p className="font-semibold">
-                                        Barangay Bugo Health Center
-                                    </p>
+                                    <div>
+                                        <p className="font-semibold">
+                                            Barangay Bugo Health Center
+                                        </p>
 
-                                    <p className="text-sm text-muted-foreground">
-                                        Pediatric Immunization Management System
-                                    </p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Pediatric Immunization Management System
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="max-w-lg">
-                            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border bg-muted/30">
-                                <HeartPulse className="h-7 w-7" />
+                            <div className="my-auto py-8">
+                                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border bg-muted/30">
+                                    <HeartPulse className="h-7 w-7" />
+                                </div>
+
+                                <h1 className="text-4xl font-bold tracking-tight">
+                                    One secure portal for
+                                    health center staff and
+                                    families.
+                                </h1>
+
+                                <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+                                    Access immunization records,
+                                    vaccination schedules,
+                                    patient information, and
+                                    health center services using
+                                    your registered account.
+                                </p>
+
+                                <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                                    <div className="rounded-xl border p-4">
+                                        <ShieldCheck className="mb-3 h-5 w-5" />
+
+                                        <p className="font-medium">
+                                            Health Center Staff
+                                        </p>
+
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            Admin, nurse, midwife,
+                                            and barangay health
+                                            worker accounts.
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-xl border p-4">
+                                        <UsersRound className="mb-3 h-5 w-5" />
+
+                                        <p className="font-medium">
+                                            Parents & Guardians
+                                        </p>
+
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            View children's
+                                            immunization records
+                                            and schedules.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
-                            <h1 className="text-4xl font-bold tracking-tight">
-                                One secure portal for
-                                health center staff and
-                                families.
-                            </h1>
-
-                            <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-                                Access immunization records,
-                                vaccination schedules,
-                                patient information, and
-                                health center services using
-                                your registered account.
+                            <p className="text-sm text-muted-foreground">
+                                Barangay Bugo Health Center
                             </p>
-
-                            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                                <div className="rounded-xl border p-4">
-                                    <ShieldCheck className="mb-3 h-5 w-5" />
-
-                                    <p className="font-medium">
-                                        Health Center Staff
-                                    </p>
-
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        Admin, nurse, midwife,
-                                        and barangay health
-                                        worker accounts.
-                                    </p>
-                                </div>
-
-                                <div className="rounded-xl border p-4">
-                                    <UsersRound className="mb-3 h-5 w-5" />
-
-                                    <p className="font-medium">
-                                        Parents & Guardians
-                                    </p>
-
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        View children's
-                                        immunization records
-                                        and schedules.
-                                    </p>
-                                </div>
-                            </div>
                         </div>
-
-                        <p className="text-sm text-muted-foreground">
-                            Barangay Bugo Health Center
-                        </p>
                     </div>
 
                     {/* Right Side */}

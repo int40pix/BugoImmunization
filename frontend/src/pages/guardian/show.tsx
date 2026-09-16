@@ -298,7 +298,7 @@ export default function GuardianShow() {
                 title={`${guardian.name} - Registered Family`}
             />
 
-            <div className="max-w-6xl space-y-5 p-6">
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
                 <div className="rounded-2xl border bg-background/70 p-5 shadow-sm">
                     <Button
                         type="button"

@@ -348,7 +348,7 @@ export default function PatientIndex() {
         <AppLayout>
             <Head title="Patient Management" />
 
-            <div className="max-w-7xl space-y-5 p-6">
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
                 <div className="flex flex-col gap-4 rounded-2xl border bg-background/70 p-5 shadow-sm md:flex-row md:items-center md:justify-between">
                     <div>
                         <div className="flex items-center gap-2">

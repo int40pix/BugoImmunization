@@ -91,7 +91,7 @@ export default function GuardianChildShow({
 
             <div className="min-h-screen bg-background text-foreground">
                 <header className="border-b">
-                    <div className="mx-auto flex max-w-5xl items-center gap-3 px-5 py-4">
+                    <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-4">
                         <img
                             src="/images/bugo-health-center-logo.png"
                             alt=""
@@ -110,7 +110,7 @@ export default function GuardianChildShow({
                     </div>
                 </header>
 
-                <main className="mx-auto max-w-5xl space-y-5 px-5 py-6">
+                <main className="mx-auto max-w-6xl space-y-5 px-5 py-6">
                     <Button
                         type="button"
                         variant="ghost"

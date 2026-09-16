@@ -267,7 +267,7 @@ export default function VaccineInventoryTransactions() {
         >
             <Head title="Inventory Transaction History - Bugo Health Center" />
 
-            <div className="max-w-7xl space-y-6 p-6">
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Inventory Transaction History</h1>
                     <p className="mt-1 text-sm text-muted-foreground">
