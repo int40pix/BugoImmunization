@@ -13,6 +13,8 @@ import {
     Baby,
     Bell,
     Boxes,
+    CalendarDays,
+    KeyRound,
     LayoutDashboard,
     Syringe,
     UserCog,
@@ -25,6 +27,26 @@ export function AppSidebar() {
     const userRole = auth.user.role;
 
     const mainNavItems: NavItem[] = [
+        ...(userRole === 'guardian'
+            ? [
+                  {
+                      title: 'Guardian Dashboard',
+                      url: '/guardian/dashboard',
+                      icon: LayoutDashboard,
+                  },
+                  {
+                      title: 'My Children',
+                      url: '/guardian/children',
+                      icon: Baby,
+                  },
+                  {
+                      title: 'Upcoming Visits',
+                      url: '/guardian/visits',
+                      icon: CalendarDays,
+                  },
+              ]
+            : []),
+
         ...(userRole === 'admin'
             ? [
                   {
@@ -89,7 +111,16 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={userRole === 'patient' ? '/patient/inbox' : '/dashboard'} prefetch>
+                            <Link
+                                href={
+                                    userRole === 'patient'
+                                        ? '/patient/inbox'
+                                        : userRole === 'guardian'
+                                          ? '/guardian/dashboard'
+                                          : '/dashboard'
+                                }
+                                prefetch
+                            >
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

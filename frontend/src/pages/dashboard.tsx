@@ -1,7 +1,8 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { type BreadcrumbItem, type SharedData } from '@/types';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     AlertTriangle,
     ArrowRight,
@@ -9,6 +10,7 @@ import {
     CalendarDays,
     ChevronRight,
     Clock3,
+    KeyRound,
     Syringe,
     Users,
 } from 'lucide-react';
@@ -21,6 +23,7 @@ type DashboardData = {
     overdueImmunizations: number;
     currentAgeImmunizations: number;
     recentDueImmunizations: number;
+    pendingRecoveryCount?: number;
 };
 
 type InventoryHealth = {
@@ -71,6 +74,10 @@ export default function Dashboard({
     inventoryHealth,
     vaccineStockDemand = [],
 }: DashboardProps) {
+    const { auth } = usePage<SharedData>().props;
+    const isAdmin = auth?.user?.role === 'admin';
+    const pendingRecoveryCount = dashboard.pendingRecoveryCount ?? 0;
+
     const stats = [
         {
             label: 'Total Registered Patients',
@@ -198,6 +205,27 @@ export default function Dashboard({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
+                        {isAdmin && (
+                            <Button
+                                asChild
+                                variant="outline"
+                                size="sm"
+                                className="h-8 gap-1.5 rounded-lg border-border/60 text-xs font-medium shadow-2xs"
+                            >
+                                <Link href="/admin/password-reset-requests">
+                                    <KeyRound className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                                    Account Recovery
+                                    {pendingRecoveryCount > 0 && (
+                                        <Badge
+                                            variant="secondary"
+                                            className="ml-1 px-1.5 py-0 text-[10px] font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-400 border-none"
+                                        >
+                                            {pendingRecoveryCount}
+                                        </Badge>
+                                    )}
+                                </Link>
+                            </Button>
+                        )}
                         <Button
                             asChild
                             variant="outline"
@@ -222,11 +250,12 @@ export default function Dashboard({
                         </Button>
                         <Button
                             asChild
+                            variant="outline"
                             size="sm"
-                            className="h-8 gap-1.5 rounded-lg text-xs font-medium shadow-2xs bg-primary text-primary-foreground hover:bg-primary/90"
+                            className="h-8 gap-1.5 rounded-lg border-border/60 text-xs font-medium shadow-2xs"
                         >
                             <Link href={route('immunization.index')}>
-                                <Syringe className="h-3.5 w-3.5" />
+                                <Syringe className="h-3.5 w-3.5 text-muted-foreground" />
                                 Immunization Tracker
                             </Link>
                         </Button>

@@ -15,42 +15,42 @@ interface InventorySubnavProps {
 export function InventorySubnav({ current }: InventorySubnavProps) {
     return (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
-            <div className="flex flex-wrap items-center gap-2">
-                <Button
-                    variant={current === 'active' ? 'default' : 'outline'}
-                    size="sm"
-                    asChild
-                    className="gap-2 text-xs font-medium"
+            <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border/60 bg-muted/40 p-1 text-xs font-medium">
+                <Link
+                    href={route('vaccine-inventory.index')}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        current === 'active'
+                            ? 'bg-background text-foreground shadow-xs font-semibold'
+                            : 'text-muted-foreground hover:text-foreground'
+                    }`}
                 >
-                    <Link href={route('vaccine-inventory.index')}>
-                        <Package className="h-4 w-4" />
-                        Active Batches
-                    </Link>
-                </Button>
+                    <Package className="h-4 w-4" />
+                    Active Batches
+                </Link>
 
-                <Button
-                    variant={current === 'transactions' ? 'default' : 'outline'}
-                    size="sm"
-                    asChild
-                    className="gap-2 text-xs font-medium"
+                <Link
+                    href={route('vaccine-inventory.transactions')}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        current === 'transactions'
+                            ? 'bg-background text-foreground shadow-xs font-semibold'
+                            : 'text-muted-foreground hover:text-foreground'
+                    }`}
                 >
-                    <Link href={route('vaccine-inventory.transactions')}>
-                        <History className="h-4 w-4" />
-                        Transaction History
-                    </Link>
-                </Button>
+                    <History className="h-4 w-4" />
+                    Transaction History
+                </Link>
 
-                <Button
-                    variant={current === 'archived' ? 'default' : 'outline'}
-                    size="sm"
-                    asChild
-                    className="gap-2 text-xs font-medium"
+                <Link
+                    href={route('vaccine-inventory.archived')}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        current === 'archived'
+                            ? 'bg-background text-foreground shadow-xs font-semibold'
+                            : 'text-muted-foreground hover:text-foreground'
+                    }`}
                 >
-                    <Link href={route('vaccine-inventory.archived')}>
-                        <Archive className="h-4 w-4" />
-                        Archived Batches
-                    </Link>
-                </Button>
+                    <Archive className="h-4 w-4" />
+                    Archived Batches
+                </Link>
             </div>
 
             <div className="flex items-center gap-2">

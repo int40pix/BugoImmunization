@@ -546,8 +546,12 @@ export default function VaccinationManagement({
                                 </h3>
                             </div>
                             <Badge
-                                variant={vaccinationOptions.length > 0 ? 'default' : 'outline'}
-                                className="text-xs"
+                                variant="outline"
+                                className={`text-xs ${
+                                    vaccinationOptions.length > 0
+                                        ? 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400 font-medium'
+                                        : 'border-border text-muted-foreground'
+                                }`}
                             >
                                 {vaccinationOptions.length}{' '}
                                 {vaccinationOptions.length === 1 ? 'Dose Due' : 'Doses Due'}

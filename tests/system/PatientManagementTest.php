@@ -149,10 +149,10 @@ class PatientManagementTest extends TestCase
             'status' => 'Active',
         ]);
 
-        $response = $this->put('/patients/'.$patient->id.'/status');
+        $response = $this->from(route('patients.index'))->put('/patients/'.$patient->id.'/status');
 
         $response->assertRedirect(route('patients.index'));
-        $response->assertSessionHas('success', 'Patient status updated successfully.');
+        $response->assertSessionHas('success', 'Patient record status updated to Inactive.');
 
         $this->assertDatabaseHas('patients', [
             'id' => $patient->id,

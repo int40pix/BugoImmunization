@@ -19,7 +19,18 @@ class FirstLoginPasswordController extends Controller
             return $this->redirectForUser($request);
         }
 
-        return Inertia::render('auth/change-temporary-password');
+        $user->loadMissing('accountRole');
+
+        return Inertia::render('auth/change-temporary-password', [
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'role_label' => $user->accountRole?->display_name ?? ucfirst($user->role ?? 'User'),
+                'is_guardian' => $user->isGuardian(),
+                'is_staff' => $user->isStaff(),
+            ],
+        ]);
     }
 
     public function update(Request $request): RedirectResponse
@@ -64,12 +75,15 @@ class FirstLoginPasswordController extends Controller
             'accountRole'
         );
 
-        if (
-            $user->accountRole?->name ===
-            'guardian'
-        ) {
+        if ($user->isGuardian()) {
             return redirect()->route(
                 'guardian.dashboard'
+            );
+        }
+
+        if ($user->role === 'bhw') {
+            return redirect()->route(
+                'patients.index'
             );
         }
 

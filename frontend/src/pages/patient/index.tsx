@@ -355,26 +355,32 @@ export default function PatientIndex() {
                     </div>
                 </div>
 
-                <div className="flex w-fit rounded-lg border bg-muted/20 p-1">
-                    <Button
+                <div className="flex w-fit rounded-lg border border-border/60 bg-muted/40 p-1 gap-1 text-xs font-medium">
+                    <button
                         type="button"
-                        size="sm"
-                        variant={activeTab === 'patients' ? 'default' : 'ghost'}
                         onClick={() => setActiveTab('patients')}
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                            activeTab === 'patients'
+                                ? 'bg-background text-foreground shadow-xs font-semibold'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }`}
                     >
-                        <Baby className="mr-2 h-4 w-4" />
+                        <Baby className="h-4 w-4" />
                         Patients
-                    </Button>
+                    </button>
 
-                    <Button
+                    <button
                         type="button"
-                        size="sm"
-                        variant={activeTab === 'families' ? 'default' : 'ghost'}
                         onClick={() => setActiveTab('families')}
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                            activeTab === 'families'
+                                ? 'bg-background text-foreground shadow-xs font-semibold'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }`}
                     >
-                        <UsersRound className="mr-2 h-4 w-4" />
+                        <UsersRound className="h-4 w-4" />
                         Registered Families
-                    </Button>
+                    </button>
                 </div>
 
                 {activeTab === 'patients' && (
@@ -594,7 +600,7 @@ export default function PatientIndex() {
                                     />
                                 </div>
 
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border/50 bg-muted/30 p-1 text-xs">
                                     {(
                                         [
                                             ['all', 'All'],
@@ -604,21 +610,20 @@ export default function PatientIndex() {
                                             ['Completed', 'Completed'],
                                         ] as const
                                     ).map(([value, label]) => (
-                                        <Button
+                                        <button
                                             key={value}
                                             type="button"
-                                            size="sm"
-                                            variant={
-                                                familyStatusFilter === value
-                                                    ? 'default'
-                                                    : 'outline'
-                                            }
                                             onClick={() =>
                                                 setFamilyStatusFilter(value)
                                             }
+                                            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                                                familyStatusFilter === value
+                                                    ? 'bg-background text-foreground shadow-xs font-semibold'
+                                                    : 'text-muted-foreground hover:text-foreground'
+                                            }`}
                                         >
                                             {label}
-                                        </Button>
+                                        </button>
                                     ))}
                                 </div>
                             </CardContent>

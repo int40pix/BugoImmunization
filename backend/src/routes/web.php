@@ -103,12 +103,30 @@ Route::middleware([
 
 
     Route::get(
+        'guardian/children',
+        [
+            GuardianPortalController::class,
+            'childrenIndex',
+        ]
+    )->name('guardian.children.index');
+
+
+    Route::get(
         'guardian/children/{patient}',
         [
             GuardianPortalController::class,
             'showChild',
         ]
     )->name('guardian.children.show');
+
+
+    Route::get(
+        'guardian/visits',
+        [
+            GuardianPortalController::class,
+            'visitsIndex',
+        ]
+    )->name('guardian.visits.index');
 
 });
 
@@ -263,6 +281,15 @@ Route::middleware([
                 'toggleStatus',
             ]
         )->name('staff.toggle-status');
+
+
+        Route::post(
+            'staff/{user}/reset-password',
+            [
+                StaffController::class,
+                'resetPassword',
+            ]
+        )->name('staff.reset-password');
 
 
 

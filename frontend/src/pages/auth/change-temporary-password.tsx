@@ -1,7 +1,8 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import {
     KeyRound,
     LockKeyhole,
+    LogOut,
     ShieldCheck,
 } from 'lucide-react';
 import { FormEventHandler } from 'react';
@@ -18,7 +19,21 @@ interface PasswordForm {
     [key: string]: string;
 }
 
+interface ChangeTemporaryPasswordProps {
+    user?: {
+        name: string;
+        email: string;
+        role?: string;
+        role_label?: string;
+        is_guardian?: boolean;
+        is_staff?: boolean;
+    };
+    [key: string]: unknown;
+}
+
 export default function ChangeTemporaryPassword() {
+    const { user } = usePage<ChangeTemporaryPasswordProps>().props;
+
     const {
         data,
         setData,
@@ -51,6 +66,13 @@ export default function ChangeTemporaryPassword() {
         );
     };
 
+    const handleSignOut = () => {
+        router.post('/logout');
+    };
+
+    const isGuardian = user?.is_guardian ?? false;
+    const destinationName = isGuardian ? 'the Guardian Portal' : 'the Health Center Dashboard';
+
     return (
         <>
             <Head title="Create New Password" />
@@ -59,7 +81,7 @@ export default function ChangeTemporaryPassword() {
                 <div className="w-full max-w-md">
                     <div className="rounded-2xl border bg-background p-6 shadow-sm sm:p-8">
                         <div className="mb-7">
-                            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border bg-muted/30">
+                            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
                                 <KeyRound className="h-5 w-5" />
                             </div>
 
@@ -69,9 +91,19 @@ export default function ChangeTemporaryPassword() {
 
                             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                                 You signed in using a temporary password.
-                                Before continuing to the Guardian Portal,
-                                create a password that only you know.
+                                Before continuing to {destinationName},
+                                create a permanent password that only you know.
                             </p>
+
+                            {user?.name && (
+                                <div className="mt-3 rounded-lg border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                                    Signed in as:{' '}
+                                    <span className="font-semibold text-foreground">
+                                        {user.name}
+                                    </span>{' '}
+                                    ({user.role_label ?? user.role})
+                                </div>
+                            )}
                         </div>
 
                         <div className="mb-6 rounded-xl border bg-muted/20 p-4">
@@ -160,6 +192,17 @@ export default function ChangeTemporaryPassword() {
                                     ? 'Creating Password...'
                                     : 'Create Password & Continue'}
                             </Button>
+
+                            <div className="pt-2 text-center">
+                                <button
+                                    type="button"
+                                    onClick={handleSignOut}
+                                    className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+                                >
+                                    <LogOut className="h-3.5 w-3.5" />
+                                    Cancel and sign out
+                                </button>
+                            </div>
                         </form>
                     </div>
 

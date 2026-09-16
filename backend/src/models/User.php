@@ -55,13 +55,16 @@ class User extends Authenticatable
 
     public function isGuardian(): bool
     {
-        return $this->accountRole?->name === 'guardian';
+        return $this->accountRole?->name === 'guardian'
+            || in_array($this->role, ['guardian', 'patient'], true);
     }
 
     public function isStaff(): bool
     {
+        $roleName = $this->accountRole?->name ?? $this->role;
+
         return in_array(
-            $this->accountRole?->name,
+            $roleName,
             [
                 'admin',
                 'nurse',
@@ -72,10 +75,18 @@ class User extends Authenticatable
         );
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->accountRole?->name === 'admin'
+            || $this->role === 'admin';
+    }
+
     public function hasRole(string ...$roles): bool
     {
+        $currentRole = $this->accountRole?->name ?? $this->role;
+
         return in_array(
-            $this->accountRole?->name,
+            $currentRole,
             $roles,
             true
         );

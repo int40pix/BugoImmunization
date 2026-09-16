@@ -341,16 +341,14 @@ export default function GuardianShow() {
                                 </Badge>
 
                                 <Badge
-                                    variant={
-                                        guardian.status ===
-                                        'active'
-                                            ? 'default'
-                                            : 'secondary'
-                                    }
+                                    variant="outline"
+                                    className={`capitalize ${
+                                        guardian.status === 'active'
+                                            ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+                                            : 'border-muted text-muted-foreground'
+                                    }`}
                                 >
-                                    {
-                                        guardian.status
-                                    }
+                                    {guardian.status}
                                 </Badge>
                             </div>
 

@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\PasswordResetRequest;
 use App\Models\User;
+use App\Notifications\AccountRecoveryRequestedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,16 +47,16 @@ class PasswordResetRequestController extends Controller
 
         /*
          * Do not reveal whether an account exists.
-         * Only guardian portal accounts can create
-         * this staff-assisted reset request.
+         * Active accounts (staff or guardians) can create
+         * this administrator-assisted reset request.
          */
         if (
             $user &&
-            $user->accountRole?->name === 'guardian' &&
             $user->account_status !== 'unclaimed' &&
+            $user->status !== 'inactive' &&
             filled($user->password)
         ) {
-            PasswordResetRequest::query()
+            $resetRequest = PasswordResetRequest::query()
                 ->firstOrCreate(
                     [
                         'user_id' => $user->id,
@@ -64,6 +66,26 @@ class PasswordResetRequestController extends Controller
                         'requested_at' => now(),
                     ]
                 );
+
+            /*
+             * Send notification exclusively to administrators.
+             */
+            $admins = User::query()
+                ->where('status', 'active')
+                ->where(function ($query) {
+                    $query->where('role', 'admin')
+                        ->orWhereHas('accountRole', function ($subQuery) {
+                            $subQuery->where('name', 'admin');
+                        });
+                })
+                ->get();
+
+            if ($admins->isNotEmpty()) {
+                Notification::send(
+                    $admins,
+                    new AccountRecoveryRequestedNotification($user, $resetRequest)
+                );
+            }
         }
 
         return back()->with(

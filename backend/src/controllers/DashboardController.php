@@ -56,6 +56,10 @@ class DashboardController extends Controller
             )
             ->count();
 
+        $pendingRecoveryCount = auth()->user()?->isAdmin()
+            ? \App\Models\PasswordResetRequest::where('status', 'pending')->count()
+            : 0;
+
         /*
         |--------------------------------------------------------------------------
         | TCL / IMMUNIZATION WORKLOAD
@@ -299,6 +303,9 @@ class DashboardController extends Controller
 
                     'upcomingSchedules' =>
                         $upcomingSchedules,
+
+                    'pendingRecoveryCount' =>
+                        $pendingRecoveryCount,
 
                     'inventoryAlerts' =>
                         $inventoryAlerts,

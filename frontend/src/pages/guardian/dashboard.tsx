@@ -1,22 +1,27 @@
-import { Head, router } from '@inertiajs/react';
-import {
-    CalendarDays,
-    ChevronRight,
-    Clock3,
-    LogOut,
-    Syringe,
-    UserRound,
-    UsersRound,
-} from 'lucide-react';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link } from '@inertiajs/react';
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+    AlertCircle,
+    ArrowRight,
+    Baby,
+    Building2,
+    Calendar,
+    CalendarDays,
+    CheckCircle2,
+    Clock3,
+    HeartPulse,
+    QrCode,
+    ShieldCheck,
+    Syringe,
+    UsersRound,
+} from 'lucide-react';
+import React, { useState } from 'react';
+import ChildQrModal, { type QrChildItem } from './components/child-qr-modal';
+import { StockBadge } from './components/stock-badge';
 
 type Guardian = {
     id: number;
@@ -24,6 +29,8 @@ type Guardian = {
     name: string;
     email: string | null;
     contact_number: string | null;
+    address?: string | null;
+    status?: string;
 };
 
 type Appointment = {
@@ -31,31 +38,36 @@ type Appointment = {
     patient_id: number;
     patient_name: string;
     date: string;
+    vaccine_id?: number;
     vaccine: string;
     dose_number: number;
+    stock_vials?: number;
+    stock_status?: string;
 };
 
 type Child = {
     id: number;
     patient_id: string;
     name: string;
+    first_name?: string;
     nickname: string | null;
     date_of_birth: string | null;
+    age_display?: string | null;
     sex: string;
     status: string;
-
-    portal_status:
-        | 'Overdue'
-        | 'Upcoming'
-        | 'No Schedule';
-
+    portal_status: 'Overdue' | 'Upcoming' | 'No Schedule' | 'Up to Date';
     documented_doses: number;
+    routine_target_doses?: number;
+    routine_progress_percent?: number;
     overdue_count: number;
-
+    qr_code_value?: string;
     next_appointment: {
+        vaccine_id?: number;
         date: string;
         vaccine: string;
         dose_number: number;
+        stock_vials?: number;
+        stock_status?: string;
     } | null;
 };
 
@@ -65,441 +77,496 @@ type Props = {
     appointments: Appointment[];
 };
 
-function formatDate(
-    value: string | null,
-) {
-    if (!value) {
-        return '—';
-    }
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Guardian Dashboard',
+        href: '/guardian/dashboard',
+    },
+];
 
-    const [year, month, day] = value
-        .split('-')
-        .map(Number);
-
-    return new Date(
-        year,
-        month - 1,
-        day,
-    ).toLocaleDateString('en-US', {
+function formatDate(value: string | null) {
+    if (!value) return '—';
+    const [year, month, day] = value.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
     });
 }
 
-function statusClasses(
-    status: Child['portal_status'],
-) {
+function statusBadge(status: Child['portal_status']) {
     if (status === 'Overdue') {
-        return 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400';
+        return (
+            <Badge
+                variant="outline"
+                className="border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400 font-medium gap-1 text-[11px] px-2 py-0.5"
+            >
+                <AlertCircle className="h-3 w-3" />
+                Dose Overdue
+            </Badge>
+        );
     }
 
     if (status === 'Upcoming') {
-        return 'border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400';
+        return (
+            <Badge
+                variant="outline"
+                className="border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 font-medium gap-1 text-[11px] px-2 py-0.5"
+            >
+                <Clock3 className="h-3 w-3" />
+                Upcoming Dose
+            </Badge>
+        );
     }
 
-    return 'border-border bg-muted text-muted-foreground';
+    return (
+        <Badge
+            variant="outline"
+            className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium gap-1 text-[11px] px-2 py-0.5"
+        >
+            <CheckCircle2 className="h-3 w-3" />
+            Up to Date
+        </Badge>
+    );
 }
 
 export default function GuardianDashboard({
     guardian,
-    children,
-    appointments,
+    children = [],
+    appointments = [],
 }: Props) {
-    const logout = () => {
-        router.post(
-            '/logout',
-            {},
-            {
-                preserveScroll: false,
+    const [qrModalOpen, setQrModalOpen] = useState(false);
+    const [selectedChildForQr, setSelectedChildForQr] = useState<number | undefined>(
+        children[0]?.id,
+    );
 
-                onSuccess: () => {
-                    router.visit('/login');
-                },
-            },
-        );
+    const openQrForChild = (childId: number) => {
+        setSelectedChildForQr(childId);
+        setQrModalOpen(true);
     };
 
-    return (
-        <>
-            <Head title="Guardian Portal" />
+    const hasOverdue = children.some((c) => c.portal_status === 'Overdue');
+    const totalDosesDocumented = children.reduce(
+        (sum, child) => sum + (child.documented_doses || 0),
+        0,
+    );
 
-            <div className="min-h-screen bg-background text-foreground">
-                {/* Header */}
-                <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
-                    <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
-                        <div className="flex min-w-0 items-center gap-3">
-                            <img
-                                src="/images/bugo-health-center-logo.png"
-                                alt="Barangay Bugo Health Center"
-                                className="h-11 w-11 rounded-full object-contain"
+    const nextUpcomingVisit = appointments[0] || null;
+
+    const qrChildrenList: QrChildItem[] = children.map((c) => ({
+        id: c.id,
+        patient_id: c.patient_id,
+        name: c.name,
+        date_of_birth: c.date_of_birth,
+        qr_code_value: c.qr_code_value || `/patients/${c.id}`,
+    }));
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Guardian Dashboard - Barangay Bugo Health Center" />
+
+            <div className="space-y-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+                {/* Welcome Hero Banner */}
+                <div className="relative overflow-hidden rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-card to-emerald-500/5 p-6 sm:p-7 shadow-xs">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div className="space-y-1.5 max-w-2xl">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/15 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-300">
+                                    <ShieldCheck className="h-3.5 w-3.5" />
+                                    Verified Family Account
+                                </span>
+                                <span className="font-mono text-xs text-muted-foreground">
+                                    {guardian.guardian_no}
+                                </span>
+                            </div>
+
+                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                                Welcome, {guardian.name}
+                            </h1>
+
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Monitor your children's routine pediatric immunization records, check live vaccine inventory stock, and track upcoming health center visits.
+                            </p>
+                        </div>
+
+                        {children.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-center">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        setSelectedChildForQr(children[0]?.id);
+                                        setQrModalOpen(true);
+                                    }}
+                                    className="h-9 gap-2 rounded-xl border-border/80 bg-card/60 hover:bg-accent text-xs font-medium shadow-2xs"
+                                >
+                                    <QrCode className="h-4 w-4 text-primary" />
+                                    <span>Check-In QR</span>
+                                </Button>
+
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 gap-2 rounded-xl border-border/80 bg-card/60 hover:bg-accent text-xs font-medium shadow-2xs"
+                                >
+                                    <Link href="/guardian/children">
+                                        <Baby className="h-4 w-4 text-primary" />
+                                        <span>My Children</span>
+                                    </Link>
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Summary Metric Cards */}
+                <div className="grid gap-4 sm:grid-cols-3">
+                    <Link
+                        href="/guardian/children"
+                        className="group block rounded-xl border border-border/60 bg-card/60 p-4 sm:p-5 shadow-2xs transition-all hover:border-border hover:shadow-xs hover:bg-card"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform">
+                                <UsersRound className="h-5 w-5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                                    Registered Children
+                                </p>
+                                <div className="flex items-baseline gap-2">
+                                    <p className="text-2xl font-bold tracking-tight text-foreground">
+                                        {children.length}
+                                    </p>
+                                    <span className="text-xs text-muted-foreground">
+                                        {children.length === 1 ? 'child on file' : 'children on file'}
+                                    </span>
+                                </div>
+                            </div>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                        </div>
+                    </Link>
+
+                    <Link
+                        href="/guardian/visits"
+                        className="group block rounded-xl border border-border/60 bg-card/60 p-4 sm:p-5 shadow-2xs transition-all hover:border-border hover:shadow-xs hover:bg-card"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-purple-500/20 bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
+                                <CalendarDays className="h-5 w-5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                                    Upcoming Visits
+                                </p>
+                                <div className="flex items-baseline gap-2">
+                                    <p className="text-2xl font-bold tracking-tight text-foreground">
+                                        {appointments.length}
+                                    </p>
+                                    <span className="text-xs text-muted-foreground">
+                                        scheduled {appointments.length === 1 ? 'dose' : 'doses'}
+                                    </span>
+                                </div>
+                            </div>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                        </div>
+                    </Link>
+
+                    <div className="rounded-xl border border-border/60 bg-card/60 p-4 sm:p-5 shadow-2xs">
+                        <div className="flex items-center gap-4">
+                            <div
+                                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${
+                                    hasOverdue
+                                        ? 'border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400'
+                                        : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                }`}
+                            >
+                                <HeartPulse className="h-5 w-5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-medium text-muted-foreground">
+                                    Total Doses Recorded
+                                </p>
+                                <div className="flex items-baseline gap-2">
+                                    <p className="text-2xl font-bold tracking-tight text-foreground">
+                                        {totalDosesDocumented}
+                                    </p>
+                                    <span className="text-xs text-muted-foreground">
+                                        {hasOverdue ? 'attention needed' : 'doses administered'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Next Upcoming Appointment Spotlight with Realtime Stock */}
+                {nextUpcomingVisit ? (
+                    <div className="rounded-2xl border border-purple-500/25 bg-gradient-to-r from-purple-500/10 via-card to-card p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div className="flex items-center gap-3.5 min-w-0">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-purple-500/25 bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                                <Syringe className="h-5 w-5" />
+                            </div>
+                            <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="text-[11px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                                        Next Scheduled Visit
+                                    </span>
+                                    <Badge
+                                        variant="outline"
+                                        className="border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 font-medium text-[11px] px-2 py-0"
+                                    >
+                                        <Calendar className="mr-1 h-3 w-3" />
+                                        {formatDate(nextUpcomingVisit.date)}
+                                    </Badge>
+                                </div>
+                                <h3 className="text-sm font-bold text-foreground truncate mt-0.5">
+                                    {nextUpcomingVisit.patient_name} — {nextUpcomingVisit.vaccine} (Dose {nextUpcomingVisit.dose_number})
+                                </h3>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto shrink-0">
+                            {/* Realtime Stock Badge */}
+                            <StockBadge
+                                stockVials={nextUpcomingVisit.stock_vials}
+                                stockStatus={nextUpcomingVisit.stock_status}
                             />
 
-                            <div className="min-w-0">
-                                <p className="truncate font-bold">
-                                    Barangay Bugo
-                                </p>
+                            <Button
+                                asChild
+                                variant="outline"
+                                size="sm"
+                                className="h-8.5 gap-1.5 rounded-lg border-border/80 text-xs font-medium shadow-2xs"
+                            >
+                                <Link href="/guardian/visits">
+                                    <span>All Visits ({appointments.length})</span>
+                                    <ArrowRight className="h-3.5 w-3.5 ml-0.5 text-muted-foreground" />
+                                </Link>
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 sm:p-5 text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-3">
+                        <CheckCircle2 className="h-5 w-5 shrink-0" />
+                        <span>
+                            All registered children are up to date on scheduled clinic visits. Health center staff will book future milestone doses during routine check-ups.
+                        </span>
+                    </div>
+                )}
 
-                                <p className="text-xs text-muted-foreground">
-                                    Parent / Guardian Portal
-                                </p>
-                            </div>
+                {/* Small, Compact Children List Section */}
+                <div className="space-y-3.5">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-lg font-bold tracking-tight text-foreground">
+                                My Children
+                            </h2>
+                            <p className="text-xs text-muted-foreground">
+                                Compact pediatric records with live vaccine inventory status.
+                            </p>
                         </div>
 
                         <Button
-                            type="button"
-                            variant="outline"
+                            asChild
+                            variant="ghost"
                             size="sm"
-                            onClick={logout}
+                            className="h-8 gap-1 text-xs text-muted-foreground hover:text-foreground"
                         >
-                            <LogOut className="mr-2 h-4 w-4" />
-
-                            <span className="hidden sm:inline">
-                                Log out
-                            </span>
+                            <Link href="/guardian/children">
+                                <span>Full records page ({children.length})</span>
+                                <ArrowRight className="h-3.5 w-3.5" />
+                            </Link>
                         </Button>
                     </div>
-                </header>
 
-                {/* Main */}
-                <main className="mx-auto max-w-6xl space-y-6 px-5 py-6 pb-24">
-                    {/* Welcome */}
-                    <section className="rounded-2xl border bg-card p-6">
-                        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    Welcome back
+                    {children.length === 0 ? (
+                        <Card className="border-dashed">
+                            <CardContent className="py-12 text-center text-sm text-muted-foreground">
+                                <Baby className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
+                                <p className="font-semibold text-foreground">No child records linked yet</p>
+                                <p className="mt-1 text-xs">
+                                    Please visit the Barangay Bugo Health Center with your child's birth certificate to link them to your guardian account.
                                 </p>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="space-y-2.5">
+                            {children.map((child) => {
+                                const progress = child.routine_progress_percent ?? 0;
+                                const nextAppt = child.next_appointment;
 
-                                <h1 className="mt-1 text-2xl font-bold">
-                                    {guardian.name}
-                                </h1>
+                                return (
+                                    <div
+                                        key={child.id}
+                                        className="group rounded-xl border border-border/70 bg-card p-4 shadow-2xs transition-all hover:border-border hover:shadow-xs"
+                                    >
+                                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                            {/* Child Identity */}
+                                            <div className="flex items-center gap-3.5 min-w-0">
+                                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary font-bold text-sm">
+                                                    {child.name.charAt(0).toUpperCase()}
+                                                </div>
 
-                                <p className="mt-2 text-sm text-muted-foreground">
-                                    {guardian.guardian_no}
-
-                                    {guardian.contact_number
-                                        ? ` · ${guardian.contact_number}`
-                                        : ''}
-                                </p>
-
-                                {guardian.email && (
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        {guardian.email}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full border bg-muted/40">
-                                <UserRound className="h-6 w-6" />
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Summary */}
-                    <div className="grid gap-4 sm:grid-cols-3">
-                        <SummaryCard
-                            icon={UsersRound}
-                            label="My Children"
-                            value={String(
-                                children.length,
-                            )}
-                        />
-
-                        <SummaryCard
-                            icon={CalendarDays}
-                            label="Upcoming Visits"
-                            value={String(
-                                appointments.length,
-                            )}
-                        />
-
-                        <SummaryCard
-                            icon={Clock3}
-                            label="Needs Attention"
-                            value={String(
-                                children.filter(
-                                    (child) =>
-                                        child.portal_status ===
-                                        'Overdue',
-                                ).length,
-                            )}
-                        />
-                    </div>
-
-                    {/* Children */}
-                    <section id="children">
-                        <div className="mb-4">
-                            <h2 className="text-xl font-bold">
-                                My Children
-                            </h2>
-
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                View each child's
-                                vaccination status and
-                                immunization record.
-                            </p>
-                        </div>
-
-                        {children.length === 0 ? (
-                            <Card>
-                                <CardContent className="py-10 text-center text-sm text-muted-foreground">
-                                    No patient records are
-                                    linked to this guardian
-                                    account.
-                                </CardContent>
-                            </Card>
-                        ) : (
-                            <div className="grid gap-4 md:grid-cols-2">
-                                {children.map(
-                                    (child) => (
-                                        <button
-                                            key={child.id}
-                                            type="button"
-                                            className="rounded-2xl border bg-card p-5 text-left transition hover:bg-muted/30"
-                                            onClick={() =>
-                                                router.visit(
-                                                    `/guardian/children/${child.id}`,
-                                                )
-                                            }
-                                        >
-                                            <div className="flex items-start justify-between gap-4">
                                                 <div className="min-w-0">
                                                     <div className="flex flex-wrap items-center gap-2">
-                                                        <h3 className="truncate font-bold">
-                                                            {
-                                                                child.name
-                                                            }
+                                                        <h3 className="text-sm font-bold text-foreground truncate">
+                                                            {child.name}
                                                         </h3>
-
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={statusClasses(
-                                                                child.portal_status,
-                                                            )}
-                                                        >
-                                                            {
-                                                                child.portal_status
-                                                            }
-                                                        </Badge>
+                                                        {child.nickname && (
+                                                            <span className="text-xs text-muted-foreground">
+                                                                ({child.nickname})
+                                                            </span>
+                                                        )}
+                                                        {statusBadge(child.portal_status)}
                                                     </div>
 
-                                                    <p className="mt-1 text-sm text-muted-foreground">
-                                                        {
-                                                            child.patient_id
-                                                        }{' '}
-                                                        ·{' '}
-                                                        {formatDate(
-                                                            child.date_of_birth,
+                                                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                                                        <span className="font-mono text-[11px] font-medium text-foreground/80">
+                                                            {child.patient_id}
+                                                        </span>
+                                                        <span>•</span>
+                                                        <span>{child.sex}</span>
+                                                        {child.age_display && (
+                                                            <>
+                                                                <span>•</span>
+                                                                <span>{child.age_display}</span>
+                                                            </>
                                                         )}
-                                                    </p>
-                                                </div>
-
-                                                <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
-                                            </div>
-
-                                            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                                                <div className="rounded-xl border bg-muted/20 p-3">
-                                                    <p className="text-xs text-muted-foreground">
-                                                        Documented
-                                                        Doses
-                                                    </p>
-
-                                                    <p className="mt-1 font-semibold">
-                                                        {
-                                                            child.documented_doses
-                                                        }
-                                                    </p>
-                                                </div>
-
-                                                <div className="rounded-xl border bg-muted/20 p-3">
-                                                    <p className="text-xs text-muted-foreground">
-                                                        Next
-                                                        Visit
-                                                    </p>
-
-                                                    <p className="mt-1 text-sm font-semibold">
-                                                        {child.next_appointment
-                                                            ? formatDate(
-                                                                  child
-                                                                      .next_appointment
-                                                                      .date,
-                                                              )
-                                                            : 'No appointment'}
-                                                    </p>
+                                                        <span>•</span>
+                                                        <span>Born {formatDate(child.date_of_birth)}</span>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            {child.next_appointment && (
-                                                <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                                                    <Syringe className="h-4 w-4" />
+                                            {/* Center / Routine Progress Pill */}
+                                            <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
+                                                <div className="space-y-1 w-28 sm:w-36">
+                                                    <div className="flex items-center justify-between text-[11px]">
+                                                        <span className="text-muted-foreground">EPI Progress</span>
+                                                        <span className="font-mono font-semibold text-foreground">{child.documented_doses}/12</span>
+                                                    </div>
+                                                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/60">
+                                                        <div
+                                                            className="h-full bg-emerald-500 transition-all duration-500 rounded-full"
+                                                            style={{ width: `${Math.max(5, progress)}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                                    <span>
-                                                        {
-                                                            child
-                                                                .next_appointment
-                                                                .vaccine
-                                                        }{' '}
-                                                        · Dose{' '}
-                                                        {
-                                                            child
-                                                                .next_appointment
-                                                                .dose_number
-                                                        }
-                                                    </span>
+                                            {/* Right / Actions */}
+                                            <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => openQrForChild(child.id)}
+                                                    className="h-8 gap-1.5 rounded-lg border-border/70 text-xs font-medium shadow-2xs hover:border-primary/40 hover:bg-primary/5"
+                                                    title="Open QR check-in pass"
+                                                >
+                                                    <QrCode className="h-3.5 w-3.5 text-primary" />
+                                                    <span>QR Pass</span>
+                                                </Button>
+
+                                                <Button
+                                                    asChild
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-8 gap-1.5 rounded-lg border-border/70 text-xs font-medium shadow-2xs hover:border-primary/40 hover:bg-primary/5"
+                                                >
+                                                    <Link href={`/guardian/children/${child.id}`}>
+                                                        <span>Bakuna Card</span>
+                                                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                                                    </Link>
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Child Next Dose & Live Inventory Banner */}
+                                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2.5 rounded-lg border border-border/50 bg-muted/20 px-3 py-2 text-xs">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                {child.overdue_count > 0 ? (
+                                                    <>
+                                                        <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+                                                        <span className="text-red-700 dark:text-red-400 font-medium">
+                                                            {child.overdue_count} overdue dose — please visit the clinic
+                                                        </span>
+                                                    </>
+                                                ) : nextAppt ? (
+                                                    <>
+                                                        <Syringe className="h-4 w-4 shrink-0 text-blue-600" />
+                                                        <span className="truncate">
+                                                            Next: <strong>{nextAppt.vaccine}</strong> (Dose {nextAppt.dose_number}) on {formatDate(nextAppt.date)}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                                                        <span className="text-muted-foreground">
+                                                            Routine immunization doses up to date for this age milestone
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </div>
+
+                                            {/* Realtime Vaccine Stock Badge */}
+                                            {nextAppt && (
+                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                    <span className="text-[11px] text-muted-foreground hidden sm:inline">Center Stock:</span>
+                                                    <StockBadge
+                                                        stockVials={nextAppt.stock_vials}
+                                                        stockStatus={nextAppt.stock_status}
+                                                    />
                                                 </div>
                                             )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
 
-                                            {child.overdue_count >
-                                                0 && (
-                                                <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">
-                                                    {
-                                                        child.overdue_count
-                                                    }{' '}
-                                                    overdue vaccination
-                                                    {child.overdue_count >
-                                                    1
-                                                        ? 's'
-                                                        : ''}
-                                                </p>
-                                            )}
-                                        </button>
-                                    ),
-                                )}
+                {/* Health Center Information Card */}
+                <Card className="rounded-2xl border-border/60 bg-card/60 shadow-2xs">
+                    <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-foreground font-bold text-sm">
+                                <Building2 className="h-4 w-4 text-primary" />
+                                <span>Barangay Bugo Health Center — Pediatric Services</span>
                             </div>
-                        )}
-                    </section>
-
-                    {/* Appointments */}
-                    <section id="appointments">
-                        <div className="mb-4">
-                            <h2 className="text-xl font-bold">
-                                Upcoming Appointments
-                            </h2>
-
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Scheduled vaccination
-                                visits for your children.
+                            <p className="text-muted-foreground leading-relaxed">
+                                Pediatric Immunization Clinic: <strong>Wednesdays & Thursdays, 8:00 AM – 11:30 AM</strong>.
+                                <br className="hidden sm:inline" /> Located at Zone 1, Bugo, Cagayan de Oro City.
                             </p>
                         </div>
 
-                        <Card>
-                            {appointments.length ===
-                            0 ? (
-                                <CardContent className="py-10 text-center text-sm text-muted-foreground">
-                                    No upcoming
-                                    appointments are
-                                    currently scheduled.
-                                </CardContent>
-                            ) : (
-                                <CardContent className="divide-y p-0">
-                                    {appointments.map(
-                                        (
-                                            appointment,
-                                        ) => (
-                                            <div
-                                                key={
-                                                    appointment.id
-                                                }
-                                                className="flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between"
-                                            >
-                                                <div>
-                                                    <p className="font-semibold">
-                                                        {
-                                                            appointment.patient_name
-                                                        }
-                                                    </p>
+                        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                            <Button
+                                asChild
+                                variant="outline"
+                                size="sm"
+                                className="h-8 gap-1.5 rounded-lg border-border/70 text-xs font-medium"
+                            >
+                                <Link href="/guardian/visits">
+                                    <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                                    <span>Check Schedule</span>
+                                </Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
 
-                                                    <p className="mt-1 text-sm text-muted-foreground">
-                                                        {
-                                                            appointment.vaccine
-                                                        }{' '}
-                                                        ·
-                                                        Dose{' '}
-                                                        {
-                                                            appointment.dose_number
-                                                        }
-                                                    </p>
-                                                </div>
-
-                                                <Badge variant="outline">
-                                                    {formatDate(
-                                                        appointment.date,
-                                                    )}
-                                                </Badge>
-                                            </div>
-                                        ),
-                                    )}
-                                </CardContent>
-                            )}
-                        </Card>
-                    </section>
-                </main>
-
-                {/* Mobile Navigation */}
-                <nav className="fixed inset-x-0 bottom-0 z-20 border-t bg-background md:hidden">
-                    <div className="grid grid-cols-3">
-                        <a
-                            href="#children"
-                            className="flex flex-col items-center gap-1 py-3 text-xs"
-                        >
-                            <UsersRound className="h-5 w-5" />
-                            Children
-                        </a>
-
-                        <a
-                            href="#appointments"
-                            className="flex flex-col items-center gap-1 py-3 text-xs"
-                        >
-                            <CalendarDays className="h-5 w-5" />
-                            Visits
-                        </a>
-
-                        <button
-                            type="button"
-                            className="flex flex-col items-center gap-1 py-3 text-xs"
-                            onClick={logout}
-                        >
-                            <LogOut className="h-5 w-5" />
-
-                            Logout
-                        </button>
-                    </div>
-                </nav>
+                {/* Check-In QR Modal */}
+                <ChildQrModal
+                    open={qrModalOpen}
+                    onOpenChange={setQrModalOpen}
+                    childrenList={qrChildrenList}
+                    selectedChildId={selectedChildForQr}
+                />
             </div>
-        </>
-    );
-}
-
-function SummaryCard({
-    icon: Icon,
-    label,
-    value,
-}: {
-    icon: React.ComponentType<{
-        className?: string;
-    }>;
-
-    label: string;
-    value: string;
-}) {
-    return (
-        <Card>
-            <CardContent className="flex items-center gap-4 p-5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl border">
-                    <Icon className="h-5 w-5" />
-                </div>
-
-                <div>
-                    <p className="text-sm text-muted-foreground">
-                        {label}
-                    </p>
-
-                    <p className="text-2xl font-bold">
-                        {value}
-                    </p>
-                </div>
-            </CardContent>
-        </Card>
+        </AppLayout>
     );
 }

@@ -55,8 +55,15 @@ class StaffController extends Controller
     // Shows staff details
     public function show(User $user)
     {
+        $user->loadMissing('accountRole');
+
+        $hasPendingReset = \App\Models\PasswordResetRequest::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
+
         return inertia('staff/show', [
             'staff' => $user,
+            'hasPendingReset' => $hasPendingReset,
         ]);
     }
 
@@ -171,5 +178,44 @@ class StaffController extends Controller
         return redirect()
             ->back()
             ->with('success', 'Staff account status updated successfully.');
+    }
+
+    // Generates a temporary password for a staff member
+    public function resetPassword(User $user)
+    {
+        if (! auth()->user()?->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $temporaryPassword = \Illuminate\Support\Str::password(
+            length: 10,
+            letters: true,
+            numbers: true,
+            symbols: false,
+            spaces: false
+        );
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($user, $temporaryPassword) {
+            $user->forceFill([
+                'password' => Hash::make($temporaryPassword),
+                'must_change_password' => true,
+                'account_status' => 'temporary',
+                'status' => 'active',
+            ])->save();
+
+            \App\Models\PasswordResetRequest::where('user_id', $user->id)
+                ->where('status', 'pending')
+                ->update([
+                    'status' => 'resolved',
+                    'resolved_by' => auth()->id(),
+                    'resolved_at' => now(),
+                ]);
+        });
+
+        return redirect()
+            ->back()
+            ->with('success', "A new temporary password has been generated for {$user->name}.")
+            ->with('temporary_password', $temporaryPassword)
+            ->with('temporary_password_user_name', $user->name);
     }
 }

@@ -16,8 +16,9 @@ class AdminPasswordResetRequestController extends Controller
     {
         $requests = PasswordResetRequest::query()
             ->with([
-                'user:id,name,email,role_id,account_status',
+                'user:id,name,email,role,role_id,account_status,status',
                 'user.guardian:id,user_id,guardian_no,name,contact_number',
+                'user.accountRole:id,name,display_name',
                 'resolvedBy:id,name',
             ])
             ->latest('requested_at')
@@ -25,6 +26,11 @@ class AdminPasswordResetRequestController extends Controller
             ->map(function (
                 PasswordResetRequest $resetRequest
             ) {
+                $user = $resetRequest->user;
+                $isGuardian = $user ? $user->isGuardian() : false;
+                $roleLabel = $user?->accountRole?->display_name
+                    ?? ucfirst($user?->role ?? 'User');
+
                 return [
                     'id' => $resetRequest->id,
                     'status' => $resetRequest->status,
@@ -35,20 +41,30 @@ class AdminPasswordResetRequestController extends Controller
                         $resetRequest->resolved_at
                     )->toIso8601String(),
 
-                    'guardian' => [
-                        'name' =>
-                            $resetRequest->user?->guardian?->name
-                            ?? $resetRequest->user?->name,
-                        'guardian_no' =>
-                            $resetRequest->user?->guardian?->guardian_no,
-                        'contact_number' =>
-                            $resetRequest->user?->guardian?->contact_number,
+                    'user' => [
+                        'id' => $user?->id,
+                        'name' => $user?->name ?? 'Unknown',
+                        'email' => $user?->email,
+                        'role' => $user?->role,
+                        'role_label' => $roleLabel,
+                        'is_guardian' => $isGuardian,
+                        'account_status' => $user?->account_status,
                     ],
 
+                    'guardian' => $isGuardian ? [
+                        'name' =>
+                            $user?->guardian?->name
+                            ?? $user?->name,
+                        'guardian_no' =>
+                            $user?->guardian?->guardian_no,
+                        'contact_number' =>
+                            $user?->guardian?->contact_number,
+                    ] : null,
+
                     'account' => [
-                        'email' => $resetRequest->user?->email,
+                        'email' => $user?->email,
                         'account_status' =>
-                            $resetRequest->user?->account_status,
+                            $user?->account_status,
                     ],
 
                     'resolved_by' =>
@@ -77,7 +93,13 @@ class AdminPasswordResetRequestController extends Controller
             );
         }
 
-        $temporaryPassword = Str::random(10);
+        $temporaryPassword = Str::password(
+            length: 10,
+            letters: true,
+            numbers: true,
+            symbols: false,
+            spaces: false
+        );
 
         DB::transaction(
             function () use (
@@ -91,13 +113,10 @@ class AdminPasswordResetRequestController extends Controller
                 $user =
                     $passwordResetRequest->user;
 
-                if (
-                    ! $user ||
-                    $user->accountRole?->name !== 'guardian'
-                ) {
+                if (! $user) {
                     abort(
                         422,
-                        'The linked account is not a valid guardian account.'
+                        'The linked user account could not be found.'
                     );
                 }
 
@@ -107,7 +126,7 @@ class AdminPasswordResetRequestController extends Controller
                 ) {
                     abort(
                         422,
-                        'This guardian does not have active portal credentials.'
+                        'This account does not have active login credentials.'
                     );
                 }
 
@@ -140,6 +159,10 @@ class AdminPasswordResetRequestController extends Controller
             ->with(
                 'temporary_password_request_id',
                 $passwordResetRequest->id
+            )
+            ->with(
+                'temporary_password_user_name',
+                $passwordResetRequest->user?->name
             );
     }
 }

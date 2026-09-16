@@ -40,13 +40,13 @@ export default function ForgotPassword() {
     return (
         <AuthLayout
             title="Forgot password?"
-            description="Submit a password reset request for your guardian portal account."
+            description="Submit a password recovery request for your staff or guardian account."
         >
             <Head title="Forgot Password" />
 
             <div className="mb-6 rounded-lg border bg-muted/40 p-4 text-sm">
                 <div className="flex gap-3">
-                    <KeyRound className="mt-0.5 h-5 w-5 shrink-0" />
+                    <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
 
                     <div>
                         <p className="font-medium">
@@ -55,7 +55,7 @@ export default function ForgotPassword() {
 
                         <p className="mt-1 text-muted-foreground">
                             Enter the email you use to sign in. An administrator
-                            will review your request and generate a new
+                            will review your request and generate a replacement
                             temporary password.
                         </p>
                     </div>

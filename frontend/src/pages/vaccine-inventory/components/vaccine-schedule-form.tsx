@@ -270,42 +270,36 @@ export default function VaccineScheduleForm({
             {/* INTERVAL PATTERN */}
 
             {requiredDoses > 1 && (
-                <div className="flex flex-wrap items-center gap-3">
-
-                    <span className="text-sm font-medium">
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground">
                         Interval Pattern:
                     </span>
 
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={
-                            intervalMode === 'same'
-                                ? 'default'
-                                : 'outline'
-                        }
-                        onClick={() =>
-                            changeIntervalMode('same')
-                        }
-                    >
-                        Same Throughout
-                    </Button>
+                    <div className="flex items-center rounded-lg border border-border/60 bg-muted/40 p-1 text-xs font-medium">
+                        <button
+                            type="button"
+                            onClick={() => changeIntervalMode('same')}
+                            className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                                intervalMode === 'same'
+                                    ? 'bg-background text-foreground shadow-xs font-semibold'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            Same Throughout
+                        </button>
 
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant={
-                            intervalMode === 'different'
-                                ? 'default'
-                                : 'outline'
-                        }
-                        onClick={() =>
-                            changeIntervalMode('different')
-                        }
-                    >
-                        Different Per Dose
-                    </Button>
-
+                        <button
+                            type="button"
+                            onClick={() => changeIntervalMode('different')}
+                            className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                                intervalMode === 'different'
+                                    ? 'bg-background text-foreground shadow-xs font-semibold'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            Different Per Dose
+                        </button>
+                    </div>
                 </div>
             )}
 
