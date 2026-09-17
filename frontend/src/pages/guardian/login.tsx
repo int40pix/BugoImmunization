@@ -59,8 +59,9 @@ export default function GuardianLogin() {
                     </Button>
                 </div>
 
-                <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-5 py-10">
-                    <div className="w-full max-w-md">
+                <div className="container min-h-screen d-flex align-items-center justify-content-center py-5">
+                    <div className="row justify-content-center w-100">
+                        <div className="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
                         <div className="mb-8 text-center">
                             <img
                                 src="/images/bugo-health-center-logo.png"
@@ -222,6 +223,7 @@ export default function GuardianLogin() {
                     </div>
                 </div>
             </div>
-        </>
-    );
+        </div>
+    </>
+);
 }

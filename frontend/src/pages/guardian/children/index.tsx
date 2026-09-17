@@ -159,8 +159,8 @@ export default function GuardianChildrenIndex({
 
             <div className="space-y-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
                 {/* Header Section */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-5">
-                    <div className="space-y-1">
+                <div className="row g-3 align-items-center justify-content-between border-b border-border/60 pb-5">
+                    <div className="col-12 col-sm-8 space-y-1">
                         <div className="flex items-center gap-2.5">
                             <h1 className="text-2xl font-bold tracking-tight text-foreground">
                                 My Children
@@ -175,19 +175,21 @@ export default function GuardianChildrenIndex({
                     </div>
 
                     {children.length > 0 && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                                setSelectedChildForQr(children[0]?.id);
-                                setQrModalOpen(true);
-                            }}
-                            className="h-9 gap-2 rounded-xl border-border/80 bg-card/60 hover:bg-accent text-xs font-medium shadow-2xs self-start sm:self-auto"
-                        >
-                            <QrCode className="h-4 w-4 text-primary" />
-                            <span>Check-In QR Pass</span>
-                        </Button>
+                        <div className="col-12 col-sm-4 d-flex justify-content-start justify-content-sm-end">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    setSelectedChildForQr(children[0]?.id);
+                                    setQrModalOpen(true);
+                                }}
+                                className="h-9 gap-2 rounded-xl border-border/80 bg-card/60 hover:bg-accent text-xs font-medium shadow-2xs"
+                            >
+                                <QrCode className="h-4 w-4 text-primary" />
+                                <span>Check-In QR Pass</span>
+                            </Button>
+                        </div>
                     )}
                 </div>
 
@@ -215,49 +217,51 @@ export default function GuardianChildrenIndex({
                                     key={child.id}
                                     className="group rounded-xl border border-border/70 bg-card p-4 sm:p-5 shadow-2xs transition-all hover:border-border hover:shadow-xs"
                                 >
-                                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                    <div className="row g-3 align-items-center justify-content-between">
                                         {/* Child Identity */}
-                                        <div className="flex items-center gap-3.5 min-w-0">
-                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary font-bold text-base">
-                                                {child.name.charAt(0).toUpperCase()}
-                                            </div>
-
-                                            <div className="min-w-0">
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <h2 className="text-base font-bold text-foreground truncate">
-                                                        {child.name}
-                                                    </h2>
-                                                    {child.nickname && (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            ({child.nickname})
-                                                        </span>
-                                                    )}
-                                                    {statusBadge(child.portal_status)}
+                                        <div className="col-12 col-lg-5">
+                                            <div className="flex items-center gap-3.5 min-w-0">
+                                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary font-bold text-base">
+                                                    {child.name.charAt(0).toUpperCase()}
                                                 </div>
 
-                                                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                                                    <span className="font-mono text-[11px] font-medium text-foreground/80">
-                                                        {child.patient_id}
-                                                    </span>
-                                                    <span>•</span>
-                                                    <span>{child.sex}</span>
-                                                    {child.age_display && (
-                                                        <>
-                                                            <span>•</span>
-                                                            <span className="font-medium text-foreground">
-                                                                {child.age_display}
+                                                <div className="min-w-0">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <h2 className="text-base font-bold text-foreground truncate">
+                                                            {child.name}
+                                                        </h2>
+                                                        {child.nickname && (
+                                                            <span className="text-xs text-muted-foreground">
+                                                                ({child.nickname})
                                                             </span>
-                                                        </>
-                                                    )}
-                                                    <span>•</span>
-                                                    <span>DOB: {formatDate(child.date_of_birth)}</span>
+                                                        )}
+                                                        {statusBadge(child.portal_status)}
+                                                    </div>
+
+                                                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                                                        <span className="font-mono text-[11px] font-medium text-foreground/80">
+                                                            {child.patient_id}
+                                                        </span>
+                                                        <span>•</span>
+                                                        <span>{child.sex}</span>
+                                                        {child.age_display && (
+                                                            <>
+                                                                <span>•</span>
+                                                                <span className="font-medium text-foreground">
+                                                                    {child.age_display}
+                                                                </span>
+                                                            </>
+                                                        )}
+                                                        <span>•</span>
+                                                        <span>DOB: {formatDate(child.date_of_birth)}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* EPI Progress */}
-                                        <div className="flex items-center gap-3 shrink-0">
-                                            <div className="space-y-1 w-32 sm:w-40">
+                                        <div className="col-12 col-sm-6 col-lg-3">
+                                            <div className="space-y-1 max-w-[220px]">
                                                 <div className="flex items-center justify-between text-[11px]">
                                                     <span className="text-muted-foreground font-medium">Routine EPI</span>
                                                     <span className="font-mono font-semibold text-foreground">
@@ -274,7 +278,7 @@ export default function GuardianChildrenIndex({
                                         </div>
 
                                         {/* Actions */}
-                                        <div className="flex items-center gap-2 shrink-0 self-end lg:self-center">
+                                        <div className="col-12 col-sm-6 col-lg-4 d-flex align-items-center justify-content-start justify-content-lg-end gap-2">
                                             <Button
                                                 type="button"
                                                 variant="outline"

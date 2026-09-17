@@ -305,7 +305,7 @@ export default function VaccineInventoryIndex() {
         <AppLayout>
             <Head title="Vaccine Inventory" />
 
-            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
+            <div className="mx-auto flex h-full w-full max-w-7xl min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7 overflow-x-hidden">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">
                         Vaccine Inventory
@@ -320,65 +320,79 @@ export default function VaccineInventoryIndex() {
 
                 <InventorySubnav current="active" />
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-                    <SummaryCard
-                        label="Vaccines"
-                        value={
-                            summary.total_vaccines
-                        }
-                        description="Vaccine master records"
-                    />
+                <div className="row g-2 g-sm-3 mx-0 w-full">
+                    <div className="col-6 col-md-4 col-xl">
+                        <SummaryCard
+                            label="Vaccines"
+                            value={
+                                summary.total_vaccines
+                            }
+                            description="Vaccine master records"
+                        />
+                    </div>
 
-                    <SummaryCard
-                        label="Usable Stock"
-                        value={
-                            summary.total_usable_stock
-                        }
-                        description="Total active non-expired doses"
-                    />
+                    <div className="col-6 col-md-4 col-xl">
+                        <SummaryCard
+                            label="Usable Stock"
+                            value={
+                                summary.total_usable_stock
+                            }
+                            description="Total active non-expired doses"
+                        />
+                    </div>
 
-                    <SummaryCard
-                        label="Low Stock"
-                        value={
-                            summary.low_stock_vaccines
-                        }
-                        description="Vaccines low in aggregate stock"
-                    />
+                    <div className="col-6 col-md-4 col-xl">
+                        <SummaryCard
+                            label="Low Stock"
+                            value={
+                                summary.low_stock_vaccines
+                            }
+                            description="Vaccines low in aggregate stock"
+                        />
+                    </div>
 
-                    <SummaryCard
-                        label="Out of Stock"
-                        value={
-                            summary.out_of_stock_vaccines
-                        }
-                        description="Vaccines with no usable doses"
-                    />
+                    <div className="col-6 col-md-4 col-xl">
+                        <SummaryCard
+                            label="Out of Stock"
+                            value={
+                                summary.out_of_stock_vaccines
+                            }
+                            description="Vaccines with no usable doses"
+                        />
+                    </div>
 
-                    <SummaryCard
-                        label="Expiring Soon"
-                        value={
-                            summary.expiring_soon_vaccines
-                        }
-                        description="Vaccines with a batch ≤ 30 days"
-                    />
+                    <div className="col-12 col-sm-6 col-md-4 col-xl">
+                        <SummaryCard
+                            label="Expiring Soon"
+                            value={
+                                summary.expiring_soon_vaccines
+                            }
+                            description="Vaccines with a batch ≤ 30 days"
+                        />
+                    </div>
                 </div>
 
-                <Card>
+                <Card className="min-w-0 max-w-full">
                     <CardContent className="pt-6">
-                        <div className="grid gap-3 md:grid-cols-3">
-                            <div className="relative">
-                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <div className="row g-3 mx-0 w-full">
+                            <div className="col-12 col-md-4">
+                                <div className="relative">
+                                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
-                                <Input
-                                    value={search}
-                                    onChange={(event) =>
-                                        setSearch(
-                                            event.target.value,
-                                        )
-                                    }
-                                    placeholder="Search vaccine or batch..."
-                                    className="pl-10"
-                                />
+                                    <Input
+                                        value={search}
+                                        onChange={(event) =>
+                                            setSearch(
+                                                event.target.value,
+                                            )
+                                        }
+                                        placeholder="Search vaccine or batch..."
+                                        className="pl-10"
+                                    />
+                                </div>
                             </div>
+
+                            <div className="col-12 col-md-4">
 
                             <Select
                                 value={status}
@@ -420,7 +434,9 @@ export default function VaccineInventoryIndex() {
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
+                            </div>
 
+                            <div className="col-12 col-md-4">
                             <Select
                                 value={vaccineId}
                                 onValueChange={
@@ -454,6 +470,7 @@ export default function VaccineInventoryIndex() {
                                     )}
                                 </SelectContent>
                             </Select>
+                            </div>
                         </div>
 
                         {loading && (
@@ -465,7 +482,7 @@ export default function VaccineInventoryIndex() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="min-w-0 max-w-full overflow-hidden">
                     <CardHeader className="border-b">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div>
@@ -525,14 +542,14 @@ export default function VaccineInventoryIndex() {
                                             >
                                                 <button
                                                     type="button"
-                                                    className="grid w-full grid-cols-[auto_minmax(0,1.6fr)_repeat(4,minmax(72px,0.7fr))_minmax(95px,0.75fr)] items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-muted/30"
+                                                    className="flex w-full min-w-0 items-center justify-between gap-3 px-3 sm:px-5 py-4 text-left transition-colors hover:bg-muted/30 xl:grid xl:grid-cols-[auto_minmax(0,1.6fr)_repeat(4,minmax(72px,0.7fr))_minmax(95px,0.75fr)] xl:gap-4"
                                                     onClick={() =>
                                                         toggleVaccine(
                                                             vaccine.id,
                                                         )
                                                     }
                                                 >
-                                                    <div className="flex h-8 w-8 items-center justify-center">
+                                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center">
                                                         {expanded ? (
                                                             <ChevronDown className="h-4 w-4 text-muted-foreground" />
                                                         ) : (
@@ -540,9 +557,9 @@ export default function VaccineInventoryIndex() {
                                                         )}
                                                     </div>
 
-                                                    <div className="min-w-0">
+                                                    <div className="min-w-0 flex-1">
                                                         <div className="flex flex-wrap items-center gap-2">
-                                                            <p className="truncate font-semibold">
+                                                            <p className="truncate font-semibold text-sm sm:text-base">
                                                                 {vaccine.name}
                                                             </p>
 
@@ -574,6 +591,13 @@ export default function VaccineInventoryIndex() {
                                                             >
                                                                 {vaccine.demand_coverage}
                                                             </Badge>
+
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className="h-5 px-2 text-[10px] font-medium xl:hidden"
+                                                            >
+                                                                {vaccine.usable_stock} usable
+                                                            </Badge>
                                                         </div>
                                                     </div>
 
@@ -597,7 +621,7 @@ export default function VaccineInventoryIndex() {
                                                         value={vaccine.remaining_demand}
                                                     />
 
-                                                    <div className="text-right">
+                                                    <div className="shrink-0 text-right">
                                                         <p className="text-sm font-semibold">
                                                             {vaccine.batch_count}{' '}
                                                             {vaccine.batch_count === 1
@@ -614,7 +638,7 @@ export default function VaccineInventoryIndex() {
                                                 </button>
 
                                                 {expanded && (
-                                                    <div className="border-t bg-muted/10 px-5 py-5">
+                                                    <div className="border-t bg-muted/10 px-3 sm:px-5 py-4 sm:py-5 min-w-0 max-w-full">
                                                         {vaccine.batches.length ===
                                                         0 ? (
                                                             <div className="rounded-lg border border-dashed px-5 py-8 text-center">
@@ -639,114 +663,142 @@ export default function VaccineInventoryIndex() {
                                                                 </Button>
                                                             </div>
                                                         ) : (
-                                                            <div className="overflow-x-auto rounded-lg border">
-                                                                <table className="w-full min-w-[900px] text-sm">
-                                                                    <thead className="border-b bg-muted/30">
-                                                                        <tr>
-                                                                            <th className="px-4 py-3 text-left font-medium">
-                                                                                Batch
-                                                                            </th>
-                                                                            <th className="px-4 py-3 text-center font-medium">
-                                                                                Quantity
-                                                                            </th>
-                                                                            <th className="px-4 py-3 text-center font-medium">
-                                                                                Reserved
-                                                                            </th>
-                                                                            <th className="px-4 py-3 text-center font-medium">
-                                                                                Free
-                                                                            </th>
-                                                                            <th className="px-4 py-3 text-left font-medium">
-                                                                                Received
-                                                                            </th>
-                                                                            <th className="px-4 py-3 text-left font-medium">
-                                                                                Expiration
-                                                                            </th>
-                                                                            <th className="px-4 py-3 text-left font-medium">
-                                                                                Status
-                                                                            </th>
-                                                                            <th className="px-4 py-3 text-right font-medium">
-                                                                                Actions
-                                                                            </th>
-                                                                        </tr>
-                                                                    </thead>
-
-                                                                    <tbody className="divide-y">
-                                                                        {vaccine.batches.map(
-                                                                            (
-                                                                                batch,
-                                                                            ) => (
-                                                                                <tr
-                                                                                    key={
-                                                                                        batch.id
-                                                                                    }
-                                                                                >
-                                                                                    <td className="px-4 py-3">
-                                                                                        <p className="font-medium">
-                                                                                            {
-                                                                                                batch.batch_number
-                                                                                            }
+                                                            <>
+                                                                {/* Mobile View (< md): Compact Batch Cards */}
+                                                                <div className="d-block d-md-none divide-y divide-border/60 rounded-lg border">
+                                                                    {vaccine.batches.map((batch) => (
+                                                                        <div key={batch.id} className="p-3 space-y-2 hover:bg-muted/15 transition-colors">
+                                                                            <div className="flex items-start justify-between gap-2">
+                                                                                <div className="min-w-0">
+                                                                                    <p className="font-semibold text-xs text-foreground font-mono truncate">{batch.batch_number}</p>
+                                                                                    {(batch.manufacturer || batch.supplier) && (
+                                                                                        <p className="text-[11px] text-muted-foreground truncate max-w-[200px]">
+                                                                                            {[batch.manufacturer, batch.supplier].filter(Boolean).join(' · ')}
                                                                                         </p>
+                                                                                    )}
+                                                                                </div>
+                                                                                <Badge
+                                                                                    variant="outline"
+                                                                                    className={`text-[10px] shrink-0 ${batchStatusClass(batch.status)}`}
+                                                                                >
+                                                                                    {batch.status}
+                                                                                </Badge>
+                                                                            </div>
 
-                                                                                        {(batch.manufacturer ||
-                                                                                            batch.supplier) && (
+                                                                            <div className="grid grid-cols-3 gap-1.5 py-1.5 bg-muted/20 rounded p-2 text-center text-xs">
+                                                                                <div>
+                                                                                    <p className="text-[10px] text-muted-foreground">Qty</p>
+                                                                                    <p className="font-bold text-foreground">{batch.quantity}</p>
+                                                                                </div>
+                                                                                <div>
+                                                                                    <p className="text-[10px] text-muted-foreground">Reserved</p>
+                                                                                    <p className="font-medium text-amber-600 dark:text-amber-400">{batch.reserved}</p>
+                                                                                </div>
+                                                                                <div>
+                                                                                    <p className="text-[10px] text-muted-foreground">Free</p>
+                                                                                    <p className="font-bold text-emerald-600 dark:text-emerald-400">{batch.free_capacity}</p>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px]">
+                                                                                <div className="text-muted-foreground text-[10px]">
+                                                                                    <span>Exp: {formatDate(batch.expiration_date)}</span>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                                                    <Button
+                                                                                        type="button"
+                                                                                        size="sm"
+                                                                                        variant="outline"
+                                                                                        className="h-7 px-2 text-[11px] gap-1"
+                                                                                        onClick={() => {
+                                                                                            setSelectedBatchForQr({
+                                                                                                id: batch.id,
+                                                                                                batch_number: batch.batch_number,
+                                                                                                quantity: batch.quantity,
+                                                                                                expiration_date: batch.expiration_date,
+                                                                                                manufacturer: batch.manufacturer,
+                                                                                                supplier: batch.supplier,
+                                                                                                vaccine_name: vaccine.name,
+                                                                                            });
+                                                                                            setBatchQrOpen(true);
+                                                                                        }}
+                                                                                    >
+                                                                                        <QrCode className="h-3 w-3 text-primary" />
+                                                                                        QR
+                                                                                    </Button>
+
+                                                                                    <Button
+                                                                                        type="button"
+                                                                                        size="sm"
+                                                                                        variant="outline"
+                                                                                        className="h-7 px-2 text-[11px] gap-1"
+                                                                                        onClick={() => {
+                                                                                            setSelectedBatchForAdj({
+                                                                                                id: batch.id,
+                                                                                                batch_number: batch.batch_number,
+                                                                                                quantity: batch.quantity,
+                                                                                                vaccine_name: vaccine.name,
+                                                                                            });
+                                                                                            setAdjustModalOpen(true);
+                                                                                        }}
+                                                                                    >
+                                                                                        <Scale className="h-3 w-3 text-amber-600" />
+                                                                                        Adj
+                                                                                    </Button>
+
+                                                                                    <Button
+                                                                                        type="button"
+                                                                                        size="sm"
+                                                                                        variant="outline"
+                                                                                        className="h-7 px-2 text-[11px]"
+                                                                                        asChild
+                                                                                    >
+                                                                                        <Link href={route('vaccine-inventory.edit', batch.id)}>
+                                                                                            Edit
+                                                                                        </Link>
+                                                                                    </Button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+
+                                                                {/* Desktop View (md+): Fluid Table */}
+                                                                <div className="d-none d-md-block w-full max-w-full overflow-x-auto rounded-lg border">
+                                                                    <table className="w-full text-sm">
+                                                                        <thead className="border-b bg-muted/30">
+                                                                            <tr>
+                                                                                <th className="px-4 py-3 text-left font-medium">Batch</th>
+                                                                                <th className="px-4 py-3 text-center font-medium">Quantity</th>
+                                                                                <th className="px-4 py-3 text-center font-medium">Reserved</th>
+                                                                                <th className="px-4 py-3 text-center font-medium">Free</th>
+                                                                                <th className="px-4 py-3 text-left font-medium">Received</th>
+                                                                                <th className="px-4 py-3 text-left font-medium">Expiration</th>
+                                                                                <th className="px-4 py-3 text-left font-medium">Status</th>
+                                                                                <th className="px-4 py-3 text-right font-medium">Actions</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody className="divide-y">
+                                                                            {vaccine.batches.map((batch) => (
+                                                                                <tr key={batch.id}>
+                                                                                    <td className="px-4 py-3">
+                                                                                        <p className="font-medium">{batch.batch_number}</p>
+                                                                                        {(batch.manufacturer || batch.supplier) && (
                                                                                             <p className="mt-1 text-xs text-muted-foreground">
-                                                                                                {[
-                                                                                                    batch.manufacturer,
-                                                                                                    batch.supplier,
-                                                                                                ]
-                                                                                                    .filter(
-                                                                                                        Boolean,
-                                                                                                    )
-                                                                                                    .join(
-                                                                                                        ' · ',
-                                                                                                    )}
+                                                                                                {[batch.manufacturer, batch.supplier].filter(Boolean).join(' · ')}
                                                                                             </p>
                                                                                         )}
                                                                                     </td>
-
-                                                                                    <td className="px-4 py-3 text-center font-medium">
-                                                                                        {
-                                                                                            batch.quantity
-                                                                                        }
-                                                                                    </td>
-
-                                                                                    <td className="px-4 py-3 text-center">
-                                                                                        {
-                                                                                            batch.reserved
-                                                                                        }
-                                                                                    </td>
-
-                                                                                    <td className="px-4 py-3 text-center">
-                                                                                        {
-                                                                                            batch.free_capacity
-                                                                                        }
-                                                                                    </td>
-
+                                                                                    <td className="px-4 py-3 text-center font-medium">{batch.quantity}</td>
+                                                                                    <td className="px-4 py-3 text-center">{batch.reserved}</td>
+                                                                                    <td className="px-4 py-3 text-center">{batch.free_capacity}</td>
+                                                                                    <td className="px-4 py-3">{formatDate(batch.date_received)}</td>
+                                                                                    <td className="px-4 py-3">{formatDate(batch.expiration_date)}</td>
                                                                                     <td className="px-4 py-3">
-                                                                                        {formatDate(
-                                                                                            batch.date_received,
-                                                                                        )}
-                                                                                    </td>
-
-                                                                                    <td className="px-4 py-3">
-                                                                                        {formatDate(
-                                                                                            batch.expiration_date,
-                                                                                        )}
-                                                                                    </td>
-
-                                                                                    <td className="px-4 py-3">
-                                                                                        <Badge
-                                                                                            variant="outline"
-                                                                                            className={batchStatusClass(
-                                                                                                batch.status,
-                                                                                            )}
-                                                                                        >
-                                                                                            {
-                                                                                                batch.status
-                                                                                            }
+                                                                                        <Badge variant="outline" className={batchStatusClass(batch.status)}>
+                                                                                            {batch.status}
                                                                                         </Badge>
                                                                                     </td>
-
                                                                                     <td className="px-4 py-3">
                                                                                         <div className="flex justify-end items-center gap-1.5">
                                                                                             <Button
@@ -799,23 +851,18 @@ export default function VaccineInventoryIndex() {
                                                                                                 className="h-8 px-2.5 text-xs"
                                                                                                 asChild
                                                                                             >
-                                                                                                <Link
-                                                                                                    href={route(
-                                                                                                        'vaccine-inventory.edit',
-                                                                                                        batch.id
-                                                                                                    )}
-                                                                                                >
+                                                                                                <Link href={route('vaccine-inventory.edit', batch.id)}>
                                                                                                     Edit
                                                                                                 </Link>
                                                                                             </Button>
                                                                                         </div>
                                                                                     </td>
                                                                                 </tr>
-                                                                            ),
-                                                                        )}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </>
                                                         )}
                                                     </div>
                                                 )}
@@ -877,17 +924,17 @@ function SummaryCard({
     description: string;
 }) {
     return (
-        <Card>
-            <CardContent className="p-5">
-                <p className="text-sm text-muted-foreground">
+        <Card className="h-full">
+            <CardContent className="p-3 sm:p-5">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
                     {label}
                 </p>
 
-                <p className="mt-2 text-3xl font-bold">
+                <p className="mt-1 sm:mt-2 text-xl sm:text-3xl font-bold">
                     {value}
                 </p>
 
-                <p className="mt-2 text-xs text-muted-foreground">
+                <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs text-muted-foreground line-clamp-1 sm:line-clamp-none">
                     {description}
                 </p>
             </CardContent>

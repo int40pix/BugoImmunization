@@ -14,11 +14,11 @@ interface InventorySubnavProps {
 
 export function InventorySubnav({ current }: InventorySubnavProps) {
     return (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
-            <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border/60 bg-muted/40 p-1 text-xs font-medium">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b pb-4 min-w-0 max-w-full">
+            <div className="flex max-w-full overflow-x-auto no-scrollbar items-center gap-1 rounded-lg border border-border/60 bg-muted/40 p-1 text-xs font-medium shrink-0">
                 <Link
                     href={route('vaccine-inventory.index')}
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    className={`inline-flex shrink-0 items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                         current === 'active'
                             ? 'bg-background text-foreground shadow-xs font-semibold'
                             : 'text-muted-foreground hover:text-foreground'
@@ -30,7 +30,7 @@ export function InventorySubnav({ current }: InventorySubnavProps) {
 
                 <Link
                     href={route('vaccine-inventory.transactions')}
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    className={`inline-flex shrink-0 items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                         current === 'transactions'
                             ? 'bg-background text-foreground shadow-xs font-semibold'
                             : 'text-muted-foreground hover:text-foreground'
@@ -42,7 +42,7 @@ export function InventorySubnav({ current }: InventorySubnavProps) {
 
                 <Link
                     href={route('vaccine-inventory.archived')}
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    className={`inline-flex shrink-0 items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                         current === 'archived'
                             ? 'bg-background text-foreground shadow-xs font-semibold'
                             : 'text-muted-foreground hover:text-foreground'
@@ -53,12 +53,12 @@ export function InventorySubnav({ current }: InventorySubnavProps) {
                 </Link>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Button
                     variant="outline"
                     size="sm"
                     asChild
-                    className="gap-1.5 text-xs font-medium"
+                    className="flex-1 sm:flex-initial gap-1.5 text-xs font-medium"
                 >
                     <Link href={route('vaccine.index')}>
                         <List className="h-3.5 w-3.5" />
@@ -69,7 +69,7 @@ export function InventorySubnav({ current }: InventorySubnavProps) {
                 <Button
                     size="sm"
                     asChild
-                    className="gap-1.5 text-xs font-medium"
+                    className="flex-1 sm:flex-initial gap-1.5 text-xs font-medium"
                 >
                     <Link href={route('vaccine-inventory.create')}>
                         <PackagePlus className="h-3.5 w-3.5" />

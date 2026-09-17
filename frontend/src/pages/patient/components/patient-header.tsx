@@ -257,95 +257,74 @@ export default function PatientHeader({
 
         <>
 
-            <div className="rounded-2xl border bg-background/70 p-5 shadow-sm">
-
-
+            <div className="rounded-2xl border bg-background/70 p-3.5 sm:p-5 shadow-sm">
                 <Button
                     variant="ghost"
+                    size="sm"
                     type="button"
                     onClick={() =>
                         window.history.back()
                     }
-                    className="h-8 px-0"
+                    className="h-7.5 text-xs px-0 text-muted-foreground hover:text-foreground"
                 >
-
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-
+                    <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
                     Back to Patients
-
                 </Button>
 
-
-                <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-
-
-                    <div>
-
+                <div className="row g-3 align-items-center justify-content-between mt-1">
+                    <div className="col-12 col-md-7">
                         <div className="flex flex-wrap items-center gap-2">
-
-                            <h1 className="text-2xl font-bold">
-
+                            <h1 className="text-xl sm:text-2xl font-bold break-words text-foreground">
                                 {patientName}
-
                             </h1>
 
-
-                            <Badge variant="outline" className="text-muted-foreground font-normal">
+                            <Badge variant="outline" className="text-muted-foreground font-normal text-[11px] px-2 py-0.5">
                                 Pediatric Record
                             </Badge>
-
                         </div>
 
-
-                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-
-                            <span>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-muted-foreground">
+                            <span className="font-mono font-medium text-foreground">
                                 {patientId}
                             </span>
-
+                            <span>•</span>
                             <span>
                                 DOB: {dateOfBirth}
                             </span>
-
+                            <span>•</span>
                             <span>
                                 Age: {age}
                             </span>
-
                         </div>
-
                     </div>
 
-
-                    <div className="flex flex-wrap items-center gap-2">
-
+                    <div className="col-12 col-md-5 d-flex flex-wrap items-center justify-content-start justify-content-md-end gap-2">
                         <Button
                             type="button"
                             variant="outline"
+                            size="sm"
+                            className="h-8 text-xs"
                             onClick={() =>
                                 setQrOpen(
                                     true,
                                 )
                             }
                         >
-
-                            <QrCode className="mr-2 h-4 w-4" />
-
+                            <QrCode className="mr-1.5 h-3.5 w-3.5 text-primary" />
                             Show QR Code
-
                         </Button>
 
                         <Button
                             type="button"
                             variant="default"
+                            size="sm"
+                            className="h-8 text-xs"
                             onClick={() => router.visit(`/patients/${patientRecordId}/edit`)}
                         >
-                            <Pencil className="mr-2 h-4 w-4" />
+                            <Pencil className="mr-1.5 h-3.5 w-3.5" />
                             Edit Record
                         </Button>
-
                     </div>
-
-
                 </div>
 
             </div>

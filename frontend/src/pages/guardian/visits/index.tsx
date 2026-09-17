@@ -108,8 +108,8 @@ export default function GuardianVisitsIndex({
 
             <div className="space-y-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-5">
-                    <div className="space-y-1">
+                <div className="row g-3 align-items-center justify-content-between border-b border-border/60 pb-5">
+                    <div className="col-12 col-md-7 space-y-1">
                         <div className="flex items-center gap-2.5">
                             <h1 className="text-2xl font-bold tracking-tight text-foreground">
                                 Upcoming Clinic Visits
@@ -126,43 +126,45 @@ export default function GuardianVisitsIndex({
 
                     {/* Child Filter Tabs */}
                     {children.length > 1 && (
-                        <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-muted/30 p-1 self-start sm:self-auto">
-                            <button
-                                type="button"
-                                onClick={() => setSelectedChildFilter('all')}
-                                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                                    selectedChildFilter === 'all'
-                                        ? 'bg-background text-foreground shadow-2xs font-semibold'
-                                        : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                            >
-                                All Children ({appointments.length})
-                            </button>
-                            {children.map((child) => {
-                                const count = appointments.filter((a) => a.patient_id === child.id).length;
-                                return (
-                                    <button
-                                        key={child.id}
-                                        type="button"
-                                        onClick={() => setSelectedChildFilter(child.id)}
-                                        className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                                            selectedChildFilter === child.id
-                                                ? 'bg-background text-foreground shadow-2xs font-semibold'
-                                                : 'text-muted-foreground hover:text-foreground'
-                                        }`}
-                                    >
-                                        {child.nickname || child.name.split(' ')[0]} ({count})
-                                    </button>
-                                );
-                            })}
+                        <div className="col-12 col-md-5 d-flex justify-content-start justify-content-md-end">
+                            <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-muted/30 p-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedChildFilter('all')}
+                                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                                        selectedChildFilter === 'all'
+                                            ? 'bg-background text-foreground shadow-2xs font-semibold'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    All Children ({appointments.length})
+                                </button>
+                                {children.map((child) => {
+                                    const count = appointments.filter((a) => a.patient_id === child.id).length;
+                                    return (
+                                        <button
+                                            key={child.id}
+                                            type="button"
+                                            onClick={() => setSelectedChildFilter(child.id)}
+                                            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                                                selectedChildFilter === child.id
+                                                    ? 'bg-background text-foreground shadow-2xs font-semibold'
+                                                    : 'text-muted-foreground hover:text-foreground'
+                                            }`}
+                                        >
+                                            {child.nickname || child.name.split(' ')[0]} ({count})
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     )}
                 </div>
 
                 {/* Main Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div className="row g-4 items-start">
                     {/* Left: Appointments List (7 cols) */}
-                    <div className="lg:col-span-7 space-y-3.5">
+                    <div className="col-12 col-lg-7 space-y-3.5">
                         {filteredAppointments.length === 0 ? (
                             <Card className="border-dashed">
                                 <CardContent className="py-14 text-center text-sm text-muted-foreground">
@@ -241,7 +243,7 @@ export default function GuardianVisitsIndex({
                     </div>
 
                     {/* Right: Preparation Guidelines & Clinic Schedule (5 cols) */}
-                    <div className="lg:col-span-5 space-y-4">
+                    <div className="col-12 col-lg-5 space-y-4">
                         {/* Visit Preparation Tips Card */}
                         <Card className="rounded-2xl border-border/70 bg-card shadow-2xs">
                             <CardHeader className="pb-3">

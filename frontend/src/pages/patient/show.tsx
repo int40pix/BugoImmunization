@@ -320,7 +320,7 @@ function InfoSection({
 
 function InfoGrid({ children }: { children: React.ReactNode }) {
     return (
-        <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-x-4 sm:gap-x-8 gap-y-3 sm:gap-y-5 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
             {children}
         </div>
     );
@@ -336,11 +336,11 @@ function InfoItem({
     wide?: boolean;
 }) {
     return (
-        <div className={wide ? 'sm:col-span-2 lg:col-span-3' : ''}>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div className={wide ? 'col-span-2 sm:col-span-2 lg:col-span-3' : ''}>
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {label}
             </p>
-            <p className="mt-1 whitespace-pre-wrap text-sm font-medium">{value}</p>
+            <p className="mt-0.5 sm:mt-1 whitespace-pre-wrap break-words text-xs sm:text-sm font-medium text-foreground">{value}</p>
         </div>
     );
 }

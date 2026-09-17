@@ -995,23 +995,15 @@ const handleSaveCard = () => {
                 </div>
             </div>
 
-            <CardHeader className="no-print border-b">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <CardHeader className="no-print border-b p-3.5 sm:p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <CardTitle>
-                            Child
-                            Immunization
-                            Record
+                        <CardTitle className="text-base sm:text-lg">
+                            Child Immunization Record
                         </CardTitle>
 
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Digital
-                            vaccination card
-                            based on the
-                            patient's
-                            applicable
-                            vaccine
-                            schedule.
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                            Digital vaccination card based on the patient's applicable vaccine schedule.
                         </p>
                     </div>
 
@@ -1020,21 +1012,23 @@ const handleSaveCard = () => {
                             <Button
                                 type="button"
                                 variant="outline"
+                                size="sm"
+                                className="h-8 text-xs"
                                 onClick={() => window.print()}
                             >
-                                <Printer className="mr-2 h-4 w-4" />
-                                Print Immunization Card
+                                <Printer className="mr-1.5 h-3.5 w-3.5" />
+                                Print Card
                             </Button>
 
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={
-                                    handleStartCardEdit
-                                }
+                                size="sm"
+                                className="h-8 text-xs"
+                                onClick={handleStartCardEdit}
                             >
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit Immunization Card
+                                <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                                Edit Card
                             </Button>
                         </div>
                     ) : (
@@ -1042,38 +1036,31 @@ const handleSaveCard = () => {
                             <Button
                                 type="button"
                                 variant="outline"
-                                disabled={
-                                    savingCard
-                                }
-                                onClick={
-                                    handleCancelCardEdit
-                                }
+                                size="sm"
+                                className="h-8 text-xs"
+                                disabled={savingCard}
+                                onClick={handleCancelCardEdit}
                             >
-                                <X className="mr-2 h-4 w-4" />
+                                <X className="mr-1.5 h-3.5 w-3.5" />
                                 Cancel
                             </Button>
 
                             <Button
                                 type="button"
-                                disabled={
-                                    savingCard
-                                }
-                                onClick={
-                                    handleSaveCard
-                                }
+                                size="sm"
+                                className="h-8 text-xs"
+                                disabled={savingCard}
+                                onClick={handleSaveCard}
                             >
-                                <Save className="mr-2 h-4 w-4" />
-
-                                {savingCard
-                                    ? 'Saving...'
-                                    : 'Save Changes'}
+                                <Save className="mr-1.5 h-3.5 w-3.5" />
+                                {savingCard ? 'Saving...' : 'Save Changes'}
                             </Button>
                         </div>
                     )}
                 </div>
             </CardHeader>
 
-            <CardContent className="space-y-4 pt-6">
+            <CardContent className="space-y-3 pt-3 sm:pt-5">
                 {flash?.success && (
                     <div className="no-print flex items-start gap-3 rounded-lg border border-green-500/30 bg-green-500/5 p-4">
                         <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />

@@ -391,7 +391,7 @@ export default function ArchivedVaccineInventory() {
             <Head title="Archived Vaccine Batches" />
 
 
-            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 sm:gap-6 p-2.5 sm:p-4 lg:p-6">
 
 
                 {/* ========================================================= */}
@@ -399,10 +399,10 @@ export default function ArchivedVaccineInventory() {
                 {/* ========================================================= */}
 
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
                         Archived Vaccine Batches
                     </h1>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
                         View historical vaccine batches that were archived after expiration, depletion, or recall.
                     </p>
                 </div>
@@ -416,7 +416,7 @@ export default function ArchivedVaccineInventory() {
 
                 <Card>
 
-                    <CardContent className="pt-6">
+                    <CardContent className="p-3.5 sm:p-5">
 
                         <div className="flex gap-3">
 
@@ -425,14 +425,14 @@ export default function ArchivedVaccineInventory() {
 
                             <div>
 
-                                <p className="font-medium">
+                                <p className="font-medium text-sm">
 
                                     Historical Inventory
 
                                 </p>
 
 
-                                <p className="mt-1 text-sm text-muted-foreground">
+                                <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
 
                                     Archived batches remain
                                     recorded for historical
@@ -460,9 +460,9 @@ export default function ArchivedVaccineInventory() {
 
                 <Card>
 
-                    <CardContent className="pt-6">
+                    <CardContent className="p-3 sm:p-4">
 
-                        <div className="grid gap-4 md:grid-cols-3">
+                        <div className="grid gap-3 md:grid-cols-3">
 
 
                             {/* SEARCH */}
@@ -624,108 +624,106 @@ export default function ArchivedVaccineInventory() {
                     </CardHeader>
 
 
-                    <CardContent>
+                    <CardContent className="p-0 sm:p-6">
+                        {vaccines.length === 0 ? (
+                            <div className="px-4 py-12 text-center">
+                                <Archive className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
+                                <p className="font-medium text-sm">No archived batches found.</p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    Archived vaccine batches will appear here.
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Mobile Card List View (<md) */}
+                                <div className="d-block d-md-none divide-y divide-border">
+                                    {vaccines.map((inventory) => {
+                                        const isHighlighted =
+                                            (highlightedBatchId &&
+                                                (String(inventory.id) === String(highlightedBatchId) ||
+                                                    inventory.batch_number.toLowerCase() === String(highlightedBatchId).toLowerCase())) ||
+                                            selectedBatch?.id === inventory.id;
 
+                                        return (
+                                            <div
+                                                key={`mob-${inventory.id}`}
+                                                className={`p-3 space-y-2 transition-colors ${
+                                                    isHighlighted
+                                                        ? 'bg-primary/10 ring-1 ring-inset ring-primary/40'
+                                                        : 'hover:bg-muted/40'
+                                                }`}
+                                            >
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div>
+                                                        <div className="font-semibold text-foreground text-xs">
+                                                            {inventory.vaccine?.name ?? 'Unknown Vaccine'}
+                                                        </div>
+                                                        <div className="text-[11px] font-mono text-muted-foreground mt-0.5">
+                                                            Batch #{inventory.batch_number}
+                                                        </div>
+                                                    </div>
+                                                    <span
+                                                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                                            inventory.archive_reason === 'expired'
+                                                                ? 'border border-destructive/25 bg-destructive/15 text-destructive'
+                                                                : inventory.archive_reason === 'out_of_stock'
+                                                                ? 'border border-amber-500/25 bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                                                                : 'border bg-muted text-muted-foreground'
+                                                        }`}
+                                                    >
+                                                        {formatArchiveReason(inventory.archive_reason)}
+                                                    </span>
+                                                </div>
 
-                        <div className="overflow-x-auto">
+                                                <div className="grid grid-cols-2 gap-2 text-[11px] bg-muted/30 rounded-lg p-2 border border-border/50">
+                                                    <div>
+                                                        <span className="text-muted-foreground">Remaining: </span>
+                                                        <strong className="text-foreground font-semibold">{inventory.quantity} doses</strong>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Exp: </span>
+                                                        <span className="text-foreground">{formatDate(inventory.expiration_date)}</span>
+                                                    </div>
+                                                </div>
 
+                                                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+                                                    <span>Archived: {formatDate(inventory.archived_at)}</span>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-7 text-xs px-2"
+                                                        onClick={() => {
+                                                            setSelectedBatch(inventory);
+                                                            setSheetOpen(true);
+                                                        }}
+                                                    >
+                                                        <Eye className="mr-1 h-3 w-3" />
+                                                        Details
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
 
-                            <div className="overflow-hidden rounded-lg border">
-
-
-                                <table className="w-full text-left text-sm">
-
-
-                                    {/* ===================================== */}
-                                    {/* HEADER */}
-                                    {/* ===================================== */}
-
-                                    <thead className="border-b">
-
-                                        <tr>
-
-                                            <th className="px-4 py-3 font-medium">
-                                                Vaccine
-                                            </th>
-
-
-                                            <th className="px-4 py-3 font-medium">
-                                                Batch Number
-                                            </th>
-
-
-                                            <th className="px-4 py-3 text-center font-medium">
-                                                Remaining Stock
-                                            </th>
-
-
-                                            <th className="px-4 py-3 font-medium">
-                                                Expiration Date
-                                            </th>
-
-
-                                            <th className="px-4 py-3 font-medium">
-                                                Archive Reason
-                                            </th>
-
-
-                                            <th className="px-4 py-3 font-medium">
-                                                Archived On
-                                            </th>
-
-                                            <th className="px-4 py-3 text-right font-medium">
-                                                Action
-                                            </th>
-
-                                        </tr>
-
-                                    </thead>
-
-
-                                    {/* ===================================== */}
-                                    {/* BODY */}
-                                    {/* ===================================== */}
-
-                                    <tbody>
-
-
-                                        {vaccines.length === 0 ? (
-
-                                            <tr>
-
-                                                <td
-                                                    colSpan={7}
-                                                    className="px-4 py-12 text-center"
-                                                >
-
-                                                    <Archive className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-
-
-                                                    <p className="font-medium">
-
-                                                        No archived batches found.
-
-                                                    </p>
-
-
-                                                    <p className="mt-1 text-sm text-muted-foreground">
-
-                                                        Archived vaccine
-                                                        batches will appear
-                                                        here.
-
-                                                    </p>
-
-                                                </td>
-
-                                            </tr>
-
-                                        ) : (
-
-                                            vaccines.map(
-                                                (
-                                                    inventory
-                                                ) => {
+                                {/* Desktop Table View (>=md) */}
+                                <div className="d-none d-md-block overflow-x-auto">
+                                    <div className="overflow-hidden rounded-lg border">
+                                        <table className="w-full text-left text-sm">
+                                            <thead className="border-b">
+                                                <tr>
+                                                    <th className="px-4 py-3 font-medium">Vaccine</th>
+                                                    <th className="px-4 py-3 font-medium">Batch Number</th>
+                                                    <th className="px-4 py-3 text-center font-medium">Remaining Stock</th>
+                                                    <th className="px-4 py-3 font-medium">Expiration Date</th>
+                                                    <th className="px-4 py-3 font-medium">Archive Reason</th>
+                                                    <th className="px-4 py-3 font-medium">Archived On</th>
+                                                    <th className="px-4 py-3 text-right font-medium">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {vaccines.map((inventory) => {
                                                     const isHighlighted =
                                                         (highlightedBatchId &&
                                                             (String(inventory.id) === String(highlightedBatchId) ||
@@ -733,180 +731,78 @@ export default function ArchivedVaccineInventory() {
                                                         selectedBatch?.id === inventory.id;
 
                                                     return (
-
-                                                    <tr
-                                                        key={
-                                                            inventory.id
-                                                        }
-                                                        className={`border-b last:border-b-0 transition-colors ${
-                                                            isHighlighted
-                                                                ? 'bg-primary/10 ring-1 ring-inset ring-primary/40'
-                                                                : 'hover:bg-muted/40'
-                                                        }`}
-                                                    >
-
-
-                                                        {/* VACCINE */}
-
-                                                        <td className="px-4 py-4">
-
-                                                            <div>
-
-                                                                <p className="font-medium">
-
-                                                                    {
-                                                                        inventory.vaccine
-                                                                            ?.name ??
-                                                                        'Unknown Vaccine'
-                                                                    }
-
-                                                                </p>
-
-
-                                                                {inventory.manufacturer && (
-
-                                                                    <p className="mt-1 text-xs text-muted-foreground">
-
-                                                                        {
-                                                                            inventory.manufacturer
-                                                                        }
-
+                                                        <tr
+                                                            key={inventory.id}
+                                                            className={`border-b last:border-b-0 transition-colors ${
+                                                                isHighlighted
+                                                                    ? 'bg-primary/10 ring-1 ring-inset ring-primary/40'
+                                                                    : 'hover:bg-muted/40'
+                                                            }`}
+                                                        >
+                                                            <td className="px-4 py-4">
+                                                                <div>
+                                                                    <p className="font-medium">
+                                                                        {inventory.vaccine?.name ?? 'Unknown Vaccine'}
                                                                     </p>
-
-                                                                )}
-
-                                                            </div>
-
-                                                        </td>
-
-
-                                                        {/* BATCH */}
-
-                                                        <td className="px-4 py-4">
-
-                                                            <span className="font-mono font-medium">
-
-                                                                {
-                                                                    inventory.batch_number
-                                                                }
-
-                                                            </span>
-
-                                                        </td>
-
-
-                                                        {/* REMAINING */}
-
-                                                        <td className="px-4 py-4 text-center">
-
-                                                            <span className="font-semibold">
-
-                                                                {
-                                                                    inventory.quantity
-                                                                }
-
-                                                            </span>
-
-                                                        </td>
-
-
-                                                        {/* EXPIRATION */}
-
-                                                        <td className="px-4 py-4">
-
-                                                            {
-                                                                formatDate(
-                                                                    inventory.expiration_date
-                                                                )
-                                                            }
-
-                                                        </td>
-
-
-                                                        {/* REASON */}
-
-                                                        <td className="px-4 py-4">
-
-                                                            <span
-                                                                className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-                                                                    inventory.archive_reason ===
-                                                                    'expired'
-                                                                        ? 'border border-destructive/25 bg-destructive/15 text-destructive'
-                                                                        : inventory.archive_reason ===
-                                                                          'out_of_stock'
-                                                                        ? 'border border-amber-500/25 bg-amber-500/15 text-amber-700 dark:text-amber-400'
-                                                                        : 'border bg-muted text-muted-foreground'
-                                                                }`}
-                                                            >
-
-                                                                {
-                                                                    formatArchiveReason(
-                                                                        inventory.archive_reason
-                                                                    )
-                                                                }
-
-                                                            </span>
-
-                                                        </td>
-
-
-                                                        {/* ARCHIVED DATE */}
-
-                                                        <td className="px-4 py-4">
-
-                                                            {
-                                                                formatDate(
-                                                                    inventory.archived_at
-                                                                )
-                                                            }
-
-                                                        </td>
-
-
-                                                        {/* ACTION */}
-
-                                                        <td className="px-4 py-4 text-right">
-
-                                                            <Button
-                                                                type="button"
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => {
-                                                                    setSelectedBatch(inventory);
-                                                                    setSheetOpen(true);
-                                                                }}
-                                                            >
-
-                                                                <Eye className="mr-1.5 h-3.5 w-3.5" />
-
-                                                                View Details
-
-                                                            </Button>
-
-                                                        </td>
-
-
-                                                    </tr>
-
+                                                                    {inventory.manufacturer && (
+                                                                        <p className="mt-1 text-xs text-muted-foreground">
+                                                                            {inventory.manufacturer}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-4 py-4">
+                                                                <span className="font-mono font-medium">
+                                                                    {inventory.batch_number}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-4 text-center">
+                                                                <span className="font-semibold">
+                                                                    {inventory.quantity}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-4">
+                                                                {formatDate(inventory.expiration_date)}
+                                                            </td>
+                                                            <td className="px-4 py-4">
+                                                                <span
+                                                                    className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                                                                        inventory.archive_reason === 'expired'
+                                                                            ? 'border border-destructive/25 bg-destructive/15 text-destructive'
+                                                                            : inventory.archive_reason === 'out_of_stock'
+                                                                            ? 'border border-amber-500/25 bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                                                                            : 'border bg-muted text-muted-foreground'
+                                                                    }`}
+                                                                >
+                                                                    {formatArchiveReason(inventory.archive_reason)}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-4">
+                                                                {formatDate(inventory.archived_at)}
+                                                            </td>
+                                                            <td className="px-4 py-4 text-right">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setSelectedBatch(inventory);
+                                                                        setSheetOpen(true);
+                                                                    }}
+                                                                >
+                                                                    <Eye className="mr-1.5 h-3.5 w-3.5" />
+                                                                    View Details
+                                                                </Button>
+                                                            </td>
+                                                        </tr>
                                                     );
-                                                }
-                                            )
-
-                                        )}
-
-
-                                    </tbody>
-
-
-                                </table>
-
-
-                            </div>
-
-
-                        </div>
-
-
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </CardContent>
 
 

@@ -165,13 +165,13 @@ export default function GuardianDashboard({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Guardian Dashboard - Barangay Bugo Health Center" />
 
-            <div className="space-y-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+            <div className="space-y-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">
                 {/* Welcome Hero Banner */}
-                <div className="relative overflow-hidden rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-card to-emerald-500/5 p-6 sm:p-7 shadow-xs">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <div className="space-y-1.5 max-w-2xl">
+                <div className="relative overflow-hidden rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-card to-emerald-500/5 p-3.5 sm:p-6 shadow-xs min-w-0 max-w-full">
+                    <div className="row g-3 mx-0 w-full align-items-center justify-content-between">
+                        <div className="col-12 col-md-8 space-y-1.5 max-w-2xl">
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/15 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-300">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/15 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-300 shrink-0">
                                     <ShieldCheck className="h-3.5 w-3.5" />
                                     Verified Family Account
                                 </span>
@@ -180,17 +180,17 @@ export default function GuardianDashboard({
                                 </span>
                             </div>
 
-                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground break-words">
                                 Welcome, {guardian.name}
                             </h1>
 
-                            <p className="text-sm text-muted-foreground leading-relaxed">
+                            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                                 Monitor your children's routine pediatric immunization records, check live vaccine inventory stock, and track upcoming health center visits.
                             </p>
                         </div>
 
                         {children.length > 0 && (
-                            <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-center">
+                            <div className="col-12 col-md-4 d-flex flex-wrap items-center justify-content-start justify-content-md-end gap-2 shrink-0">
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -199,9 +199,9 @@ export default function GuardianDashboard({
                                         setSelectedChildForQr(children[0]?.id);
                                         setQrModalOpen(true);
                                     }}
-                                    className="h-9 gap-2 rounded-xl border-border/80 bg-card/60 hover:bg-accent text-xs font-medium shadow-2xs"
+                                    className="h-8 gap-1.5 rounded-lg border-border/80 bg-card/60 hover:bg-accent text-xs font-medium shadow-2xs"
                                 >
-                                    <QrCode className="h-4 w-4 text-primary" />
+                                    <QrCode className="h-3.5 w-3.5 text-primary" />
                                     <span>Check-In QR</span>
                                 </Button>
 
@@ -209,10 +209,10 @@ export default function GuardianDashboard({
                                     asChild
                                     variant="outline"
                                     size="sm"
-                                    className="h-9 gap-2 rounded-xl border-border/80 bg-card/60 hover:bg-accent text-xs font-medium shadow-2xs"
+                                    className="h-8 gap-1.5 rounded-lg border-border/80 bg-card/60 hover:bg-accent text-xs font-medium shadow-2xs"
                                 >
                                     <Link href="/guardian/children">
-                                        <Baby className="h-4 w-4 text-primary" />
+                                        <Baby className="h-3.5 w-3.5 text-primary" />
                                         <span>My Children</span>
                                     </Link>
                                 </Button>
@@ -222,79 +222,85 @@ export default function GuardianDashboard({
                 </div>
 
                 {/* Summary Metric Cards */}
-                <div className="grid gap-4 sm:grid-cols-3">
-                    <Link
-                        href="/guardian/children"
-                        className="group block rounded-xl border border-border/60 bg-card/60 p-4 sm:p-5 shadow-2xs transition-all hover:border-border hover:shadow-xs hover:bg-card"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform">
-                                <UsersRound className="h-5 w-5" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                                    Registered Children
-                                </p>
-                                <div className="flex items-baseline gap-2">
-                                    <p className="text-2xl font-bold tracking-tight text-foreground">
-                                        {children.length}
-                                    </p>
-                                    <span className="text-xs text-muted-foreground">
-                                        {children.length === 1 ? 'child on file' : 'children on file'}
-                                    </span>
+                <div className="row g-3 mx-0 w-full">
+                    <div className="col-12 col-sm-6 col-lg-4">
+                        <Link
+                            href="/guardian/children"
+                            className="group block h-full rounded-xl border border-border/60 bg-card/60 p-3.5 sm:p-5 shadow-2xs transition-all hover:border-border hover:shadow-xs hover:bg-card"
+                        >
+                            <div className="flex items-center gap-3 sm:gap-4">
+                                <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform">
+                                    <UsersRound className="h-5 w-5" />
                                 </div>
-                            </div>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-                        </div>
-                    </Link>
-
-                    <Link
-                        href="/guardian/visits"
-                        className="group block rounded-xl border border-border/60 bg-card/60 p-4 sm:p-5 shadow-2xs transition-all hover:border-border hover:shadow-xs hover:bg-card"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-purple-500/20 bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
-                                <CalendarDays className="h-5 w-5" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                                    Upcoming Visits
-                                </p>
-                                <div className="flex items-baseline gap-2">
-                                    <p className="text-2xl font-bold tracking-tight text-foreground">
-                                        {appointments.length}
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors truncate">
+                                        Registered Children
                                     </p>
-                                    <span className="text-xs text-muted-foreground">
-                                        scheduled {appointments.length === 1 ? 'dose' : 'doses'}
-                                    </span>
+                                    <div className="flex items-baseline gap-1.5 sm:gap-2">
+                                        <p className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                                            {children.length}
+                                        </p>
+                                        <span className="text-[11px] sm:text-xs text-muted-foreground truncate">
+                                            {children.length === 1 ? 'child on file' : 'children on file'}
+                                        </span>
+                                    </div>
                                 </div>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                             </div>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-                        </div>
-                    </Link>
+                        </Link>
+                    </div>
 
-                    <div className="rounded-xl border border-border/60 bg-card/60 p-4 sm:p-5 shadow-2xs">
-                        <div className="flex items-center gap-4">
-                            <div
-                                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${
-                                    hasOverdue
-                                        ? 'border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400'
-                                        : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                }`}
-                            >
-                                <HeartPulse className="h-5 w-5" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-xs font-medium text-muted-foreground">
-                                    Total Doses Recorded
-                                </p>
-                                <div className="flex items-baseline gap-2">
-                                    <p className="text-2xl font-bold tracking-tight text-foreground">
-                                        {totalDosesDocumented}
+                    <div className="col-12 col-sm-6 col-lg-4">
+                        <Link
+                            href="/guardian/visits"
+                            className="group block h-full rounded-xl border border-border/60 bg-card/60 p-4 sm:p-5 shadow-2xs transition-all hover:border-border hover:shadow-xs hover:bg-card"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-purple-500/20 bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
+                                    <CalendarDays className="h-5 w-5" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                                        Upcoming Visits
                                     </p>
-                                    <span className="text-xs text-muted-foreground">
-                                        {hasOverdue ? 'attention needed' : 'doses administered'}
-                                    </span>
+                                    <div className="flex items-baseline gap-2">
+                                        <p className="text-2xl font-bold tracking-tight text-foreground">
+                                            {appointments.length}
+                                        </p>
+                                        <span className="text-xs text-muted-foreground">
+                                            scheduled {appointments.length === 1 ? 'dose' : 'doses'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                            </div>
+                        </Link>
+                    </div>
+
+                    <div className="col-12 col-sm-12 col-lg-4">
+                        <div className="h-full rounded-xl border border-border/60 bg-card/60 p-4 sm:p-5 shadow-2xs">
+                            <div className="flex items-center gap-4">
+                                <div
+                                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${
+                                        hasOverdue
+                                            ? 'border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400'
+                                            : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                    }`}
+                                >
+                                    <HeartPulse className="h-5 w-5" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                        Total Doses Recorded
+                                    </p>
+                                    <div className="flex items-baseline gap-2">
+                                        <p className="text-2xl font-bold tracking-tight text-foreground">
+                                            {totalDosesDocumented}
+                                        </p>
+                                        <span className="text-xs text-muted-foreground">
+                                            {hasOverdue ? 'attention needed' : 'doses administered'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -303,48 +309,52 @@ export default function GuardianDashboard({
 
                 {/* Next Upcoming Appointment Spotlight with Realtime Stock */}
                 {nextUpcomingVisit ? (
-                    <div className="rounded-2xl border border-purple-500/25 bg-gradient-to-r from-purple-500/10 via-card to-card p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div className="flex items-center gap-3.5 min-w-0">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-purple-500/25 bg-purple-500/15 text-purple-600 dark:text-purple-400">
-                                <Syringe className="h-5 w-5" />
-                            </div>
-                            <div className="min-w-0">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <span className="text-[11px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                                        Next Scheduled Visit
-                                    </span>
-                                    <Badge
-                                        variant="outline"
-                                        className="border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 font-medium text-[11px] px-2 py-0"
-                                    >
-                                        <Calendar className="mr-1 h-3 w-3" />
-                                        {formatDate(nextUpcomingVisit.date)}
-                                    </Badge>
+                    <div className="rounded-2xl border border-purple-500/25 bg-gradient-to-r from-purple-500/10 via-card to-card p-4 sm:p-5 shadow-2xs min-w-0 max-w-full">
+                        <div className="row g-3 mx-0 w-full align-items-center justify-content-between">
+                            <div className="col-12 col-md-7">
+                                <div className="flex items-center gap-3.5 min-w-0">
+                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-purple-500/25 bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                                        <Syringe className="h-5 w-5" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className="text-[11px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                                                Next Scheduled Visit
+                                            </span>
+                                            <Badge
+                                                variant="outline"
+                                                className="border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 font-medium text-[11px] px-2 py-0"
+                                            >
+                                                <Calendar className="mr-1 h-3 w-3" />
+                                                {formatDate(nextUpcomingVisit.date)}
+                                            </Badge>
+                                        </div>
+                                        <h3 className="text-sm font-bold text-foreground truncate mt-0.5">
+                                            {nextUpcomingVisit.patient_name} — {nextUpcomingVisit.vaccine} (Dose {nextUpcomingVisit.dose_number})
+                                        </h3>
+                                    </div>
                                 </div>
-                                <h3 className="text-sm font-bold text-foreground truncate mt-0.5">
-                                    {nextUpcomingVisit.patient_name} — {nextUpcomingVisit.vaccine} (Dose {nextUpcomingVisit.dose_number})
-                                </h3>
                             </div>
-                        </div>
 
-                        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto shrink-0">
-                            {/* Realtime Stock Badge */}
-                            <StockBadge
-                                stockVials={nextUpcomingVisit.stock_vials}
-                                stockStatus={nextUpcomingVisit.stock_status}
-                            />
+                            <div className="col-12 col-md-5 d-flex flex-wrap items-center justify-content-start justify-content-md-end gap-2.5 shrink-0">
+                                {/* Realtime Stock Badge */}
+                                <StockBadge
+                                    stockVials={nextUpcomingVisit.stock_vials}
+                                    stockStatus={nextUpcomingVisit.stock_status}
+                                />
 
-                            <Button
-                                asChild
-                                variant="outline"
-                                size="sm"
-                                className="h-8.5 gap-1.5 rounded-lg border-border/80 text-xs font-medium shadow-2xs"
-                            >
-                                <Link href="/guardian/visits">
-                                    <span>All Visits ({appointments.length})</span>
-                                    <ArrowRight className="h-3.5 w-3.5 ml-0.5 text-muted-foreground" />
-                                </Link>
-                            </Button>
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8.5 gap-1.5 rounded-lg border-border/80 text-xs font-medium shadow-2xs"
+                                >
+                                    <Link href="/guardian/visits">
+                                        <span>All Visits ({appointments.length})</span>
+                                        <ArrowRight className="h-3.5 w-3.5 ml-0.5 text-muted-foreground" />
+                                    </Link>
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 ) : (
@@ -400,49 +410,51 @@ export default function GuardianDashboard({
                                 return (
                                     <div
                                         key={child.id}
-                                        className="group rounded-xl border border-border/70 bg-card p-4 shadow-2xs transition-all hover:border-border hover:shadow-xs"
+                                        className="group rounded-xl border border-border/70 bg-card p-4 shadow-2xs transition-all hover:border-border hover:shadow-xs min-w-0 max-w-full"
                                     >
-                                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                        <div className="row g-3 mx-0 w-full align-items-center justify-content-between">
                                             {/* Child Identity */}
-                                            <div className="flex items-center gap-3.5 min-w-0">
-                                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary font-bold text-sm">
-                                                    {child.name.charAt(0).toUpperCase()}
-                                                </div>
-
-                                                <div className="min-w-0">
-                                                    <div className="flex flex-wrap items-center gap-2">
-                                                        <h3 className="text-sm font-bold text-foreground truncate">
-                                                            {child.name}
-                                                        </h3>
-                                                        {child.nickname && (
-                                                            <span className="text-xs text-muted-foreground">
-                                                                ({child.nickname})
-                                                            </span>
-                                                        )}
-                                                        {statusBadge(child.portal_status)}
+                                            <div className="col-12 col-lg-5">
+                                                <div className="flex items-center gap-3.5 min-w-0">
+                                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary font-bold text-sm">
+                                                        {child.name.charAt(0).toUpperCase()}
                                                     </div>
 
-                                                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                                                        <span className="font-mono text-[11px] font-medium text-foreground/80">
-                                                            {child.patient_id}
-                                                        </span>
-                                                        <span>•</span>
-                                                        <span>{child.sex}</span>
-                                                        {child.age_display && (
-                                                            <>
-                                                                <span>•</span>
-                                                                <span>{child.age_display}</span>
-                                                            </>
-                                                        )}
-                                                        <span>•</span>
-                                                        <span>Born {formatDate(child.date_of_birth)}</span>
+                                                    <div className="min-w-0">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <h3 className="text-sm font-bold text-foreground truncate">
+                                                                {child.name}
+                                                            </h3>
+                                                            {child.nickname && (
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    ({child.nickname})
+                                                                </span>
+                                                            )}
+                                                            {statusBadge(child.portal_status)}
+                                                        </div>
+
+                                                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                                                            <span className="font-mono text-[11px] font-medium text-foreground/80">
+                                                                {child.patient_id}
+                                                            </span>
+                                                            <span>•</span>
+                                                            <span>{child.sex}</span>
+                                                            {child.age_display && (
+                                                                <>
+                                                                    <span>•</span>
+                                                                    <span>{child.age_display}</span>
+                                                                </>
+                                                            )}
+                                                            <span>•</span>
+                                                            <span>Born {formatDate(child.date_of_birth)}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Center / Routine Progress Pill */}
-                                            <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
-                                                <div className="space-y-1 w-28 sm:w-36">
+                                            <div className="col-12 col-sm-6 col-lg-3">
+                                                <div className="space-y-1 max-w-[200px]">
                                                     <div className="flex items-center justify-between text-[11px]">
                                                         <span className="text-muted-foreground">EPI Progress</span>
                                                         <span className="font-mono font-semibold text-foreground">{child.documented_doses}/12</span>
@@ -457,7 +469,7 @@ export default function GuardianDashboard({
                                             </div>
 
                                             {/* Right / Actions */}
-                                            <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+                                            <div className="col-12 col-sm-6 col-lg-4 d-flex align-items-center justify-content-start justify-content-lg-end gap-2">
                                                 <Button
                                                     type="button"
                                                     variant="outline"

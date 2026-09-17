@@ -136,10 +136,10 @@ export default function StaffIndex({
         <AppLayout>
             <Head title="Staff Management" />
 
-            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
+            <div className="mx-auto flex h-full w-full max-w-7xl min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7 overflow-x-hidden">
                 {/* Header with Register Button */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
+                <div className="row g-3 mx-0 w-full align-items-center justify-content-between">
+                    <div className="col-12 col-sm-8">
                         <div className="flex flex-wrap items-center gap-2.5">
                             <h1 className="text-2xl font-bold tracking-tight text-foreground">
                                 Staff Management
@@ -153,122 +153,138 @@ export default function StaffIndex({
                         </p>
                     </div>
 
-                    <Button asChild className="shrink-0 gap-2 shadow-xs">
-                        <Link href="/staff/create">
-                            <Plus className="h-4 w-4" />
-                            Register Staff
-                        </Link>
-                    </Button>
+                    <div className="col-12 col-sm-4 d-flex justify-content-start justify-content-sm-end">
+                        <Button asChild className="shrink-0 gap-2 shadow-xs">
+                            <Link href="/staff/create">
+                                <Plus className="h-4 w-4" />
+                                Register Staff
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Summary Metrics */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card>
-                        <CardContent className="flex items-center justify-between p-5">
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground">Total Personnel</p>
-                                <p className="mt-1 text-2xl font-bold text-foreground">{staff.length}</p>
-                            </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                <Users className="h-5 w-5" />
-                            </div>
-                        </CardContent>
-                    </Card>
+                <div className="row g-2 g-sm-3 mx-0 w-full">
+                    <div className="col-6 col-lg-3">
+                        <Card className="h-full">
+                            <CardContent className="flex items-center justify-between p-3 sm:p-5">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">Total Personnel</p>
+                                    <p className="mt-0.5 sm:mt-1 text-xl sm:text-2xl font-bold text-foreground">{staff.length}</p>
+                                </div>
+                                <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-primary/10 text-primary">
+                                    <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                    <Card>
-                        <CardContent className="flex items-center justify-between p-5">
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground">Active Accounts</p>
-                                <p className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                                    {activeCount}
-                                </p>
-                            </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                <UserCheck className="h-5 w-5" />
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <div className="col-6 col-lg-3">
+                        <Card className="h-full">
+                            <CardContent className="flex items-center justify-between p-3 sm:p-5">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">Active Accounts</p>
+                                    <p className="mt-0.5 sm:mt-1 text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                                        {activeCount}
+                                    </p>
+                                </div>
+                                <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                    <UserCheck className="h-4 w-4 sm:h-5 sm:w-5" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                    <Card>
-                        <CardContent className="flex items-center justify-between p-5">
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground">Inactive Accounts</p>
-                                <p className="mt-1 text-2xl font-bold text-muted-foreground">
-                                    {inactiveCount}
-                                </p>
-                            </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                                <UserX className="h-5 w-5" />
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <div className="col-6 col-lg-3">
+                        <Card className="h-full">
+                            <CardContent className="flex items-center justify-between p-3 sm:p-5">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">Inactive Accounts</p>
+                                    <p className="mt-0.5 sm:mt-1 text-xl sm:text-2xl font-bold text-muted-foreground">
+                                        {inactiveCount}
+                                    </p>
+                                </div>
+                                <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-muted text-muted-foreground">
+                                    <UserX className="h-4 w-4 sm:h-5 sm:w-5" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                    <Card>
-                        <CardContent className="flex items-center justify-between p-5">
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground">Clinical Providers</p>
-                                <p className="mt-1 text-2xl font-bold text-foreground">
-                                    {clinicalCount}
-                                </p>
-                            </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                <ShieldCheck className="h-5 w-5" />
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <div className="col-6 col-lg-3">
+                        <Card className="h-full">
+                            <CardContent className="flex items-center justify-between p-3 sm:p-5">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">Clinical Providers</p>
+                                    <p className="mt-0.5 sm:mt-1 text-xl sm:text-2xl font-bold text-foreground">
+                                        {clinicalCount}
+                                    </p>
+                                </div>
+                                <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                    <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
 
                 {/* Filters */}
-                <Card>
+                <Card className="min-w-0 max-w-full">
                     <CardContent className="p-4 sm:p-5">
-                        <div className="grid gap-3 md:grid-cols-3">
-                            <div className="relative">
-                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    type="search"
-                                    placeholder="Search staff by name or email..."
-                                    className="pl-10"
-                                    defaultValue={filters.search ?? ''}
-                                    onChange={(e) => updateFilters('search', e.target.value)}
-                                />
+                        <div className="row g-3 mx-0 w-full">
+                            <div className="col-12 col-md-4">
+                                <div className="relative">
+                                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        type="search"
+                                        placeholder="Search staff by name or email..."
+                                        className="pl-10"
+                                        defaultValue={filters.search ?? ''}
+                                        onChange={(e) => updateFilters('search', e.target.value)}
+                                    />
+                                </div>
                             </div>
 
-                            <Select
-                                value={filters.role ?? 'all'}
-                                onValueChange={(value) => updateFilters('role', value)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All roles" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All roles</SelectItem>
-                                    <SelectItem value="nurse">Nurse</SelectItem>
-                                    <SelectItem value="midwife">Midwife</SelectItem>
-                                    <SelectItem value="bhw">Barangay Health Worker (BHW)</SelectItem>
-                                    <SelectItem value="admin">Administrator</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="col-12 col-md-4">
+                                <Select
+                                    value={filters.role ?? 'all'}
+                                    onValueChange={(value) => updateFilters('role', value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="All roles" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All roles</SelectItem>
+                                        <SelectItem value="nurse">Nurse</SelectItem>
+                                        <SelectItem value="midwife">Midwife</SelectItem>
+                                        <SelectItem value="bhw">Barangay Health Worker (BHW)</SelectItem>
+                                        <SelectItem value="admin">Administrator</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                            <Select
-                                value={filters.status ?? 'all'}
-                                onValueChange={(value) => updateFilters('status', value)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All statuses" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All statuses</SelectItem>
-                                    <SelectItem value="active">Active Accounts</SelectItem>
-                                    <SelectItem value="inactive">Inactive Accounts</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="col-12 col-md-4">
+                                <Select
+                                    value={filters.status ?? 'all'}
+                                    onValueChange={(value) => updateFilters('status', value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="All statuses" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All statuses</SelectItem>
+                                        <SelectItem value="active">Active Accounts</SelectItem>
+                                        <SelectItem value="inactive">Inactive Accounts</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Table */}
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between border-b px-6 py-4">
+                <Card className="min-w-0 max-w-full overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between border-b px-4 sm:px-6 py-4">
                         <div>
                             <CardTitle className="text-base font-semibold">Staff Accounts</CardTitle>
                             <p className="text-xs text-muted-foreground">
@@ -281,15 +297,78 @@ export default function StaffIndex({
                     </CardHeader>
 
                     <CardContent className="p-0">
-                        <div className="overflow-x-auto">
+                        {/* Mobile View (< md): Compact card list, fits 100% width on any phone */}
+                        <div className="d-block d-md-none divide-y divide-border/60">
+                            {staff.length === 0 ? (
+                                <div className="p-6 text-center space-y-2">
+                                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                        <Users className="h-5 w-5" />
+                                    </div>
+                                    <p className="font-medium text-xs text-foreground">No staff accounts found</p>
+                                    <p className="text-[11px] text-muted-foreground">
+                                        Try adjusting your search query or role filter.
+                                    </p>
+                                </div>
+                            ) : (
+                                staff.map((member) => (
+                                    <div key={member.id} className="p-3 space-y-2 hover:bg-muted/15 transition-colors">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="flex items-center gap-2.5 min-w-0">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-xs text-primary">
+                                                    {member.name
+                                                        .split(' ')
+                                                        .map((n) => n[0])
+                                                        .slice(0, 2)
+                                                        .join('')
+                                                        .toUpperCase()}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-xs font-semibold text-foreground truncate">{member.name}</p>
+                                                    <p className="text-[11px] text-muted-foreground truncate">{member.email}</p>
+                                                </div>
+                                            </div>
+                                            <div className="shrink-0">
+                                                {getStatusBadge(member.status)}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px]">
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                {getRoleBadge(member.role)}
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    {new Date(member.created_at).toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                    })}
+                                                </span>
+                                            </div>
+                                            <Button
+                                                asChild
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-7 px-2.5 text-[11px] font-medium gap-1 shrink-0"
+                                            >
+                                                <Link href={`/staff/${member.id}`}>
+                                                    <Eye className="h-3 w-3 text-muted-foreground" />
+                                                    View
+                                                </Link>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Desktop View (md+): Fluid table with full details */}
+                        <div className="d-none d-md-block w-full overflow-x-auto">
                             <table className="w-full text-left text-sm">
                                 <thead className="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
                                     <tr>
-                                        <th className="px-6 py-3.5 font-medium">Personnel</th>
-                                        <th className="px-6 py-3.5 font-medium">Role</th>
-                                        <th className="px-6 py-3.5 font-medium">Status</th>
-                                        <th className="px-6 py-3.5 font-medium">Date Created</th>
-                                        <th className="px-6 py-3.5 text-right font-medium">Actions</th>
+                                        <th className="px-4 lg:px-6 py-3.5 font-medium">Personnel</th>
+                                        <th className="px-4 lg:px-6 py-3.5 font-medium">Role</th>
+                                        <th className="px-4 lg:px-6 py-3.5 font-medium">Status</th>
+                                        <th className="px-4 lg:px-6 py-3.5 font-medium">Date Created</th>
+                                        <th className="px-4 lg:px-6 py-3.5 text-right font-medium">Actions</th>
                                     </tr>
                                 </thead>
 
@@ -311,7 +390,7 @@ export default function StaffIndex({
                                     ) : (
                                         staff.map((member) => (
                                             <tr key={member.id} className="transition-colors hover:bg-muted/30">
-                                                <td className="px-6 py-4">
+                                                <td className="px-4 lg:px-6 py-3.5">
                                                     <div className="flex items-center gap-3">
                                                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-xs text-primary">
                                                             {member.name
@@ -328,15 +407,15 @@ export default function StaffIndex({
                                                     </div>
                                                 </td>
 
-                                                <td className="px-6 py-4">
+                                                <td className="px-4 lg:px-6 py-3.5">
                                                     {getRoleBadge(member.role)}
                                                 </td>
 
-                                                <td className="px-6 py-4">
+                                                <td className="px-4 lg:px-6 py-3.5">
                                                     {getStatusBadge(member.status)}
                                                 </td>
 
-                                                <td className="px-6 py-4 text-xs text-muted-foreground">
+                                                <td className="px-4 lg:px-6 py-3.5 text-xs text-muted-foreground">
                                                     {new Date(member.created_at).toLocaleDateString('en-US', {
                                                         year: 'numeric',
                                                         month: 'short',
@@ -344,7 +423,7 @@ export default function StaffIndex({
                                                     })}
                                                 </td>
 
-                                                <td className="px-6 py-4 text-right">
+                                                <td className="px-4 lg:px-6 py-3.5 text-right">
                                                     <Button
                                                         asChild
                                                         variant="outline"

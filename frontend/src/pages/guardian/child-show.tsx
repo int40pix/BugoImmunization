@@ -231,99 +231,105 @@ export default function GuardianChildShow({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`${patientName} - Bakuna Card - Barangay Bugo`} />
 
-            <div className="space-y-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+            <div className="space-y-4 sm:space-y-6 p-2.5 sm:p-4 lg:p-6 max-w-7xl mx-auto w-full">
                 {/* Sibling Switcher & Back Button Row */}
-                <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        asChild
-                        className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-                    >
-                        <Link href="/guardian/children">
-                            <ArrowLeft className="h-3.5 w-3.5" />
-                            <span>Back to Children List</span>
-                        </Link>
-                    </Button>
+                <div className="row g-2 align-items-center justify-content-between print:hidden">
+                    <div className="col-auto">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            asChild
+                            className="h-7.5 sm:h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                        >
+                            <Link href="/guardian/children">
+                                <ArrowLeft className="h-3.5 w-3.5" />
+                                <span>Back to Children List</span>
+                            </Link>
+                        </Button>
+                    </div>
 
                     {/* Sibling Switcher Pills */}
                     {siblings.length > 1 && (
-                        <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-muted/40 p-1 text-xs font-medium">
-                            <span className="px-2 text-muted-foreground hidden sm:inline text-[11px]">
-                                Switch Child:
-                            </span>
-                            {siblings.map((sib) => (
-                                <Link
-                                    key={sib.id}
-                                    href={`/guardian/children/${sib.id}`}
-                                    className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all ${
-                                        sib.id === patient.id
-                                            ? 'bg-background text-foreground shadow-2xs font-semibold'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                >
-                                    {sib.nickname || sib.name.split(' ')[0]}
-                                </Link>
-                            ))}
+                        <div className="col-auto">
+                            <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border/60 bg-muted/40 p-1 text-xs font-medium">
+                                <span className="px-2 text-muted-foreground hidden sm:inline text-[11px]">
+                                    Switch Child:
+                                </span>
+                                {siblings.map((sib) => (
+                                    <Link
+                                        key={sib.id}
+                                        href={`/guardian/children/${sib.id}`}
+                                        className={`rounded-lg px-2 py-0.5 sm:px-2.5 sm:py-1 text-xs font-medium transition-all ${
+                                            sib.id === patient.id
+                                                ? 'bg-background text-foreground shadow-2xs font-semibold'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        {sib.nickname || sib.name.split(' ')[0]}
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
 
                 {/* Child Profile Card */}
-                <div className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
-                    <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-                        <div className="flex items-start gap-4">
-                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary font-bold text-xl">
-                                {patient.first_name ? patient.first_name.charAt(0).toUpperCase() : 'C'}
-                            </div>
-
-                            <div className="space-y-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                                        {patientName}
-                                    </h1>
-                                    {patient.nickname && (
-                                        <Badge
-                                            variant="outline"
-                                            className="border-primary/30 bg-primary/5 text-primary text-xs font-medium"
-                                        >
-                                            aka &ldquo;{patient.nickname}&rdquo;
-                                        </Badge>
-                                    )}
+                <div className="rounded-2xl border border-border/70 bg-card p-3.5 sm:p-5 shadow-xs">
+                    <div className="row g-3 align-items-center justify-content-between">
+                        <div className="col-12 col-md-8">
+                            <div className="flex items-start gap-3 sm:gap-4">
+                                <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl border border-primary/20 bg-primary/10 text-primary font-bold text-lg sm:text-xl">
+                                    {patient.first_name ? patient.first_name.charAt(0).toUpperCase() : 'C'}
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                                    <span className="font-mono font-medium text-foreground">
-                                        ID: {patient.patient_id}
-                                    </span>
-                                    <span>•</span>
-                                    <span>{patient.sex}</span>
-                                    {patient.age_display && (
-                                        <>
-                                            <span>•</span>
-                                            <span className="font-medium text-foreground">
-                                                {patient.age_display}
-                                            </span>
-                                        </>
-                                    )}
-                                    <span>•</span>
-                                    <span>Born: {formatDate(patient.date_of_birth)}</span>
+                                <div className="space-y-1">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                                            {patientName}
+                                        </h1>
+                                        {patient.nickname && (
+                                            <Badge
+                                                variant="outline"
+                                                className="border-primary/30 bg-primary/5 text-primary text-xs font-medium"
+                                            >
+                                                aka &ldquo;{patient.nickname}&rdquo;
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                        <span className="font-mono font-medium text-foreground">
+                                            ID: {patient.patient_id}
+                                        </span>
+                                        <span>•</span>
+                                        <span>{patient.sex}</span>
+                                        {patient.age_display && (
+                                            <>
+                                                <span>•</span>
+                                                <span className="font-medium text-foreground">
+                                                    {patient.age_display}
+                                                </span>
+                                            </>
+                                        )}
+                                        <span>•</span>
+                                        <span>Born: {formatDate(patient.date_of_birth)}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Top Profile Actions */}
-                        <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-center print:hidden">
+                        <div className="col-12 col-md-4 d-flex flex-wrap items-center justify-content-start justify-content-md-end gap-2 print:hidden">
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setQrModalOpen(true)}
-                                className="h-9 gap-1.5 rounded-xl border-border/80 text-xs font-medium shadow-2xs hover:bg-muted"
+                                className="h-7.5 sm:h-8 gap-1.5 rounded-lg border-border/80 text-xs font-medium shadow-2xs hover:bg-muted"
                                 title="Show Health Center check-in QR pass"
                             >
-                                <QrCode className="h-4 w-4 text-primary" />
+                                <QrCode className="h-3.5 w-3.5 text-primary" />
                                 <span>Check-In QR</span>
                             </Button>
 
@@ -332,36 +338,36 @@ export default function GuardianChildShow({
                                 variant="outline"
                                 size="sm"
                                 onClick={handlePrint}
-                                className="h-9 gap-1.5 rounded-xl border-border/80 text-xs font-medium shadow-2xs hover:bg-muted"
+                                className="h-7.5 sm:h-8 gap-1.5 rounded-lg border-border/80 text-xs font-medium shadow-2xs hover:bg-muted"
                             >
-                                <Printer className="h-4 w-4 text-muted-foreground" />
+                                <Printer className="h-3.5 w-3.5 text-muted-foreground" />
                                 <span>Print Card</span>
                             </Button>
                         </div>
                     </div>
 
                     {/* Progress & Stat Strip */}
-                    <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-border/50 pt-4 text-xs">
-                        <div>
+                    <div className="row g-2.5 border-t border-border/50 pt-3 mt-3 text-xs">
+                        <div className="col-6 col-md-3">
                             <span className="text-muted-foreground">DOH Target Doses:</span>
                             <p className="font-semibold text-foreground mt-0.5">
                                 12 Routine (EPI)
                             </p>
                         </div>
-                        <div>
+                        <div className="col-6 col-md-3">
                             <span className="text-muted-foreground">Completed Doses:</span>
                             <p className="font-semibold text-foreground mt-0.5 text-emerald-600 dark:text-emerald-400">
                                 {administeredCardDoses} of {totalCardDoses > 0 ? totalCardDoses : 12} recorded
                             </p>
                         </div>
-                        <div>
+                        <div className="col-6 col-md-3">
                             <span className="text-muted-foreground">Upcoming Visits:</span>
                             <p className="font-semibold text-foreground mt-0.5">
                                 {patient.schedules.length}{' '}
                                 {patient.schedules.length === 1 ? 'visit scheduled' : 'visits scheduled'}
                             </p>
                         </div>
-                        <div>
+                        <div className="col-6 col-md-3">
                             <span className="text-muted-foreground">Linked Guardian:</span>
                             <p className="font-semibold text-foreground mt-0.5 truncate">
                                 {guardian.name}
@@ -371,43 +377,43 @@ export default function GuardianChildShow({
                 </div>
 
                 {/* Segmented View Switcher */}
-                <div className="flex w-fit rounded-lg border border-border/60 bg-muted/40 p-1 gap-1 text-xs font-medium print:hidden">
+                <div className="flex max-w-full overflow-x-auto rounded-lg border border-border/60 bg-muted/40 p-1 gap-1 text-xs font-medium print:hidden">
                     <button
                         type="button"
                         onClick={() => setActiveTab('card')}
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        className={`inline-flex shrink-0 items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                             activeTab === 'card'
                                 ? 'bg-background text-foreground shadow-2xs font-semibold'
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <FileText className="h-4 w-4" />
+                        <FileText className="h-3.5 w-3.5" />
                         Digital Bakuna Card (EPI Record)
                     </button>
 
                     <button
                         type="button"
                         onClick={() => setActiveTab('schedules')}
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        className={`inline-flex shrink-0 items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                             activeTab === 'schedules'
                                 ? 'bg-background text-foreground shadow-2xs font-semibold'
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <CalendarDays className="h-4 w-4" />
+                        <CalendarDays className="h-3.5 w-3.5" />
                         Upcoming Visits ({patient.schedules.length})
                     </button>
 
                     <button
                         type="button"
                         onClick={() => setActiveTab('history')}
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        className={`inline-flex shrink-0 items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                             activeTab === 'history'
                                 ? 'bg-background text-foreground shadow-2xs font-semibold'
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <History className="h-4 w-4" />
+                        <History className="h-3.5 w-3.5" />
                         Administered Log ({patient.records.length})
                     </button>
                 </div>
@@ -416,27 +422,27 @@ export default function GuardianChildShow({
                 {activeTab === 'card' && (
                     <Card className="rounded-2xl border-border/70 bg-card shadow-xs overflow-hidden">
                         {/* Official DOH Header Stamp */}
-                        <div className="border-b border-border/70 bg-muted/20 px-6 py-4">
+                        <div className="border-b border-border/70 bg-muted/20 px-4 py-3 sm:px-6 sm:py-4">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+                                        <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-primary">
                                             Republic of the Philippines · Department of Health
                                         </span>
                                     </div>
-                                    <h2 className="text-base font-bold text-foreground">
+                                    <h2 className="text-sm sm:text-base font-bold text-foreground">
                                         Barangay Bugo Health Center — Child Immunization Card
                                     </h2>
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="text-[11px] sm:text-xs text-muted-foreground">
                                         Expanded Program on Immunization (EPI) Official Record
                                     </p>
                                 </div>
 
                                 <Badge
                                     variant="outline"
-                                    className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium self-start sm:self-auto py-1 px-2.5"
+                                    className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium self-start sm:self-auto py-0.5 px-2"
                                 >
-                                    <Check className="mr-1 h-3.5 w-3.5" />
+                                    <Check className="mr-1 h-3 w-3" />
                                     {administeredCardDoses} Doses Completed
                                 </Badge>
                             </div>
@@ -448,43 +454,36 @@ export default function GuardianChildShow({
                                     No active immunization master schedule found.
                                 </div>
                             ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left text-xs">
-                                        <thead className="border-b border-border/60 bg-muted/40 font-semibold text-muted-foreground uppercase tracking-wider text-[11px]">
-                                            <tr>
-                                                <th className="px-4 py-3 sm:px-6">Vaccine Name</th>
-                                                <th className="px-3 py-3">Milestone Age</th>
-                                                <th className="px-3 py-3 text-center">Dose</th>
-                                                <th className="px-4 py-3">Status / Date Given</th>
-                                                <th className="px-3 py-3">Inventory Stock</th>
-                                                <th className="px-3 py-3">Batch / Lot</th>
-                                                <th className="px-4 py-3">Administered By</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-border/60">
-                                            {cardVaccines.flatMap((vaccine) =>
-                                                vaccine.doses.map((doseItem) => {
-                                                    const record = doseItem.record;
-                                                    const schedule = doseItem.schedule;
-                                                    const isDone = Boolean(record);
-                                                    const isScheduled = !isDone && Boolean(schedule);
-                                                    const targetAge = getRecommendedAge(
-                                                        vaccine.vaccine_name,
-                                                        doseItem.dose_number,
-                                                    );
+                                <>
+                                    {/* Mobile Card List View (<md) */}
+                                    <div className="d-block d-md-none divide-y divide-border/60">
+                                        {cardVaccines.flatMap((vaccine) =>
+                                            vaccine.doses.map((doseItem) => {
+                                                const record = doseItem.record;
+                                                const schedule = doseItem.schedule;
+                                                const isDone = Boolean(record);
+                                                const isScheduled = !isDone && Boolean(schedule);
+                                                const targetAge = getRecommendedAge(
+                                                    vaccine.vaccine_name,
+                                                    doseItem.dose_number,
+                                                );
 
-                                                    return (
-                                                        <tr
-                                                            key={`${vaccine.vaccine_id}-${doseItem.dose_number}`}
-                                                            className={
-                                                                isDone
-                                                                    ? 'bg-emerald-500/[0.02] hover:bg-emerald-500/[0.05] transition-colors'
-                                                                    : 'hover:bg-muted/30 transition-colors'
-                                                            }
-                                                        >
-                                                            <td className="px-4 py-3.5 sm:px-6 font-semibold text-foreground">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span>{vaccine.vaccine_name}</span>
+                                                return (
+                                                    <div
+                                                        key={`mobile-${vaccine.vaccine_id}-${doseItem.dose_number}`}
+                                                        className={`p-3 space-y-2 transition-colors ${
+                                                            isDone ? 'bg-emerald-500/[0.03]' : 'hover:bg-muted/30'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <div>
+                                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                                    <span className="font-semibold text-foreground text-xs">
+                                                                        {vaccine.vaccine_name}
+                                                                    </span>
+                                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-muted text-muted-foreground border border-border/50">
+                                                                        Dose {doseItem.dose_number}
+                                                                    </span>
                                                                     {vaccine.category === 'Optional' && (
                                                                         <Badge
                                                                             variant="outline"
@@ -494,38 +493,38 @@ export default function GuardianChildShow({
                                                                         </Badge>
                                                                     )}
                                                                 </div>
-                                                            </td>
+                                                                <div className="text-[11px] text-muted-foreground mt-0.5">
+                                                                    Milestone: <span className="font-medium text-foreground">{targetAge}</span>
+                                                                </div>
+                                                            </div>
 
-                                                            <td className="px-3 py-3.5 text-muted-foreground font-medium">
-                                                                {targetAge}
-                                                            </td>
-
-                                                            <td className="px-3 py-3.5 text-center font-mono font-semibold">
-                                                                Dose {doseItem.dose_number}
-                                                            </td>
-
-                                                            <td className="px-4 py-3.5">
+                                                            {/* Status Badge */}
+                                                            <div className="shrink-0">
                                                                 {isDone ? (
-                                                                    <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-medium text-emerald-700 dark:text-emerald-400">
-                                                                        <CheckCircle2 className="h-3.5 w-3.5" />
+                                                                    <div className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                                                                        <CheckCircle2 className="h-3 w-3" />
                                                                         <span>{formatDate(record?.date_administered ?? null)}</span>
                                                                     </div>
                                                                 ) : isScheduled ? (
-                                                                    <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 py-0.5 font-medium text-blue-700 dark:text-blue-400">
-                                                                        <Clock3 className="h-3.5 w-3.5" />
+                                                                    <div className="inline-flex items-center gap-1 rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:text-blue-400">
+                                                                        <Clock3 className="h-3 w-3" />
                                                                         <span>Due: {formatDate(schedule?.scheduled_date ?? null)}</span>
                                                                     </div>
                                                                 ) : (
-                                                                    <span className="text-muted-foreground/60 italic">
-                                                                        Pending milestone
+                                                                    <span className="text-[10px] text-muted-foreground/60 italic">
+                                                                        Pending
                                                                     </span>
                                                                 )}
-                                                            </td>
+                                                            </div>
+                                                        </div>
 
-                                                            {/* Realtime Inventory Stock Column */}
-                                                            <td className="px-3 py-3.5">
+                                                        {/* Stock & Batch info row */}
+                                                        <div className="flex items-center justify-between text-[11px] border-t border-border/40 pt-1.5 text-muted-foreground">
+                                                            <div>
                                                                 {isDone ? (
-                                                                    <span className="text-muted-foreground text-[11px]">—</span>
+                                                                    <span className="font-mono text-[10px]">
+                                                                        {record?.batch_number ? `Batch #${record.batch_number}` : '—'}
+                                                                    </span>
                                                                 ) : (
                                                                     <StockBadge
                                                                         stockVials={schedule?.stock_vials ?? vaccine.stock_vials}
@@ -533,32 +532,134 @@ export default function GuardianChildShow({
                                                                         compact={true}
                                                                     />
                                                                 )}
-                                                            </td>
-
-                                                            <td className="px-3 py-3.5 font-mono text-[11px] text-muted-foreground">
-                                                                {record?.batch_number ? (
-                                                                    <span>#{record.batch_number}</span>
-                                                                ) : (
-                                                                    <span>—</span>
-                                                                )}
-                                                            </td>
-
-                                                            <td className="px-4 py-3.5 text-muted-foreground">
-                                                                {record?.administered_by?.name ? (
-                                                                    <span className="font-medium text-foreground">
-                                                                        {record.administered_by.name}
+                                                            </div>
+                                                            <div>
+                                                                {isDone && record?.administered_by?.name ? (
+                                                                    <span className="text-[10px]">
+                                                                        By: <strong className="text-foreground">{record.administered_by.name}</strong>
                                                                     </span>
-                                                                ) : (
-                                                                    <span>—</span>
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                }),
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                                ) : null}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }),
+                                        )}
+                                    </div>
+
+                                    {/* Desktop Table View (>=md) */}
+                                    <div className="d-none d-md-block overflow-x-auto">
+                                        <table className="w-full text-left text-xs">
+                                            <thead className="border-b border-border/60 bg-muted/40 font-semibold text-muted-foreground uppercase tracking-wider text-[11px]">
+                                                <tr>
+                                                    <th className="px-4 py-3 sm:px-6">Vaccine Name</th>
+                                                    <th className="px-3 py-3">Milestone Age</th>
+                                                    <th className="px-3 py-3 text-center">Dose</th>
+                                                    <th className="px-4 py-3">Status / Date Given</th>
+                                                    <th className="px-3 py-3">Inventory Stock</th>
+                                                    <th className="px-3 py-3">Batch / Lot</th>
+                                                    <th className="px-4 py-3">Administered By</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-border/60">
+                                                {cardVaccines.flatMap((vaccine) =>
+                                                    vaccine.doses.map((doseItem) => {
+                                                        const record = doseItem.record;
+                                                        const schedule = doseItem.schedule;
+                                                        const isDone = Boolean(record);
+                                                        const isScheduled = !isDone && Boolean(schedule);
+                                                        const targetAge = getRecommendedAge(
+                                                            vaccine.vaccine_name,
+                                                            doseItem.dose_number,
+                                                        );
+
+                                                        return (
+                                                            <tr
+                                                                key={`${vaccine.vaccine_id}-${doseItem.dose_number}`}
+                                                                className={
+                                                                    isDone
+                                                                        ? 'bg-emerald-500/[0.02] hover:bg-emerald-500/[0.05] transition-colors'
+                                                                        : 'hover:bg-muted/30 transition-colors'
+                                                                }
+                                                            >
+                                                                <td className="px-4 py-3 sm:px-6 font-semibold text-foreground">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span>{vaccine.vaccine_name}</span>
+                                                                        {vaccine.category === 'Optional' && (
+                                                                            <Badge
+                                                                                variant="outline"
+                                                                                className="text-[10px] py-0 px-1 text-muted-foreground"
+                                                                            >
+                                                                                Optional
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="px-3 py-3 text-muted-foreground font-medium">
+                                                                    {targetAge}
+                                                                </td>
+
+                                                                <td className="px-3 py-3 text-center font-mono font-semibold">
+                                                                    Dose {doseItem.dose_number}
+                                                                </td>
+
+                                                                <td className="px-4 py-3">
+                                                                    {isDone ? (
+                                                                        <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-medium text-emerald-700 dark:text-emerald-400">
+                                                                            <CheckCircle2 className="h-3.5 w-3.5" />
+                                                                            <span>{formatDate(record?.date_administered ?? null)}</span>
+                                                                        </div>
+                                                                    ) : isScheduled ? (
+                                                                        <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 py-0.5 font-medium text-blue-700 dark:text-blue-400">
+                                                                            <Clock3 className="h-3.5 w-3.5" />
+                                                                            <span>Due: {formatDate(schedule?.scheduled_date ?? null)}</span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="text-muted-foreground/60 italic">
+                                                                            Pending milestone
+                                                                        </span>
+                                                                    )}
+                                                                </td>
+
+                                                                {/* Realtime Inventory Stock Column */}
+                                                                <td className="px-3 py-3">
+                                                                    {isDone ? (
+                                                                        <span className="text-muted-foreground text-[11px]">—</span>
+                                                                    ) : (
+                                                                        <StockBadge
+                                                                            stockVials={schedule?.stock_vials ?? vaccine.stock_vials}
+                                                                            stockStatus={schedule?.stock_status}
+                                                                            compact={true}
+                                                                        />
+                                                                    )}
+                                                                </td>
+
+                                                                <td className="px-3 py-3 font-mono text-[11px] text-muted-foreground">
+                                                                    {record?.batch_number ? (
+                                                                        <span>#{record.batch_number}</span>
+                                                                    ) : (
+                                                                        <span>—</span>
+                                                                    )}
+                                                                </td>
+
+                                                                <td className="px-4 py-3 text-muted-foreground">
+                                                                    {record?.administered_by?.name ? (
+                                                                        <span className="font-medium text-foreground">
+                                                                            {record.administered_by.name}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span>—</span>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    }),
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </>
                             )}
                         </CardContent>
                     </Card>

@@ -184,41 +184,41 @@ export default function Dashboard({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Staff Dashboard" />
 
-            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-7">
+            <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 sm:gap-5 p-3 sm:p-6 lg:p-7 min-w-0 max-w-full overflow-x-hidden">
                 {/* ========================================================= */}
                 {/* HEADER & QUICK ACTIONS */}
                 {/* ========================================================= */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <div className="flex flex-wrap items-center gap-2.5">
-                            <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between w-full min-w-0">
+                    <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-foreground break-words">
                                 Barangay Bugo Health Center
                             </h1>
-                            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 shrink-0">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 Live Operations
                             </span>
                         </div>
-                        <p className="mt-0.5 text-xs text-muted-foreground">
+                        <p className="mt-0.5 text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
                             Pediatric Immunization & Vaccine Inventory Management System
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto min-w-0">
                         {isAdmin && (
                             <Button
                                 asChild
                                 variant="outline"
                                 size="sm"
-                                className="h-8 gap-1.5 rounded-lg border-border/60 text-xs font-medium shadow-2xs"
+                                className="h-7.5 sm:h-8 shrink-0 gap-1 rounded-lg border-border/60 text-[11px] sm:text-xs font-medium shadow-2xs justify-center sm:justify-start"
                             >
                                 <Link href="/admin/password-reset-requests">
-                                    <KeyRound className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                                    Account Recovery
+                                    <KeyRound className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                                    <span className="truncate">Recovery</span>
                                     {pendingRecoveryCount > 0 && (
                                         <Badge
                                             variant="secondary"
-                                            className="ml-1 px-1.5 py-0 text-[10px] font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-400 border-none"
+                                            className="ml-1 px-1 py-0 text-[9px] font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-400 border-none"
                                         >
                                             {pendingRecoveryCount}
                                         </Badge>
@@ -230,72 +230,73 @@ export default function Dashboard({
                             asChild
                             variant="outline"
                             size="sm"
-                            className="h-8 gap-1.5 rounded-lg border-border/60 text-xs font-medium shadow-2xs"
+                            className="h-7.5 sm:h-8 shrink-0 gap-1 rounded-lg border-border/60 text-[11px] sm:text-xs font-medium shadow-2xs justify-center sm:justify-start"
                         >
                             <Link href={route('patients.index')}>
-                                <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                                Patients Directory
+                                <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground shrink-0" />
+                                <span className="truncate">Patients</span>
                             </Link>
                         </Button>
                         <Button
                             asChild
                             variant="outline"
                             size="sm"
-                            className="h-8 gap-1.5 rounded-lg border-border/60 text-xs font-medium shadow-2xs"
+                            className="h-7.5 sm:h-8 shrink-0 gap-1 rounded-lg border-border/60 text-[11px] sm:text-xs font-medium shadow-2xs justify-center sm:justify-start"
                         >
                             <Link href={route('vaccine-inventory.index')}>
-                                <Boxes className="h-3.5 w-3.5 text-muted-foreground" />
-                                Vaccine Stock
+                                <Boxes className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground shrink-0" />
+                                <span className="truncate">Stock</span>
                             </Link>
                         </Button>
                         <Button
                             asChild
                             variant="outline"
                             size="sm"
-                            className="h-8 gap-1.5 rounded-lg border-border/60 text-xs font-medium shadow-2xs"
+                            className="h-7.5 sm:h-8 shrink-0 gap-1 rounded-lg border-border/60 text-[11px] sm:text-xs font-medium shadow-2xs justify-center sm:justify-start"
                         >
                             <Link href={route('immunization.index')}>
-                                <Syringe className="h-3.5 w-3.5 text-muted-foreground" />
-                                Immunization Tracker
+                                <Syringe className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground shrink-0" />
+                                <span className="truncate">Tracker</span>
                             </Link>
                         </Button>
                     </div>
                 </div>
 
                 {/* ========================================================= */}
-                {/* 4 SUMMARY STAT CARDS */}
+                {/* 4 SUMMARY STAT CARDS (2x2 on Mobile via col-6, 4-col on Desktop via col-lg-3) */}
                 {/* ========================================================= */}
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="row g-2 g-sm-3 mx-0 w-full">
                     {stats.map((item) => {
                         const Icon = item.icon;
                         return (
-                            <button
-                                key={item.label}
-                                type="button"
-                                onClick={item.onClick}
-                                className="group flex flex-col justify-between rounded-xl border border-border/60 bg-card p-4 text-left shadow-2xs transition-all hover:border-border hover:shadow-xs hover:bg-muted/20 cursor-pointer"
-                            >
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-[11px] font-medium text-muted-foreground">
-                                            {item.label}
-                                        </p>
-                                        <p className="mt-1.5 text-2xl font-bold tracking-tight text-foreground">
-                                            {item.value}
-                                        </p>
+                            <div key={item.label} className="col-6 col-lg-3 px-1 sm:px-1.5">
+                                <button
+                                    type="button"
+                                    onClick={item.onClick}
+                                    className="group flex flex-col justify-between w-full h-full rounded-xl border border-border/60 bg-card p-2.5 sm:p-4 text-left shadow-2xs transition-all hover:border-border hover:shadow-xs hover:bg-muted/20 cursor-pointer min-w-0"
+                                >
+                                    <div className="flex items-start justify-between gap-1.5 sm:gap-2 min-w-0">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-[10px] sm:text-[11px] font-medium text-muted-foreground truncate" title={item.label}>
+                                                {item.label}
+                                            </p>
+                                            <p className="mt-1 text-lg sm:text-2xl font-bold tracking-tight text-foreground">
+                                                {item.value}
+                                            </p>
+                                        </div>
+                                        <div
+                                            className={`flex h-7 w-7 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg border ${item.colorClass}`}
+                                        >
+                                            <Icon className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
+                                        </div>
                                     </div>
-                                    <div
-                                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${item.colorClass}`}
-                                    >
-                                        <Icon className="h-4.5 w-4.5" />
-                                    </div>
-                                </div>
 
-                                <div className="mt-2.5 flex items-center justify-between border-t border-border/40 pt-2 text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">
-                                    <span>{item.description}</span>
-                                    <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                                </div>
-                            </button>
+                                    <div className="mt-2 hidden sm:flex items-center justify-between border-t border-border/40 pt-2 text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">
+                                        <span className="truncate">{item.description}</span>
+                                        <ArrowRight className="h-3 w-3 shrink-0 ml-1 transition-transform group-hover:translate-x-0.5" />
+                                    </div>
+                                </button>
+                            </div>
                         );
                     })}
                 </div>
@@ -303,9 +304,9 @@ export default function Dashboard({
                 {/* ========================================================= */}
                 {/* ROW 2: VACCINE STOCK HEALTH & STOCK VS DEMAND */}
                 {/* ========================================================= */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                <div className="row g-3 items-stretch mx-0 w-full">
                     {/* Left: Stock Health Donut (4 cols) */}
-                    <div className="lg:col-span-4 h-full">
+                    <div className="col-12 col-lg-4 lg:h-full min-w-0 max-w-full px-0 sm:px-2">
                         <InventoryHealthCard
                             inventoryHealth={inventoryHealth}
                             total={totalInventoryVaccines}
@@ -313,125 +314,188 @@ export default function Dashboard({
                     </div>
 
                     {/* Right: Stock vs Demand Table (8 cols) */}
-                    <div className="lg:col-span-8 flex h-full flex-col justify-between rounded-xl border border-border/60 bg-card shadow-2xs overflow-hidden">
-                        <div className="flex items-center justify-between border-b border-border/40 px-4 py-3 sm:px-5">
-                            <div>
-                                <h2 className="text-sm font-semibold text-foreground">
-                                    Vaccine Stock vs Demand
-                                </h2>
-                                <p className="text-[11px] text-muted-foreground">
-                                    Usable stock compared with active patient demand
-                                </p>
-                            </div>
-
-                            <Button
-                                asChild
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground"
-                            >
-                                <Link href={route('vaccine-inventory.index')}>
-                                    View Full Inventory
-                                    <ArrowRight className="h-3 w-3 ml-0.5" />
-                                </Link>
-                            </Button>
-                        </div>
-
-                        <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
-                            {/* Structured Table Column Header Bar */}
-                            <div className="mb-2.5 flex items-center gap-3 px-3 pb-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/30">
-                                <span className="w-28 sm:w-32 shrink-0">Vaccine</span>
-                                <span className="w-24 shrink-0 text-center">Status</span>
-                                <div className="flex-1 flex items-center gap-4 min-w-0">
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                                        <span className="normal-case font-medium text-[11px] text-foreground/80">
-                                            Free Stock
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="h-2 w-2 rounded-full bg-blue-500" />
-                                        <span className="normal-case font-medium text-[11px] text-foreground/80">
-                                            Active Demand
-                                        </span>
-                                    </div>
+                    <div className="col-12 col-lg-8 lg:h-full min-w-0 max-w-full w-full px-0 sm:px-2">
+                        <div className="flex lg:h-full flex-col justify-between rounded-xl border border-border/60 bg-card shadow-2xs overflow-hidden w-full max-w-full">
+                            <div className="flex items-center justify-between border-b border-border/40 px-4 py-3 sm:px-5">
+                                <div>
+                                    <h2 className="text-sm font-semibold text-foreground">
+                                        Vaccine Stock vs Demand
+                                    </h2>
+                                    <p className="text-[11px] text-muted-foreground">
+                                        Usable stock compared with active patient demand
+                                    </p>
                                 </div>
-                                <span className="w-14 shrink-0 text-right">Free</span>
-                                <span className="w-14 shrink-0 text-right">Need</span>
+
+                                <Button
+                                    asChild
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground"
+                                >
+                                    <Link href={route('vaccine-inventory.index')}>
+                                        View Full Inventory
+                                        <ArrowRight className="h-3 w-3 ml-0.5" />
+                                    </Link>
+                                </Button>
                             </div>
 
-                            {/* Vaccine rows - strictly aligned tabular grid */}
-                            <div className="space-y-2 flex-1 flex flex-col justify-around">
-                                {vaccineStockDemand.map((vaccine) => {
-                                    const stockWidth = Math.min(
-                                        100,
-                                        Math.max(
-                                            vaccine.freeStock > 0 ? 5 : 0,
-                                            (vaccine.freeStock / maxInventoryValue) * 100,
-                                        ),
-                                    );
-                                    const demandWidth = Math.min(
-                                        100,
-                                        Math.max(
-                                            vaccine.remainingDemand > 0 ? 5 : 0,
-                                            (vaccine.remainingDemand / maxInventoryValue) * 100,
-                                        ),
-                                    );
+                            <div className="flex flex-1 flex-col justify-between p-3.5 sm:p-5 w-full min-w-0">
+                                {/* Mobile View (< sm): Fully responsive compact list (ZERO horizontal scrolling) */}
+                                <div className="d-block d-sm-none space-y-2 w-full">
+                                    {vaccineStockDemand.map((vaccine) => {
+                                        const stockWidth = Math.min(
+                                            100,
+                                            Math.max(
+                                                vaccine.freeStock > 0 ? 5 : 0,
+                                                (vaccine.freeStock / maxInventoryValue) * 100,
+                                            ),
+                                        );
+                                        const demandWidth = Math.min(
+                                            100,
+                                            Math.max(
+                                                vaccine.remainingDemand > 0 ? 5 : 0,
+                                                (vaccine.remainingDemand / maxInventoryValue) * 100,
+                                            ),
+                                        );
 
-                                    return (
-                                        <div
-                                            key={vaccine.id}
-                                            className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/15 px-3 py-1.5 transition-colors hover:bg-muted/30"
-                                        >
-                                            {/* Column 1: Vaccine Name */}
-                                            <span
-                                                className="w-28 sm:w-32 shrink-0 text-xs font-semibold text-foreground truncate"
-                                                title={vaccine.name}
+                                        return (
+                                            <div
+                                                key={vaccine.id}
+                                                className="rounded-lg border border-border/40 bg-muted/15 p-2.5 space-y-1.5 transition-colors"
                                             >
-                                                {vaccine.name}
-                                            </span>
-
-                                            {/* Column 2: Status Badge (centered, fixed width) */}
-                                            <div className="w-24 shrink-0 flex justify-center">
-                                                <span
-                                                    className={`inline-block w-full text-center text-[10px] font-medium px-2 py-0.5 rounded-full border ${getStockBadge(
-                                                        vaccine.stockHealth,
-                                                    )}`}
-                                                >
-                                                    {vaccine.stockHealth}
-                                                </span>
-                                            </div>
-
-                                            {/* Column 3: Proportional dual progress bar */}
-                                            <div className="flex-1 space-y-1 min-w-0">
-                                                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/70">
-                                                    <div
-                                                        className="h-full rounded-full bg-emerald-500 transition-all"
-                                                        style={{ width: `${stockWidth}%` }}
-                                                    />
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-xs font-semibold text-foreground truncate">
+                                                        {vaccine.name}
+                                                    </span>
+                                                    <span
+                                                        className={`text-[10px] font-medium px-2 py-0.5 rounded-full border shrink-0 ${getStockBadge(
+                                                            vaccine.stockHealth,
+                                                        )}`}
+                                                    >
+                                                        {vaccine.stockHealth}
+                                                    </span>
                                                 </div>
-                                                {vaccine.remainingDemand > 0 ? (
-                                                    <div className="h-1 w-full overflow-hidden rounded-full bg-muted/50">
+                                                <div className="space-y-1">
+                                                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/70">
                                                         <div
-                                                            className="h-full rounded-full bg-blue-500 transition-all"
-                                                            style={{ width: `${demandWidth}%` }}
+                                                            className="h-full rounded-full bg-emerald-500 transition-all"
+                                                            style={{ width: `${stockWidth}%` }}
                                                         />
                                                     </div>
-                                                ) : (
-                                                    <div className="h-1 w-full" />
-                                                )}
+                                                    {vaccine.remainingDemand > 0 && (
+                                                        <div className="h-1 w-full overflow-hidden rounded-full bg-muted/50">
+                                                            <div
+                                                                className="h-full rounded-full bg-blue-500 transition-all"
+                                                                style={{ width: `${demandWidth}%` }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center justify-between text-[11px]">
+                                                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                                                        Free: <strong className="font-bold">{vaccine.freeStock}</strong>
+                                                    </span>
+                                                    <span className="text-blue-600 dark:text-blue-400 font-medium">
+                                                        Need: <strong className="font-bold">{vaccine.remainingDemand}</strong>
+                                                    </span>
+                                                </div>
                                             </div>
+                                        );
+                                    })}
+                                </div>
 
-                                            {/* Column 4 & 5: Aligned Counts */}
-                                            <span className="w-14 shrink-0 text-right font-semibold text-xs text-emerald-600 dark:text-emerald-400">
-                                                {vaccine.freeStock}
-                                            </span>
-                                            <span className="w-14 shrink-0 text-right font-medium text-xs text-blue-600 dark:text-blue-400">
-                                                {vaccine.remainingDemand}
-                                            </span>
+                                {/* Desktop View (sm+): Full Tabular View without static min-w-[440px] */}
+                                <div className="d-none d-sm-block w-full">
+                                    <div className="mb-2.5 flex items-center gap-3 px-3 pb-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/30">
+                                        <span className="w-28 sm:w-32 shrink-0">Vaccine</span>
+                                        <span className="w-24 shrink-0 text-center">Status</span>
+                                        <div className="flex-1 flex items-center gap-4 min-w-0">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                                                <span className="normal-case font-medium text-[11px] text-foreground/80">
+                                                    Free Stock
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="h-2 w-2 rounded-full bg-blue-500" />
+                                                <span className="normal-case font-medium text-[11px] text-foreground/80">
+                                                    Active Demand
+                                                </span>
+                                            </div>
                                         </div>
-                                    );
-                                })}
+                                        <span className="w-14 shrink-0 text-right">Free</span>
+                                        <span className="w-14 shrink-0 text-right">Need</span>
+                                    </div>
+
+                                    <div className="space-y-2 flex-1 flex flex-col justify-around">
+                                        {vaccineStockDemand.map((vaccine) => {
+                                            const stockWidth = Math.min(
+                                                100,
+                                                Math.max(
+                                                    vaccine.freeStock > 0 ? 5 : 0,
+                                                    (vaccine.freeStock / maxInventoryValue) * 100,
+                                                ),
+                                            );
+                                            const demandWidth = Math.min(
+                                                100,
+                                                Math.max(
+                                                    vaccine.remainingDemand > 0 ? 5 : 0,
+                                                    (vaccine.remainingDemand / maxInventoryValue) * 100,
+                                                ),
+                                            );
+
+                                            return (
+                                                <div
+                                                    key={vaccine.id}
+                                                    className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/15 px-3 py-1.5 transition-colors hover:bg-muted/30"
+                                                >
+                                                    <span
+                                                        className="w-28 sm:w-32 shrink-0 text-xs font-semibold text-foreground truncate"
+                                                        title={vaccine.name}
+                                                    >
+                                                        {vaccine.name}
+                                                    </span>
+
+                                                    <div className="w-24 shrink-0 flex justify-center">
+                                                        <span
+                                                            className={`inline-block w-full text-center text-[10px] font-medium px-2 py-0.5 rounded-full border ${getStockBadge(
+                                                                vaccine.stockHealth,
+                                                            )}`}
+                                                        >
+                                                            {vaccine.stockHealth}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex-1 space-y-1 min-w-0">
+                                                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/70">
+                                                            <div
+                                                                className="h-full rounded-full bg-emerald-500 transition-all"
+                                                                style={{ width: `${stockWidth}%` }}
+                                                            />
+                                                        </div>
+                                                        {vaccine.remainingDemand > 0 ? (
+                                                            <div className="h-1 w-full overflow-hidden rounded-full bg-muted/50">
+                                                                <div
+                                                                    className="h-full rounded-full bg-blue-500 transition-all"
+                                                                    style={{ width: `${demandWidth}%` }}
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="h-1 w-full" />
+                                                        )}
+                                                    </div>
+
+                                                    <span className="w-14 shrink-0 text-right font-semibold text-xs text-emerald-600 dark:text-emerald-400">
+                                                        {vaccine.freeStock}
+                                                    </span>
+                                                    <span className="w-14 shrink-0 text-right font-medium text-xs text-blue-600 dark:text-blue-400">
+                                                        {vaccine.remainingDemand}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -440,17 +504,18 @@ export default function Dashboard({
                 {/* ========================================================= */}
                 {/* ROW 3: IMMUNIZATION WORKLOAD & ATTENTION NEEDED */}
                 {/* ========================================================= */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+                <div className="row g-3 items-stretch mx-0 w-full">
                     {/* Workload card (50%) */}
-                    <div className="flex h-full flex-col justify-between rounded-xl border border-border/60 bg-card shadow-2xs overflow-hidden">
-                        <div className="border-b border-border/40 px-4 py-3 sm:px-5">
-                            <h2 className="text-sm font-semibold text-foreground">
-                                Immunization Workload
-                            </h2>
-                            <p className="text-[11px] text-muted-foreground">
-                                Active scheduling and follow-up workload distribution
-                            </p>
-                        </div>
+                    <div className="col-12 col-lg-6 min-w-0 max-w-full px-0 sm:px-2 lg:h-full">
+                        <div className="flex lg:h-full flex-col justify-between rounded-xl border border-border/60 bg-card shadow-2xs overflow-hidden">
+                            <div className="border-b border-border/40 px-4 py-3 sm:px-5">
+                                <h2 className="text-sm font-semibold text-foreground">
+                                    Immunization Workload
+                                </h2>
+                                <p className="text-[11px] text-muted-foreground">
+                                    Active scheduling and follow-up workload distribution
+                                </p>
+                            </div>
 
                         <div className="flex flex-1 flex-col justify-between gap-2.5 p-4 sm:p-5">
                             {workload.map((item) => {
@@ -491,67 +556,82 @@ export default function Dashboard({
                             })}
                         </div>
                     </div>
+                    </div>
 
                     {/* Attention items card (50%) */}
-                    <div className="flex h-full flex-col justify-between rounded-xl border border-border/60 bg-card shadow-2xs overflow-hidden">
-                        <div className="border-b border-border/40 px-4 py-3 sm:px-5">
-                            <h2 className="text-sm font-semibold text-foreground">
-                                Attention Needed
-                            </h2>
-                            <p className="text-[11px] text-muted-foreground">
-                                Clinical items requiring immediate staff action
-                            </p>
-                        </div>
+                    <div className="col-12 col-lg-6 min-w-0 max-w-full px-0 sm:px-2 lg:h-full">
+                        <div className="flex lg:h-full flex-col justify-between rounded-xl border border-border/60 bg-card shadow-2xs overflow-hidden">
+                            <div className="border-b border-border/40 px-4 py-3 sm:px-5">
+                                <h2 className="text-sm font-semibold text-foreground">
+                                    Attention Needed
+                                </h2>
+                                <p className="text-[11px] text-muted-foreground">
+                                    Clinical items requiring immediate staff action
+                                </p>
+                            </div>
 
-                        <div className="flex flex-1 flex-col justify-between divide-y divide-border/40">
-                            {attentionItems.map((item) => {
-                                const Icon = item.icon;
-                                const hasAlert = item.count > 0;
+                            <div className="flex flex-1 flex-col justify-between divide-y divide-border/40">
+                                {attentionItems.map((item) => {
+                                    const Icon = item.icon;
+                                    const hasAlert = item.count > 0;
 
-                                return (
-                                    <button
-                                        key={item.title}
-                                        type="button"
-                                        onClick={item.onClick}
-                                        className="group flex flex-1 w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30 cursor-pointer"
-                                    >
-                                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                                            <div
-                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
-                                                    hasAlert
-                                                        ? 'border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400'
-                                                        : 'border-border/60 bg-muted/40 text-muted-foreground'
-                                                }`}
-                                            >
-                                                <Icon className="h-4 w-4" />
+                                    return (
+                                        <button
+                                            key={item.title}
+                                            type="button"
+                                            onClick={item.onClick}
+                                            className="group flex flex-1 w-full items-center justify-between gap-2 sm:gap-3 px-3 py-2.5 sm:px-4 sm:py-3 text-left transition-colors hover:bg-muted/30 cursor-pointer"
+                                        >
+                                            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                                                <div
+                                                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+                                                        hasAlert
+                                                            ? 'border-red-500/25 bg-red-500/10 text-red-600 dark:text-red-400'
+                                                            : 'border-border/60 bg-muted/30 text-muted-foreground'
+                                                    }`}
+                                                >
+                                                    <Icon className="h-4 w-4" />
+                                                </div>
+
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                        <p className="text-xs font-semibold text-foreground break-words">
+                                                            {item.title}
+                                                        </p>
+                                                        <span
+                                                            className={`text-xs font-bold shrink-0 ${
+                                                                hasAlert
+                                                                    ? 'text-red-600 dark:text-red-400'
+                                                                    : 'text-muted-foreground'
+                                                            }`}
+                                                        >
+                                                            ({item.count})
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[11px] text-muted-foreground truncate">
+                                                        {item.description}
+                                                    </p>
+                                                </div>
                                             </div>
 
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-xs font-semibold text-foreground">
-                                                    {item.title}
-                                                </p>
-                                                <p className="text-[11px] text-muted-foreground truncate">
-                                                    {item.description}
-                                                </p>
+                                            {/* Right-aligned status badge & action chevron */}
+                                            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 pl-1">
+                                                {hasAlert ? (
+                                                    <span className="rounded-full bg-red-500/10 border border-red-500/20 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                        <span className="hidden sm:inline">{item.count} action needed</span>
+                                                        <span className="sm:hidden">{item.count} action</span>
+                                                    </span>
+                                                ) : (
+                                                    <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[9px] sm:text-[10px] font-medium text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                                                        All clear
+                                                    </span>
+                                                )}
+                                                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground shrink-0" />
                                             </div>
-                                        </div>
-
-                                        {/* Right-aligned status badge & action chevron */}
-                                        <div className="flex items-center gap-2.5 shrink-0 pl-2">
-                                            {hasAlert ? (
-                                                <span className="rounded-full bg-red-500/10 border border-red-500/20 px-2.5 py-0.5 text-[10px] font-bold text-red-600 dark:text-red-400">
-                                                    {item.count} action needed
-                                                </span>
-                                            ) : (
-                                                <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                                                    All clear
-                                                </span>
-                                            )}
-                                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
-                                        </div>
-                                    </button>
-                                );
-                            })}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -582,7 +662,7 @@ function InventoryHealthCard({
     const outOfStockOffset = -(availableLength + lowStockLength);
 
     return (
-        <div className="flex h-full flex-col justify-between rounded-xl border border-border/60 bg-card p-4 sm:p-5 shadow-2xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border/60 bg-card p-3.5 sm:p-5 shadow-2xs lg:h-full">
             <div>
                 <h2 className="text-sm font-semibold text-foreground">
                     Vaccine Stock Health
@@ -592,9 +672,10 @@ function InventoryHealthCard({
                 </p>
             </div>
 
-            {/* Donut Chart - Vertically centered in remaining card space */}
-            <div className="my-auto flex flex-col items-center justify-center py-4">
-                <div className="relative h-32 w-32 shrink-0">
+            {/* Responsive Chart & Metrics Container */}
+            <div className="mt-3 flex flex-row items-center justify-around gap-3 lg:my-auto lg:flex-col lg:py-4">
+                {/* Donut Chart */}
+                <div className="relative h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32 shrink-0">
                     <svg viewBox="0 0 100 100" className="-rotate-90 h-full w-full">
                         <circle
                             cx="50"
@@ -653,43 +734,43 @@ function InventoryHealthCard({
                     </svg>
 
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold tracking-tight text-foreground">
+                        <span className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-foreground">
                             {total}
                         </span>
-                        <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider">
+                        <span className="text-[8px] sm:text-[9px] font-medium text-muted-foreground uppercase tracking-wider">
                             Formulary
                         </span>
                     </div>
                 </div>
-            </div>
 
-            {/* 3-Column Metric Status Badges - Pinned flush at bottom */}
-            <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-border/40">
-                <div className="flex flex-col items-center rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-1.5 text-center">
-                    <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                        Available
-                    </span>
-                    <span className="text-base font-bold text-foreground">
-                        {inventoryHealth.available}
-                    </span>
-                </div>
+                {/* 3 Metric Status Badges: Column stack on mobile, 3-col grid across bottom on desktop */}
+                <div className="flex flex-col gap-1.5 flex-1 min-w-0 max-w-[190px] lg:max-w-none lg:w-full lg:grid lg:grid-cols-3 lg:gap-2 lg:pt-2.5 lg:border-t lg:border-border/40">
+                    <div className="flex items-center justify-between lg:flex-col lg:justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1 sm:p-1.5 text-center">
+                        <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                            Available
+                        </span>
+                        <span className="text-sm sm:text-base font-bold text-foreground">
+                            {inventoryHealth.available}
+                        </span>
+                    </div>
 
-                <div className="flex flex-col items-center rounded-lg border border-amber-500/20 bg-amber-500/5 p-1.5 text-center">
-                    <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
-                        Low Stock
-                    </span>
-                    <span className="text-base font-bold text-foreground">
-                        {inventoryHealth.lowStock}
-                    </span>
-                </div>
+                    <div className="flex items-center justify-between lg:flex-col lg:justify-center rounded-lg border border-amber-500/20 bg-amber-500/5 px-2.5 py-1 sm:p-1.5 text-center">
+                        <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                            Low Stock
+                        </span>
+                        <span className="text-sm sm:text-base font-bold text-foreground">
+                            {inventoryHealth.lowStock}
+                        </span>
+                    </div>
 
-                <div className="flex flex-col items-center rounded-lg border border-red-500/20 bg-red-500/5 p-1.5 text-center">
-                    <span className="text-[10px] font-medium text-red-600 dark:text-red-400">
-                        Out of Stock
-                    </span>
-                    <span className="text-base font-bold text-foreground">
-                        {inventoryHealth.outOfStock}
-                    </span>
+                    <div className="flex items-center justify-between lg:flex-col lg:justify-center rounded-lg border border-red-500/20 bg-red-500/5 px-2.5 py-1 sm:p-1.5 text-center">
+                        <span className="text-[10px] font-medium text-red-600 dark:text-red-400">
+                            Out of Stock
+                        </span>
+                        <span className="text-sm sm:text-base font-bold text-foreground">
+                            {inventoryHealth.outOfStock}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

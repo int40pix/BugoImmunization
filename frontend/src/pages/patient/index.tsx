@@ -316,50 +316,56 @@ export default function PatientIndex() {
         <AppLayout>
             <Head title="Patient Management" />
 
-            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
-                <div className="flex flex-col gap-4 rounded-2xl border bg-background/70 p-5 shadow-sm md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-2xl font-bold">
-                                Patient Management
-                            </h1>
-                            <Badge variant="secondary">Staff View</Badge>
+            <div className="mx-auto flex h-full w-full max-w-7xl min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7 overflow-x-hidden">
+                <div className="rounded-2xl border bg-background/70 p-4 sm:p-5 shadow-sm min-w-0 max-w-full">
+                    <div className="row g-3 mx-0 w-full align-items-center justify-content-between">
+                        <div className="col-12 col-md-6">
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-2xl font-bold">
+                                    Patient Management
+                                </h1>
+                                <Badge variant="secondary">Staff View</Badge>
+                            </div>
+
+                            <p className="mt-1.5 text-muted-foreground">
+                                Manage pediatric patient records and their registered family accounts.
+                            </p>
                         </div>
 
-                        <p className="mt-1.5 text-muted-foreground">
-                            Manage pediatric patient records and their registered family accounts.
-                        </p>
-                    </div>
+                        <div className="col-12 col-md-6 d-flex flex-wrap items-center justify-content-start justify-content-md-end gap-1.5 sm:gap-2">
+                            <Badge variant="outline" className="text-xs">
+                                {patients.length} total patients
+                            </Badge>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline">
-                            {patients.length} total patients
-                        </Badge>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3 gap-1.5"
+                                onClick={() => setScannerOpen(true)}
+                            >
+                                <ScanLine className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                Scan Patient QR
+                            </Button>
 
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setScannerOpen(true)}
-                        >
-                            <ScanLine className="mr-2 h-4 w-4" />
-                            Scan Patient QR
-                        </Button>
-
-                        <Button
-                            type="button"
-                            onClick={() => router.visit('/guardians/create')}
-                        >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Register Family
-                        </Button>
+                            <Button
+                                type="button"
+                                size="sm"
+                                className="h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3 gap-1.5"
+                                onClick={() => router.visit('/guardians/create')}
+                            >
+                                <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                Register Family
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex w-fit rounded-lg border border-border/60 bg-muted/40 p-1 gap-1 text-xs font-medium">
+                <div className="flex w-full sm:w-fit rounded-lg border border-border/60 bg-muted/40 p-1 gap-1 text-xs font-medium">
                     <button
                         type="button"
                         onClick={() => setActiveTab('patients')}
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                             activeTab === 'patients'
                                 ? 'bg-background text-foreground shadow-xs font-semibold'
                                 : 'text-muted-foreground hover:text-foreground'
@@ -372,7 +378,7 @@ export default function PatientIndex() {
                     <button
                         type="button"
                         onClick={() => setActiveTab('families')}
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                        className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                             activeTab === 'families'
                                 ? 'bg-background text-foreground shadow-xs font-semibold'
                                 : 'text-muted-foreground hover:text-foreground'
@@ -385,64 +391,143 @@ export default function PatientIndex() {
 
                 {activeTab === 'patients' && (
                     <>
-                        <Card>
+                        <Card className="min-w-0 max-w-full">
                             <CardContent className="pt-5">
-                                <div className="grid gap-3 md:grid-cols-3">
-                                    <div className="relative">
-                                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Input
-                                            type="search"
-                                            placeholder="Search patient..."
-                                            className="h-10 pl-10"
-                                            value={search}
-                                            onChange={(event) =>
-                                                setSearch(event.target.value)
-                                            }
-                                        />
+                                <div className="row g-3 mx-0 w-full">
+                                    <div className="col-12 col-md-4">
+                                        <div className="relative">
+                                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                type="search"
+                                                placeholder="Search patient..."
+                                                className="h-10 pl-10"
+                                                value={search}
+                                                onChange={(event) =>
+                                                    setSearch(event.target.value)
+                                                }
+                                            />
+                                        </div>
                                     </div>
 
-                                    <Select value={sex} onValueChange={setSex}>
-                                        <SelectTrigger className="h-10">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="both">
-                                                Both Sex
-                                            </SelectItem>
-                                            <SelectItem value="Male">
-                                                Male
-                                            </SelectItem>
-                                            <SelectItem value="Female">
-                                                Female
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <div className="col-12 col-md-4">
+                                        <Select value={sex} onValueChange={setSex}>
+                                            <SelectTrigger className="h-10">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="both">
+                                                    Both Sex
+                                                </SelectItem>
+                                                <SelectItem value="Male">
+                                                    Male
+                                                </SelectItem>
+                                                <SelectItem value="Female">
+                                                    Female
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                                    <Select disabled>
-                                        <SelectTrigger className="h-10">
-                                            <SelectValue placeholder="Completion Status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All</SelectItem>
-                                            <SelectItem value="complete">
-                                                Complete
-                                            </SelectItem>
-                                            <SelectItem value="incomplete">
-                                                Incomplete
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <div className="col-12 col-md-4">
+                                        <Select disabled>
+                                            <SelectTrigger className="h-10">
+                                                <SelectValue placeholder="Completion Status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All</SelectItem>
+                                                <SelectItem value="complete">
+                                                    Complete
+                                                </SelectItem>
+                                                <SelectItem value="incomplete">
+                                                    Incomplete
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="min-w-0 max-w-full overflow-hidden">
                             <CardHeader className="pb-3">
                                 <CardTitle>Patient Records</CardTitle>
                             </CardHeader>
 
                             <CardContent className="pt-0">
-                                <div className="overflow-hidden rounded-lg border">
+                                {/* Mobile View (< md): Compact card list, zero horizontal scroll */}
+                                <div className="d-block d-md-none divide-y divide-border/60 rounded-lg border">
+                                    {patients.length === 0 ? (
+                                        <div className="p-6 text-center space-y-2">
+                                            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                                <Baby className="h-5 w-5" />
+                                            </div>
+                                            <p className="font-medium text-xs text-foreground">No patient records found</p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                Try clearing your search query or status filter.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        patients.map((patient) => (
+                                            <div key={patient.id} className="p-3 space-y-2 hover:bg-muted/15 transition-colors">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="min-w-0">
+                                                        <p className="font-semibold text-xs text-foreground truncate">
+                                                            {patient.first_name} {patient.middle_name ? `${patient.middle_name} ` : ''}{patient.last_name}
+                                                        </p>
+                                                        <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-muted-foreground flex-wrap">
+                                                            <span className="font-mono bg-muted/70 px-1.5 py-0.2 rounded text-[10px] text-foreground/80 font-medium">
+                                                                {patient.patient_id}
+                                                            </span>
+                                                            <span>•</span>
+                                                            <span>Age: {calculateAge(patient.date_of_birth)}</span>
+                                                            <span>•</span>
+                                                            <span>DOB: {formatDateOfBirth(patient.date_of_birth)}</span>
+                                                        </div>
+                                                    </div>
+                                                    <Badge variant="secondary" className="text-[10px] shrink-0">
+                                                        {placeholderVaccinationStatus}
+                                                    </Badge>
+                                                </div>
+
+                                                <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px]">
+                                                    <p className="text-muted-foreground truncate max-w-[55%]">
+                                                        <span className="text-foreground/70 font-medium">Guardian:</span> {patient.guardian_name ?? '—'}
+                                                    </p>
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            type="button"
+                                                            className="h-7 px-2 text-[11px] font-medium"
+                                                            onClick={() =>
+                                                                router.visit(`/patients/${patient.id}`)
+                                                            }
+                                                        >
+                                                            <Eye className="mr-1 h-3 w-3 text-muted-foreground" />
+                                                            View
+                                                        </Button>
+
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            type="button"
+                                                            className="h-7 px-2 text-[11px] font-medium"
+                                                            onClick={() =>
+                                                                router.visit(`/patients/${patient.id}/edit`)
+                                                            }
+                                                        >
+                                                            <Pencil className="mr-1 h-3 w-3 text-muted-foreground" />
+                                                            Edit
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+
+                                {/* Desktop View (md+): Fluid table with full details */}
+                                <div className="d-none d-md-block w-full overflow-x-auto rounded-lg border">
                                     <table className="w-full table-fixed text-left text-xs">
                                         <thead className="bg-muted/30">
                                             <tr className="border-b">
@@ -585,7 +670,7 @@ export default function PatientIndex() {
 
                 {activeTab === 'families' && (
                     <>
-                        <Card>
+                        <Card className="min-w-0 max-w-full">
                             <CardContent className="space-y-4 pt-5">
                                 <div className="relative max-w-xl">
                                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -600,7 +685,7 @@ export default function PatientIndex() {
                                     />
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border/50 bg-muted/30 p-1 text-xs">
+                                <div className="flex max-w-full overflow-x-auto no-scrollbar items-center gap-1 rounded-lg border border-border/50 bg-muted/30 p-1 text-xs">
                                     {(
                                         [
                                             ['all', 'All'],
@@ -616,7 +701,7 @@ export default function PatientIndex() {
                                             onClick={() =>
                                                 setFamilyStatusFilter(value)
                                             }
-                                            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                                            className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
                                                 familyStatusFilter === value
                                                     ? 'bg-background text-foreground shadow-xs font-semibold'
                                                     : 'text-muted-foreground hover:text-foreground'
@@ -629,7 +714,7 @@ export default function PatientIndex() {
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="min-w-0 max-w-full overflow-hidden">
                             <CardHeader className="flex flex-row items-center justify-between gap-4 pb-3">
                                 <div>
                                     <CardTitle>Registered Families</CardTitle>

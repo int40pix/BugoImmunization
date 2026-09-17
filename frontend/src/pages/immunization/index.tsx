@@ -580,7 +580,7 @@ export default function ImmunizationIndex({
         <AppLayout>
             <Head title="Immunization Tracking" />
 
-            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
+            <div className="mx-auto flex h-full w-full max-w-7xl min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7 overflow-x-hidden">
                 <div>
                     <h1 className="text-2xl font-bold">
                         Immunization Tracking
@@ -592,85 +592,93 @@ export default function ImmunizationIndex({
                     </p>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-4">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Upcoming Visits
-                            </CardTitle>
-                        </CardHeader>
+                <div className="row g-2 g-sm-3 mx-0 w-full">
+                    <div className="col-6 col-md-3">
+                        <Card className="h-full">
+                            <CardHeader className="p-3 pb-0 sm:p-5 sm:pb-2">
+                                <CardTitle className="text-xs sm:text-sm font-medium truncate">
+                                    Upcoming Visits
+                                </CardTitle>
+                            </CardHeader>
 
-                        <CardContent>
-                            <p className="text-3xl font-bold">
-                                {upcomingSummary.count}
-                            </p>
+                            <CardContent className="p-3 pt-1.5 sm:p-5 sm:pt-0">
+                                <p className="text-xl sm:text-3xl font-bold">
+                                    {upcomingSummary.count}
+                                </p>
 
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {upcomingSummary.period}
-                            </p>
-                        </CardContent>
-                    </Card>
+                                <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-muted-foreground truncate">
+                                    {upcomingSummary.period}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Current Age
-                            </CardTitle>
-                        </CardHeader>
+                    <div className="col-6 col-md-3">
+                        <Card className="h-full">
+                            <CardHeader className="p-3 pb-0 sm:p-5 sm:pb-2">
+                                <CardTitle className="text-xs sm:text-sm font-medium truncate">
+                                    Current Age
+                                </CardTitle>
+                            </CardHeader>
 
-                        <CardContent>
-                            <p className="text-3xl font-bold">
-                                {liveCounts.currentAge}
-                            </p>
+                            <CardContent className="p-3 pt-1.5 sm:p-5 sm:pt-0">
+                                <p className="text-xl sm:text-3xl font-bold">
+                                    {liveCounts.currentAge}
+                                </p>
 
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Currently due vaccinations
-                            </p>
-                        </CardContent>
-                    </Card>
+                                <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-muted-foreground truncate">
+                                    Currently due vaccinations
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Overdue
-                            </CardTitle>
-                        </CardHeader>
+                    <div className="col-6 col-md-3">
+                        <Card className="h-full">
+                            <CardHeader className="p-3 pb-0 sm:p-5 sm:pb-2">
+                                <CardTitle className="text-xs sm:text-sm font-medium truncate">
+                                    Overdue
+                                </CardTitle>
+                            </CardHeader>
 
-                        <CardContent>
-                            <p className="text-3xl font-bold">
-                                {liveCounts.overdue}
-                            </p>
+                            <CardContent className="p-3 pt-1.5 sm:p-5 sm:pt-0">
+                                <p className="text-xl sm:text-3xl font-bold">
+                                    {liveCounts.overdue}
+                                </p>
 
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Require attention
-                            </p>
-                        </CardContent>
-                    </Card>
+                                <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-muted-foreground truncate">
+                                    Require attention
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                    <Card
-                        className={`cursor-pointer transition-all ${
-                            viewMode === 'history'
-                                ? 'border-primary ring-2 ring-primary/20 bg-primary/5'
-                                : 'hover:border-primary/50'
-                        }`}
-                        onClick={() => setViewMode('history')}
-                    >
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Completed
-                            </CardTitle>
-                        </CardHeader>
+                    <div className="col-6 col-md-3">
+                        <Card
+                            className={`h-full cursor-pointer transition-all ${
+                                viewMode === 'history'
+                                    ? 'border-primary ring-2 ring-primary/20 bg-primary/5'
+                                    : 'hover:border-primary/50'
+                            }`}
+                            onClick={() => setViewMode('history')}
+                        >
+                            <CardHeader className="p-3 pb-0 sm:p-5 sm:pb-2">
+                                <CardTitle className="text-xs sm:text-sm font-medium truncate">
+                                    Completed
+                                </CardTitle>
+                            </CardHeader>
 
-                        <CardContent>
-                            <p className="text-3xl font-bold">
-                                {liveCounts.completed}
-                            </p>
+                            <CardContent className="p-3 pt-1.5 sm:p-5 sm:pt-0">
+                                <p className="text-xl sm:text-3xl font-bold">
+                                    {liveCounts.completed}
+                                </p>
 
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Completed vaccinations
-                            </p>
-                        </CardContent>
-                    </Card>
+                                <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-muted-foreground truncate">
+                                    Completed vaccinations
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
 
                 {liveCounts.overdue > 0 ? (
@@ -723,7 +731,7 @@ export default function ImmunizationIndex({
                     </div>
                 )}
 
-                <Card>
+                <Card className="min-w-0 max-w-full">
                     <CardContent className="pt-6">
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="relative">
@@ -767,27 +775,27 @@ export default function ImmunizationIndex({
                     </CardContent>
                 </Card>
 
-                <Card className="overflow-hidden">
-                    <CardHeader className="border-b py-6">
-                        <div className="flex flex-col gap-5">
+                <Card className="min-w-0 max-w-full overflow-hidden">
+                    <CardHeader className="border-b py-5 sm:py-6">
+                        <div className="flex flex-col gap-4 sm:gap-5">
                             <div>
-                                <CardTitle className="text-2xl">
+                                <CardTitle className="text-xl sm:text-2xl">
                                     {getTrackingTitle()}
                                 </CardTitle>
 
-                                <p className="mt-1 text-sm text-muted-foreground">
+                                <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
                                     {getTrackingDescription()}
                                 </p>
                             </div>
 
-                            <div className="flex w-fit overflow-hidden rounded-md border">
+                            <div className="flex max-w-full overflow-x-auto no-scrollbar rounded-md border">
                                 <button
                                     type="button"
                                     onClick={() => setViewMode('tcl')}
-                                    className={`px-5 py-2 text-sm font-medium transition-colors ${
+                                    className={`shrink-0 px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-medium transition-colors ${
                                         viewMode === 'tcl'
-                                            ? 'bg-foreground text-background'
-                                            : 'hover:bg-muted'
+                                            ? 'bg-foreground text-background font-semibold'
+                                            : 'hover:bg-muted text-muted-foreground'
                                     }`}
                                 >
                                     TCL
@@ -798,10 +806,10 @@ export default function ImmunizationIndex({
                                     onClick={() =>
                                         setViewMode('scheduled')
                                     }
-                                    className={`border-l px-5 py-2 text-sm font-medium transition-colors ${
+                                    className={`shrink-0 border-l px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-medium transition-colors ${
                                         viewMode === 'scheduled'
-                                            ? 'bg-foreground text-background'
-                                            : 'hover:bg-muted'
+                                            ? 'bg-foreground text-background font-semibold'
+                                            : 'hover:bg-muted text-muted-foreground'
                                     }`}
                                 >
                                     Scheduled
@@ -812,10 +820,10 @@ export default function ImmunizationIndex({
                                     onClick={() =>
                                         setViewMode('history')
                                     }
-                                    className={`border-l px-5 py-2 text-sm font-medium transition-colors ${
+                                    className={`shrink-0 border-l px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-medium transition-colors ${
                                         viewMode === 'history'
-                                            ? 'bg-foreground text-background'
-                                            : 'hover:bg-muted'
+                                            ? 'bg-foreground text-background font-semibold'
+                                            : 'hover:bg-muted text-muted-foreground'
                                     }`}
                                 >
                                     Administration History
@@ -826,12 +834,12 @@ export default function ImmunizationIndex({
 
                     <CardContent className="pt-6">
                         {viewMode === 'tcl' ? (
-                            <div className="overflow-hidden rounded-lg border">
-                                <div className="flex flex-wrap items-center gap-2 border-b bg-muted/20 px-5 py-4">
+                            <div className="w-full max-w-full overflow-hidden rounded-lg border">
+                                <div className="flex max-w-full overflow-x-auto no-scrollbar items-center gap-2 border-b bg-muted/20 px-3 sm:px-5 py-3 sm:py-4">
                                     <button
                                         type="button"
                                         onClick={() => setStatusFilter('all')}
-                                        className={`inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
+                                        className={`shrink-0 inline-flex items-center gap-2 rounded-md border px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors ${
                                             statusFilter === 'all'
                                                 ? 'bg-foreground text-background'
                                                 : 'bg-background hover:bg-muted'
@@ -970,100 +978,142 @@ export default function ImmunizationIndex({
                                         </div>
                                     )
                                 ) : isSpecificVaccineSelected ? (
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full table-fixed text-sm">
-                                            <thead className="border-b-2 bg-muted/40">
-                                                <tr>
-                                                    <th className="w-[32%] border-r-2 px-6 py-4 text-left font-semibold">
-                                                        Patient
-                                                    </th>
-
-                                                    <th className="w-[16%] border-r-2 px-6 py-4 text-center font-semibold">
-                                                        PID
-                                                    </th>
-
-                                                    <th className="w-[12%] border-r-2 px-6 py-4 text-center font-semibold">
-                                                        Dose
-                                                    </th>
-
-                                                    <th className="w-[18%] border-r-2 px-6 py-4 text-center font-semibold">
-                                                        Priority
-                                                    </th>
-
-                                                    <th className="w-[22%] px-6 py-4 text-center font-semibold">
-                                                        Scheduling Status
-                                                    </th>
-                                                </tr>
-                                            </thead>
-
-                                            <tbody>
-                                                {filteredTclRows.map(
-                                                    (row) => {
-                                                        const status =
-                                                            getTclStatus(row);
-
-                                                        return (
-                                                            <tr
-                                                                key={`${row.patient_id}-${row.vaccine_id}-${row.dose_number}`}
-                                                                className="border-b-2 last:border-b-0 hover:bg-muted/20"
+                                    <>
+                                        {/* Mobile View (< md): Compact Cards */}
+                                        <div className="d-block d-md-none divide-y divide-border/60">
+                                            {filteredTclRows.map((row) => {
+                                                const status = getTclStatus(row);
+                                                return (
+                                                    <div
+                                                        key={`${row.patient_id}-${row.vaccine_id}-${row.dose_number}`}
+                                                        className="p-3 space-y-1.5 hover:bg-muted/15 transition-colors"
+                                                    >
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    router.visit(
+                                                                        route('patients.show', row.patient_id),
+                                                                    )
+                                                                }
+                                                                className="text-left font-semibold text-xs underline-offset-4 hover:underline text-foreground truncate"
                                                             >
-                                                                <td className="border-r-2 px-6 py-5 text-left align-middle">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            router.visit(
-                                                                                route(
-                                                                                    'patients.show',
-                                                                                    row.patient_id,
-                                                                                ),
-                                                                            )
-                                                                        }
-                                                                        className="font-semibold underline-offset-4 hover:underline"
-                                                                    >
-                                                                        {row.patient_name}
-                                                                    </button>
-                                                                </td>
+                                                                {row.patient_name}
+                                                            </button>
+                                                            <span
+                                                                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${getPriorityClass(
+                                                                    row.schedule_label,
+                                                                )}`}
+                                                            >
+                                                                {row.schedule_label}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                                                            <span className="font-mono bg-muted/70 px-1.5 py-0.2 rounded text-[10px] text-foreground/80">
+                                                                {row.patient_code ?? '—'}
+                                                            </span>
+                                                            <span>Dose {row.dose_number}</span>
+                                                            <span className={`font-medium ${status.className}`}>
+                                                                {status.text}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
 
-                                                                <td className="border-r-2 px-6 py-5 text-center align-middle text-muted-foreground">
-                                                                    {row.patient_code ??
-                                                                        '—'}
-                                                                </td>
+                                        {/* Desktop View (md+): Fluid Table */}
+                                        <div className="d-none d-md-block w-full max-w-full overflow-x-auto">
+                                            <table className="w-full table-fixed text-sm">
+                                                <thead className="border-b-2 bg-muted/40">
+                                                    <tr>
+                                                        <th className="w-[32%] border-r-2 px-6 py-4 text-left font-semibold">
+                                                            Patient
+                                                        </th>
+                                                        <th className="w-[16%] border-r-2 px-6 py-4 text-center font-semibold">
+                                                            PID
+                                                        </th>
+                                                        <th className="w-[12%] border-r-2 px-6 py-4 text-center font-semibold">
+                                                            Dose
+                                                        </th>
+                                                        <th className="w-[18%] border-r-2 px-6 py-4 text-center font-semibold">
+                                                            Priority
+                                                        </th>
+                                                        <th className="w-[22%] px-6 py-4 text-center font-semibold">
+                                                            Scheduling Status
+                                                        </th>
+                                                    </tr>
+                                                </thead>
 
-                                                                <td className="border-r-2 px-6 py-5 text-center align-middle">
-                                                                    Dose{' '}
-                                                                    {
-                                                                        row.dose_number
-                                                                    }
-                                                                </td>
+                                                <tbody>
+                                                    {filteredTclRows.map(
+                                                        (row) => {
+                                                            const status =
+                                                                getTclStatus(row);
 
-                                                                <td className="border-r-2 px-6 py-5 text-center align-middle">
-                                                                    <span
-                                                                        className={`font-semibold ${getPriorityClass(
-                                                                            row.schedule_label,
-                                                                        )}`}
-                                                                    >
+                                                            return (
+                                                                <tr
+                                                                    key={`${row.patient_id}-${row.vaccine_id}-${row.dose_number}`}
+                                                                    className="border-b-2 last:border-b-0 hover:bg-muted/20"
+                                                                >
+                                                                    <td className="border-r-2 px-6 py-5 text-left align-middle">
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                router.visit(
+                                                                                    route(
+                                                                                        'patients.show',
+                                                                                        row.patient_id,
+                                                                                    ),
+                                                                                )
+                                                                            }
+                                                                            className="font-semibold underline-offset-4 hover:underline"
+                                                                        >
+                                                                            {row.patient_name}
+                                                                        </button>
+                                                                    </td>
+
+                                                                    <td className="border-r-2 px-6 py-5 text-center align-middle text-muted-foreground">
+                                                                        {row.patient_code ??
+                                                                            '—'}
+                                                                    </td>
+
+                                                                    <td className="border-r-2 px-6 py-5 text-center align-middle">
+                                                                        Dose{' '}
                                                                         {
-                                                                            row.schedule_label
+                                                                            row.dose_number
                                                                         }
-                                                                    </span>
-                                                                </td>
+                                                                    </td>
 
-                                                                <td className="px-6 py-5 text-center align-middle">
-                                                                    <span
-                                                                        className={`font-medium ${status.className}`}
-                                                                    >
-                                                                        {
-                                                                            status.text
-                                                                        }
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    },
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                                    <td className="border-r-2 px-6 py-5 text-center align-middle">
+                                                                        <span
+                                                                            className={`font-semibold ${getPriorityClass(
+                                                                                row.schedule_label,
+                                                                            )}`}
+                                                                        >
+                                                                            {
+                                                                                row.schedule_label
+                                                                            }
+                                                                        </span>
+                                                                    </td>
+
+                                                                    <td className="px-6 py-5 text-center align-middle">
+                                                                        <span
+                                                                            className={`font-medium ${status.className}`}
+                                                                        >
+                                                                            {
+                                                                                status.text
+                                                                            }
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        },
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </>
                                 ) : (
                                     <div>
                                         {patientGroups.map(
@@ -1096,7 +1146,7 @@ export default function ImmunizationIndex({
                                                             aria-expanded={
                                                                 isExpanded
                                                             }
-                                                            className="grid w-full grid-cols-[44px_minmax(0,1fr)_260px] items-center gap-3 px-5 py-5 text-left transition-colors hover:bg-muted/30"
+                                                            className="grid w-full grid-cols-[36px_minmax(0,1fr)] sm:grid-cols-[44px_minmax(0,1fr)_260px] items-center gap-2 sm:gap-3 px-3 sm:px-5 py-3.5 sm:py-5 text-left transition-colors hover:bg-muted/30"
                                                         >
                                                             <div className="flex items-center justify-center text-muted-foreground">
                                                                 {isExpanded ? (
@@ -1108,7 +1158,7 @@ export default function ImmunizationIndex({
 
                                                             <div className="min-w-0">
                                                                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                                                                    <p className="font-semibold">
+                                                                    <p className="font-semibold text-sm sm:text-base">
                                                                         {
                                                                             patient.patient_name
                                                                         }
@@ -1120,21 +1170,21 @@ export default function ImmunizationIndex({
                                                                     </p>
                                                                 </div>
 
-                                                                <p className="mt-1 truncate text-sm text-muted-foreground">
+                                                                <p className="mt-1 truncate text-xs sm:text-sm text-muted-foreground">
                                                                     {getVaccineSummary(
                                                                         patient,
                                                                     )}
                                                                 </p>
                                                             </div>
 
-                                                            <div className="border-l pl-6 text-right">
-                                                                <p className="text-sm font-medium">
+                                                            <div className="col-span-2 sm:col-span-1 border-t sm:border-t-0 sm:border-l pt-2 sm:pt-0 pl-10 sm:pl-6 text-left sm:text-right">
+                                                                <p className="text-xs sm:text-sm font-medium">
                                                                     {getGroupSummary(
                                                                         patient,
                                                                     )}
                                                                 </p>
 
-                                                                <p className="mt-1 text-xs text-muted-foreground">
+                                                                <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-muted-foreground">
                                                                     {isExpanded
                                                                         ? 'Hide details'
                                                                         : 'View details'}
@@ -1143,7 +1193,7 @@ export default function ImmunizationIndex({
                                                         </button>
 
                                                         {isExpanded && (
-                                                            <div className="border-t bg-muted/10 px-6 py-2 pl-[72px]">
+                                                            <div className="border-t bg-muted/10 px-3 sm:px-6 py-2 sm:pl-[72px] min-w-0 max-w-full">
                                                                 {patient.rows.map(
                                                                     (
                                                                         row,
@@ -1246,27 +1296,88 @@ export default function ImmunizationIndex({
                                 )}
                             </div>
                         ) : viewMode === 'scheduled' ? (
-                            <div className="overflow-hidden rounded-lg border">
-                                <div className="overflow-x-auto">
+                            <div className="w-full max-w-full overflow-hidden rounded-lg border">
+                                {/* Mobile View (< md): Compact Scheduled Cards */}
+                                <div className="d-block d-md-none divide-y divide-border/60">
+                                    {scheduledGroups.length === 0 ? (
+                                        <div className="p-6 text-center space-y-2">
+                                            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                                <CalendarDays className="h-5 w-5" />
+                                            </div>
+                                            <p className="font-medium text-xs text-foreground">No scheduled vaccinations</p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                No appointments match current filters.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        scheduledGroups.map((group) => {
+                                            const isExpanded = expandedScheduledGroups.has(group.key);
+                                            return (
+                                                <div key={group.key} className="p-3 space-y-2 hover:bg-muted/15 transition-colors">
+                                                    <div
+                                                        onClick={() => toggleScheduledGroup(group.key)}
+                                                        className="cursor-pointer space-y-1.5"
+                                                    >
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <div className="flex items-center gap-2 min-w-0">
+                                                                {isExpanded ? (
+                                                                    <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                                                ) : (
+                                                                    <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                                                )}
+                                                                <p className="font-semibold text-xs text-foreground truncate">{group.patient_name}</p>
+                                                            </div>
+                                                            <span
+                                                                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${getPriorityClass(
+                                                                    group.schedule_label,
+                                                                )}`}
+                                                            >
+                                                                {group.schedule_label ?? '—'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between text-[11px] text-muted-foreground pl-5.5">
+                                                            <span className="inline-flex items-center gap-1">
+                                                                <CalendarDays className="h-3 w-3" />
+                                                                {group.scheduled_date ? formatDate(group.scheduled_date) : 'No date'}
+                                                            </span>
+                                                            <span className="font-medium text-foreground/80">
+                                                                {group.rows.length} {group.rows.length === 1 ? 'vaccine' : 'vaccines'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    {isExpanded && (
+                                                        <div className="ml-5.5 border-t border-border/40 pt-2 space-y-1.5">
+                                                            {group.rows.map((row) => (
+                                                                <div key={row.id} className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded bg-muted/30">
+                                                                    <span className="font-medium text-foreground">{row.vaccine_name ?? 'Unknown vaccine'}</span>
+                                                                    <span className="text-muted-foreground text-[11px]">Dose {row.dose_number}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
+                                {/* Desktop View (md+): Fluid Table */}
+                                <div className="d-none d-md-block w-full max-w-full overflow-x-auto">
                                     <table className="w-full table-fixed text-sm">
                                         <thead className="border-b-2 bg-muted/40">
                                             <tr>
                                                 <th className="w-[32%] border-r-2 px-5 py-4 text-left font-semibold">
                                                     Patient
                                                 </th>
-
                                                 <th className="w-[16%] border-r-2 px-5 py-4 text-center font-semibold">
                                                     PID
                                                 </th>
-
                                                 <th className="w-[20%] border-r-2 px-5 py-4 text-center font-semibold">
                                                     Scheduled Date
                                                 </th>
-
                                                 <th className="w-[15%] border-r-2 px-5 py-4 text-center font-semibold">
                                                     Priority
                                                 </th>
-
                                                 <th className="w-[17%] px-5 py-4 text-center font-semibold">
                                                     Vaccines
                                                 </th>
@@ -1284,11 +1395,9 @@ export default function ImmunizationIndex({
                                                             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                                                                 <CalendarDays className="h-5 w-5 text-muted-foreground" />
                                                             </div>
-
                                                             <p className="font-medium">
                                                                 No scheduled vaccinations
                                                             </p>
-
                                                             <p className="mt-1 text-sm text-muted-foreground">
                                                                 No appointments match the current patient or vaccine filters.
                                                             </p>
@@ -1340,7 +1449,6 @@ export default function ImmunizationIndex({
                                                                         {group.scheduled_date ? (
                                                                             <span className="inline-flex items-center justify-center gap-2">
                                                                                 <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
-
                                                                                 {formatDate(
                                                                                     group.scheduled_date,
                                                                                 )}
@@ -1400,11 +1508,9 @@ export default function ImmunizationIndex({
                                                                                         <th className="w-[55%] border-r px-6 py-3 text-left font-medium text-muted-foreground">
                                                                                             Vaccine
                                                                                         </th>
-
                                                                                         <th className="w-[20%] border-r px-6 py-3 text-center font-medium text-muted-foreground">
                                                                                             Dose
                                                                                         </th>
-
                                                                                         <th className="w-[25%] px-6 py-3 text-center font-medium text-muted-foreground">
                                                                                             Priority
                                                                                         </th>
@@ -1436,7 +1542,7 @@ export default function ImmunizationIndex({
 
                                                                                                 <td className="px-6 py-4 text-center">
                                                                                                     <span
-                                                                                                        className={`font-medium ${getPriorityClass(
+                                                                                                        className={`font-semibold ${getPriorityClass(
                                                                                                             row.schedule_label,
                                                                                                         )}`}
                                                                                                     >
@@ -1462,7 +1568,7 @@ export default function ImmunizationIndex({
                                 </div>
                             </div>
                         ) : (
-                            <div className="overflow-hidden rounded-lg border">
+                            <div className="w-full max-w-full overflow-hidden rounded-lg border">
                                 <div className="flex flex-wrap items-center justify-between gap-4 border-b bg-muted/20 px-5 py-4">
                                     <div className="flex items-center gap-2">
                                         <ShieldCheck className="h-4 w-4 text-emerald-600" />
@@ -1480,7 +1586,61 @@ export default function ImmunizationIndex({
                                     </p>
                                 </div>
 
-                                <div className="overflow-x-auto">
+                                {/* Mobile View (< md): Compact Administration History Cards */}
+                                <div className="d-block d-md-none divide-y divide-border/60">
+                                    {filteredCompletedRows.length === 0 ? (
+                                        <div className="p-6 text-center space-y-2">
+                                            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                                <History className="h-5 w-5" />
+                                            </div>
+                                            <p className="font-medium text-xs text-foreground">No administration records found</p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                {normalizedSearch || vaccineFilter !== 'all'
+                                                    ? 'No records match search/filter criteria.'
+                                                    : 'No pediatric vaccinations recorded yet.'}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        filteredCompletedRows.map((row) => (
+                                            <div key={row.id} className="p-3 space-y-2 hover:bg-muted/15 transition-colors">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div>
+                                                        <p className="font-semibold text-xs text-foreground">{row.patient_name}</p>
+                                                        <p className="text-[10px] text-muted-foreground font-mono">{row.patient_code ?? 'PID —'}</p>
+                                                    </div>
+                                                    <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
+                                                        <CalendarDays className="h-3 w-3" />
+                                                        {formatDate(row.date_administered)}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center justify-between text-xs py-1 px-2 rounded bg-muted/20">
+                                                    <span className="font-medium text-foreground">{row.vaccine_name ?? 'Unknown vaccine'}</span>
+                                                    <span className="text-primary font-semibold text-[11px]">Dose {row.dose_number}</span>
+                                                </div>
+
+                                                <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px]">
+                                                    <div className="text-muted-foreground text-[10px] truncate max-w-[60%]">
+                                                        <span>Batch: <strong className="font-mono text-foreground">{row.batch_number || '—'}</strong></span>
+                                                        <span className="ml-1.5">• {row.administered_by_name}</span>
+                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => router.visit(route('patients.show', row.patient_id))}
+                                                        className="inline-flex items-center gap-1 rounded border bg-background px-2 py-1 text-[11px] font-medium transition-colors hover:bg-muted shrink-0"
+                                                    >
+                                                        <Eye className="h-3 w-3" />
+                                                        View
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+
+                                {/* Desktop View (md+): Fluid Table */}
+                                <div className="d-none d-md-block w-full max-w-full overflow-x-auto">
                                     <table className="w-full text-sm">
                                         <thead className="border-b bg-muted/40 text-xs uppercase font-medium text-muted-foreground">
                                             <tr>

@@ -267,10 +267,10 @@ export default function VaccineInventoryTransactions() {
         >
             <Head title="Inventory Transaction History - Bugo Health Center" />
 
-            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 sm:gap-6 p-2.5 sm:p-4 lg:p-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Inventory Transaction History</h1>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Inventory Transaction History</h1>
+                    <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
                         Complete chronological audit ledger tracking all vaccine movements, administrations, stock receipts, and wastage events.
                     </p>
                 </div>
@@ -279,71 +279,71 @@ export default function VaccineInventoryTransactions() {
                 <InventorySubnav current="transactions" />
 
                 {/* Metrics Cards */}
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-2.5 sm:gap-4 grid-cols-2 xl:grid-cols-4">
                     <Card className="border-border/60">
-                        <CardContent className="p-5 flex items-center justify-between">
-                            <div className="space-y-1">
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <CardContent className="p-3 sm:p-4 flex items-center justify-between">
+                            <div className="space-y-0.5 sm:space-y-1">
+                                <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                     Total Received
                                 </p>
-                                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                                <p className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                                     +{summary.total_received.toLocaleString()}
                                 </p>
-                                <p className="text-[11px] text-muted-foreground">Doses stocked into inventory</p>
+                                <p className="text-[10px] sm:text-[11px] text-muted-foreground hidden sm:block">Doses stocked into inventory</p>
                             </div>
-                            <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                                <PackageCheck className="h-6 w-6" />
+                            <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                                <PackageCheck className="h-5 w-5 sm:h-6 sm:w-6" />
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card className="border-border/60">
-                        <CardContent className="p-5 flex items-center justify-between">
-                            <div className="space-y-1">
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <CardContent className="p-3 sm:p-4 flex items-center justify-between">
+                            <div className="space-y-0.5 sm:space-y-1">
+                                <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                     Total Administered
                                 </p>
-                                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                                     {summary.total_administered.toLocaleString()}
                                 </p>
-                                <p className="text-[11px] text-muted-foreground">Doses given to patients</p>
+                                <p className="text-[10px] sm:text-[11px] text-muted-foreground hidden sm:block">Doses given to patients</p>
                             </div>
-                            <div className="h-11 w-11 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                                <Syringe className="h-6 w-6" />
+                            <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                <Syringe className="h-5 w-5 sm:h-6 sm:w-6" />
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card className="border-border/60">
-                        <CardContent className="p-5 flex items-center justify-between">
-                            <div className="space-y-1">
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <CardContent className="p-3 sm:p-4 flex items-center justify-between">
+                            <div className="space-y-0.5 sm:space-y-1">
+                                <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                     Wastage / Spoilage
                                 </p>
-                                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                                <p className="text-lg sm:text-2xl font-bold text-amber-600 dark:text-amber-400">
                                     {summary.total_wastage.toLocaleString()}
                                 </p>
-                                <p className="text-[11px] text-muted-foreground">Doses discarded or compromised</p>
+                                <p className="text-[10px] sm:text-[11px] text-muted-foreground hidden sm:block">Doses discarded or compromised</p>
                             </div>
-                            <div className="h-11 w-11 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                                <AlertTriangle className="h-6 w-6" />
+                            <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                                <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6" />
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card className="border-border/60">
-                        <CardContent className="p-5 flex items-center justify-between">
-                            <div className="space-y-1">
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <CardContent className="p-3 sm:p-4 flex items-center justify-between">
+                            <div className="space-y-0.5 sm:space-y-1">
+                                <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                     Audit Events
                                 </p>
-                                <p className="text-2xl font-bold text-foreground">
+                                <p className="text-lg sm:text-2xl font-bold text-foreground">
                                     {summary.total_transactions.toLocaleString()}
                                 </p>
-                                <p className="text-[11px] text-muted-foreground">Total immutable logged transactions</p>
+                                <p className="text-[10px] sm:text-[11px] text-muted-foreground hidden sm:block">Total immutable logged events</p>
                             </div>
-                            <div className="h-11 w-11 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                                <History className="h-6 w-6" />
+                            <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                <History className="h-5 w-5 sm:h-6 sm:w-6" />
                             </div>
                         </CardContent>
                     </Card>
@@ -351,7 +351,7 @@ export default function VaccineInventoryTransactions() {
 
                 {/* Filter Controls Card */}
                 <Card className="border-border/60 shadow-2xs">
-                    <CardContent className="p-4 sm:p-5">
+                    <CardContent className="p-3 sm:p-4">
                         <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 items-center">
                             {/* Search */}
                             <div className="relative sm:col-span-2 lg:col-span-3 xl:col-span-4 min-w-0">
@@ -487,149 +487,234 @@ export default function VaccineInventoryTransactions() {
                                 )}
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-xs">
-                                    <thead className="border-b bg-muted/40 text-muted-foreground font-medium uppercase tracking-wider text-[10px]">
-                                        <tr>
-                                            <th className="py-3 px-4 text-left">Date & Time</th>
-                                            <th className="py-3 px-4 text-left">Type</th>
-                                            <th className="py-3 px-4 text-left">Vaccine</th>
-                                            <th className="py-3 px-4 text-left">Batch / Lot</th>
-                                            <th className="py-3 px-4 text-right">Quantity Change</th>
-                                            <th className="py-3 px-4 text-right">Balance</th>
-                                            <th className="py-3 px-4 text-left">Patient / Destination</th>
-                                            <th className="py-3 px-4 text-left">Logged By</th>
-                                            <th className="py-3 px-4 text-left">Remarks</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border/60">
-                                        {transactions.data.map((item) => {
-                                            const isPositive = item.quantity_change > 0;
-                                            const isNegative = item.quantity_change < 0;
+                            <>
+                                {/* Mobile Card List View (<md) */}
+                                <div className="d-block d-md-none divide-y divide-border/60">
+                                    {transactions.data.map((item) => {
+                                        const isPositive = item.quantity_change > 0;
+                                        const isNegative = item.quantity_change < 0;
 
-                                            return (
-                                                <tr
-                                                    key={item.id}
-                                                    className="hover:bg-muted/30 transition-colors"
-                                                >
-                                                    {/* Date & Time */}
-                                                    <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">
-                                                        {formatDateTime(item.created_at)}
-                                                    </td>
-
-                                                    {/* Type */}
-                                                    <td className="py-3 px-4 whitespace-nowrap">
-                                                        {getTransactionBadge(item.transaction_type)}
-                                                    </td>
-
-                                                    {/* Vaccine */}
-                                                    <td className="py-3 px-4 font-medium text-foreground">
-                                                        <div>{item.vaccine?.name || '—'}</div>
-                                                        {item.vaccine?.category && (
-                                                            <span className="text-[10px] text-muted-foreground capitalize">
-                                                                {item.vaccine.category}
+                                        return (
+                                            <div key={`mob-${item.id}`} className="p-3 space-y-2 hover:bg-muted/20 transition-colors">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div>
+                                                        <div className="font-semibold text-foreground text-xs">
+                                                            {item.vaccine?.name || '—'}
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap text-[11px] text-muted-foreground">
+                                                            <span>{formatDateTime(item.created_at)}</span>
+                                                            <span>•</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setSelectedBatch({
+                                                                        id: item.vaccine_inventory_id || item.id,
+                                                                        batch_number: item.batch_number,
+                                                                        quantity: item.balance_after ?? 0,
+                                                                        expiration_date: '—',
+                                                                        vaccine_name: item.vaccine?.name,
+                                                                    });
+                                                                    setQrModalOpen(true);
+                                                                }}
+                                                                className="inline-flex items-center gap-1 font-mono text-primary hover:underline"
+                                                            >
+                                                                #{item.batch_number}
+                                                                <QrCode className="h-3 w-3 opacity-60" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="shrink-0 text-right">
+                                                        <div>{getTransactionBadge(item.transaction_type)}</div>
+                                                        <div className="mt-1 font-bold text-xs">
+                                                            <span
+                                                                className={
+                                                                    isPositive
+                                                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                                                        : isNegative
+                                                                        ? 'text-foreground'
+                                                                        : 'text-muted-foreground'
+                                                                }
+                                                            >
+                                                                {isPositive ? `+${item.quantity_change}` : item.quantity_change}
                                                             </span>
-                                                        )}
-                                                    </td>
+                                                            <span className="text-[10px] text-muted-foreground font-normal ml-0.5">doses</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-                                                    {/* Batch / Lot */}
-                                                    <td className="py-3 px-4 whitespace-nowrap">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setSelectedBatch({
-                                                                    id: item.vaccine_inventory_id || item.id,
-                                                                    batch_number: item.batch_number,
-                                                                    quantity: item.balance_after ?? 0,
-                                                                    expiration_date: '—',
-                                                                    vaccine_name: item.vaccine?.name,
-                                                                });
-                                                                setQrModalOpen(true);
-                                                            }}
-                                                            className="inline-flex items-center gap-1.5 font-mono font-semibold text-primary hover:underline group"
-                                                            title="View Batch QR code"
-                                                        >
-                                                            <span>{item.batch_number}</span>
-                                                            <QrCode className="h-3.5 w-3.5 opacity-60 group-hover:opacity-100" />
-                                                        </button>
-                                                    </td>
-
-                                                    {/* Quantity Change */}
-                                                    <td className="py-3 px-4 text-right whitespace-nowrap font-bold">
-                                                        <span
-                                                            className={
-                                                                isPositive
-                                                                    ? 'text-emerald-600 dark:text-emerald-400'
-                                                                    : isNegative
-                                                                    ? 'text-foreground'
-                                                                    : 'text-muted-foreground'
-                                                            }
-                                                        >
-                                                            {isPositive ? `+${item.quantity_change}` : item.quantity_change}
-                                                        </span>
-                                                        <span className="text-[10px] text-muted-foreground font-normal ml-1">
-                                                            doses
-                                                        </span>
-                                                    </td>
-
-                                                    {/* Balance After */}
-                                                    <td className="py-3 px-4 text-right whitespace-nowrap text-muted-foreground font-medium">
-                                                        {item.balance_after !== null ? (
-                                                            <span>{item.balance_after} doses</span>
-                                                        ) : (
-                                                            '—'
-                                                        )}
-                                                    </td>
-
-                                                    {/* Patient / Destination */}
-                                                    <td className="py-3 px-4 whitespace-nowrap">
+                                                <div className="flex flex-wrap items-center justify-between gap-1 text-[11px] border-t border-border/40 pt-1.5 text-muted-foreground">
+                                                    <div>
                                                         {item.patient ? (
                                                             <Link
                                                                 href={route('patients.show', item.patient.id)}
-                                                                className="font-medium text-primary hover:underline flex items-center gap-1.5"
+                                                                className="font-medium text-primary hover:underline"
                                                             >
-                                                                <span>
-                                                                    {item.patient.first_name}{' '}
-                                                                    {item.patient.last_name}
-                                                                </span>
-                                                                <span className="text-[10px] text-muted-foreground font-mono">
-                                                                    ({item.patient.patient_id})
-                                                                </span>
+                                                                {item.patient.first_name} {item.patient.last_name}
                                                             </Link>
+                                                        ) : item.remarks ? (
+                                                            <span className="italic truncate max-w-[180px] inline-block align-bottom">{item.remarks}</span>
                                                         ) : (
-                                                            <span className="text-muted-foreground">—</span>
+                                                            <span>No recipient</span>
                                                         )}
-                                                    </td>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <span>Bal:</span>
+                                                        <strong className="text-foreground font-mono">{item.balance_after !== null ? `${item.balance_after}` : '—'}</strong>
+                                                        {item.user?.name && (
+                                                            <span className="text-muted-foreground/70 ml-1">({item.user.name.split(' ')[0]})</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
 
-                                                    {/* Logged By */}
-                                                    <td className="py-3 px-4 whitespace-nowrap">
-                                                        {item.user ? (
-                                                            <div className="flex items-center gap-1.5 text-muted-foreground">
-                                                                <User className="h-3 w-3 text-muted-foreground/80" />
-                                                                <span className="font-medium text-foreground">
-                                                                    {item.user.name}
+                                {/* Desktop Table View (>=md) */}
+                                <div className="d-none d-md-block overflow-x-auto">
+                                    <table className="w-full text-xs">
+                                        <thead className="border-b bg-muted/40 text-muted-foreground font-medium uppercase tracking-wider text-[10px]">
+                                            <tr>
+                                                <th className="py-3 px-4 text-left">Date & Time</th>
+                                                <th className="py-3 px-4 text-left">Type</th>
+                                                <th className="py-3 px-4 text-left">Vaccine</th>
+                                                <th className="py-3 px-4 text-left">Batch / Lot</th>
+                                                <th className="py-3 px-4 text-right">Quantity Change</th>
+                                                <th className="py-3 px-4 text-right">Balance</th>
+                                                <th className="py-3 px-4 text-left">Patient / Destination</th>
+                                                <th className="py-3 px-4 text-left">Logged By</th>
+                                                <th className="py-3 px-4 text-left">Remarks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border/60">
+                                            {transactions.data.map((item) => {
+                                                const isPositive = item.quantity_change > 0;
+                                                const isNegative = item.quantity_change < 0;
+
+                                                return (
+                                                    <tr
+                                                        key={item.id}
+                                                        className="hover:bg-muted/30 transition-colors"
+                                                    >
+                                                        {/* Date & Time */}
+                                                        <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">
+                                                            {formatDateTime(item.created_at)}
+                                                        </td>
+
+                                                        {/* Type */}
+                                                        <td className="py-3 px-4 whitespace-nowrap">
+                                                            {getTransactionBadge(item.transaction_type)}
+                                                        </td>
+
+                                                        {/* Vaccine */}
+                                                        <td className="py-3 px-4 font-medium text-foreground">
+                                                            <div>{item.vaccine?.name || '—'}</div>
+                                                            {item.vaccine?.category && (
+                                                                <span className="text-[10px] text-muted-foreground capitalize">
+                                                                    {item.vaccine.category}
                                                                 </span>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-muted-foreground">System</span>
-                                                        )}
-                                                    </td>
+                                                            )}
+                                                        </td>
 
-                                                    {/* Remarks */}
-                                                    <td className="py-3 px-4 text-muted-foreground max-w-[200px] truncate" title={item.remarks || ''}>
-                                                        {item.remarks || '—'}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                        {/* Batch / Lot */}
+                                                        <td className="py-3 px-4 whitespace-nowrap">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setSelectedBatch({
+                                                                        id: item.vaccine_inventory_id || item.id,
+                                                                        batch_number: item.batch_number,
+                                                                        quantity: item.balance_after ?? 0,
+                                                                        expiration_date: '—',
+                                                                        vaccine_name: item.vaccine?.name,
+                                                                    });
+                                                                    setQrModalOpen(true);
+                                                                }}
+                                                                className="inline-flex items-center gap-1.5 font-mono font-semibold text-primary hover:underline group"
+                                                                title="View Batch QR code"
+                                                            >
+                                                                <span>{item.batch_number}</span>
+                                                                <QrCode className="h-3.5 w-3.5 opacity-60 group-hover:opacity-100" />
+                                                            </button>
+                                                        </td>
+
+                                                        {/* Quantity Change */}
+                                                        <td className="py-3 px-4 text-right whitespace-nowrap font-bold">
+                                                            <span
+                                                                className={
+                                                                    isPositive
+                                                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                                                        : isNegative
+                                                                        ? 'text-foreground'
+                                                                        : 'text-muted-foreground'
+                                                                }
+                                                            >
+                                                                {isPositive ? `+${item.quantity_change}` : item.quantity_change}
+                                                            </span>
+                                                            <span className="text-[10px] text-muted-foreground font-normal ml-1">
+                                                                doses
+                                                            </span>
+                                                        </td>
+
+                                                        {/* Balance After */}
+                                                        <td className="py-3 px-4 text-right whitespace-nowrap text-muted-foreground font-medium">
+                                                            {item.balance_after !== null ? (
+                                                                <span>{item.balance_after} doses</span>
+                                                            ) : (
+                                                                '—'
+                                                            )}
+                                                        </td>
+
+                                                        {/* Patient / Destination */}
+                                                        <td className="py-3 px-4 whitespace-nowrap">
+                                                            {item.patient ? (
+                                                                <Link
+                                                                    href={route('patients.show', item.patient.id)}
+                                                                    className="font-medium text-primary hover:underline flex items-center gap-1.5"
+                                                                >
+                                                                    <span>
+                                                                        {item.patient.first_name}{' '}
+                                                                        {item.patient.last_name}
+                                                                    </span>
+                                                                    <span className="text-[10px] text-muted-foreground font-mono">
+                                                                        ({item.patient.patient_id})
+                                                                    </span>
+                                                                </Link>
+                                                            ) : (
+                                                                <span className="text-muted-foreground">—</span>
+                                                            )}
+                                                        </td>
+
+                                                        {/* Logged By */}
+                                                        <td className="py-3 px-4 whitespace-nowrap">
+                                                            {item.user ? (
+                                                                <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                                    <User className="h-3 w-3 text-muted-foreground/80" />
+                                                                    <span className="font-medium text-foreground">
+                                                                        {item.user.name}
+                                                                    </span>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-muted-foreground">System</span>
+                                                            )}
+                                                        </td>
+
+                                                        {/* Remarks */}
+                                                        <td className="py-3 px-4 text-muted-foreground max-w-[200px] truncate" title={item.remarks || ''}>
+                                                            {item.remarks || '—'}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
                         )}
 
                         {/* Pagination Links */}
                         {transactions.links.length > 3 && (
-                            <div className="flex items-center justify-between border-t border-border/60 px-4 py-3 text-xs">
+                            <div className="flex flex-col sm:flex-row items-center justify-between border-t border-border/60 px-3 py-2.5 sm:px-4 sm:py-3 text-xs gap-2">
                                 <div className="text-muted-foreground">
                                     Showing {transactions.from ?? 0} to {transactions.to ?? 0} of{' '}
                                     {transactions.total} transactions
