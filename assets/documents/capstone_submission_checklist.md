@@ -59,10 +59,10 @@
 
 ### 1.7 Testing (5 Points)
 * [x] **Multi-Tier Test Suites**:
-  * Unit: [`tests/unit/`](../../tests/unit/) (`DateHelperTest.php`, `PatientIdGeneratorTest.php`, `ExampleTest.php`)
-  * Integration: [`tests/integration/`](../../tests/integration/) (`DashboardTest.php`, `Settings/`)
-  * System: [`tests/system/`](../../tests/system/) (`Auth/`, `PatientManagementTest.php`)
-* [x] Automated test suite execution: **34 tests passed (89 assertions), 0 failures**.
+  * Unit: [`tests/unit/`](../../tests/unit/) (`DateHelperTest.php`, `PatientIdGeneratorTest.php`, `VaccineArchivingTest.php`, `ExampleTest.php`)
+  * Integration: [`tests/integration/`](../../tests/integration/) (`DashboardTest.php`, `GuardianPortalTest.php`, `Settings/`)
+  * System: [`tests/system/`](../../tests/system/) (`Auth/`, `PatientManagementTest.php`, `InventoryTransactionTest.php`)
+* [x] Automated test suite execution: **52 tests passed (235 assertions), 0 failures**.
 
 ### 1.8 Git/Version Control Practices (5 Points)
 * [x] Initialized Git repository on `main` branch.
