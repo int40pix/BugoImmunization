@@ -21,9 +21,13 @@ echo.
 start "Bugo Backend" cmd /k "cd /d %~dp0backend && php artisan serve --port=8000"
 start "Bugo Frontend" cmd /k "cd /d %~dp0frontend && npm run dev"
 
+echo =====================================================================
+echo  Servers successfully launched!
+echo =====================================================================
 echo.
-echo Servers launched!
-echo - Backend API: http://127.0.0.1:8000
-echo - Frontend SPA: http://127.0.0.1:5173
+echo  👉 OPEN YOUR BROWSER AT: http://127.0.0.1:8000
+echo.
+echo  (Vite hot-reload asset server is running in background on :5173)
+echo =====================================================================
 echo.
 pause
