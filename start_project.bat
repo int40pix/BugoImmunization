@@ -4,6 +4,17 @@ echo =====================================================================
 echo  Barangay Bugo Immunization Management System - Capstone Development
 echo =====================================================================
 echo.
+
+if not exist "%~dp0backend\.env" (
+    echo [.env Notice] backend\.env not found. Creating from .env.example...
+    copy "%~dp0backend\.env.example" "%~dp0backend\.env" >nul
+    echo [.env Notice] Generating application encryption key...
+    cd /d "%~dp0backend" && php artisan key:generate
+    cd /d "%~dp0"
+    echo [.env Notice] backend\.env created and initialized successfully!
+    echo.
+)
+
 echo Starting Backend (Laravel) and Frontend (Vite) concurrently...
 echo.
 
