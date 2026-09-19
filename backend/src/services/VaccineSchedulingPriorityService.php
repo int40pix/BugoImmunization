@@ -118,6 +118,15 @@ class VaccineSchedulingPriorityService
                             'schedule_label' =>
                                 $option['schedule_label'],
 
+                            'days_due' =>
+                                $option['days_due'] ?? 0,
+
+                            'days_overdue' =>
+                                $option['days_overdue'] ?? 0,
+
+                            'target_wednesday' =>
+                                $option['target_wednesday'] ?? null,
+
                             'available_stock' =>
                                 $option['available_stock'],
 
@@ -812,6 +821,15 @@ class VaccineSchedulingPriorityService
                     'doses_remaining'
                 ],
 
+            'days_due' =>
+                (int) ($suggestion['days_due'] ?? 0),
+
+            'days_overdue' =>
+                (int) ($suggestion['days_overdue'] ?? 0),
+
+            'target_wednesday' =>
+                $suggestion['target_wednesday'] ?? null,
+
             'allocation_rank' =>
                 $suggestion[
                     'allocation_rank'
@@ -824,6 +842,7 @@ class VaccineSchedulingPriorityService
             'tie_break_order' => [
                 'series_completion',
                 'schedule_label',
+                'days_due',
                 'eligible_date',
                 'patient_name',
             ],
@@ -862,23 +881,30 @@ class VaccineSchedulingPriorityService
     private function getPriorityReason(
         array $candidate
     ): string {
+        $daysDue = (int) ($candidate['days_due'] ?? 0);
+
         if (
             (bool) $candidate[
                 'near_completion'
             ]
         ) {
-            return
-                'Series Completion Candidate';
+            return $daysDue > 0
+                ? "Series Completion ({$daysDue}d due)"
+                : 'Series Completion Candidate';
         }
 
         return match (
             $candidate['schedule_label']
         ) {
             'Overdue' =>
-                'Overdue',
+                $daysDue > 0
+                    ? "Overdue ({$daysDue} days due)"
+                    : 'Overdue',
 
             'Recent Due' =>
-                'Recent Due',
+                $daysDue > 0
+                    ? "Recent Due ({$daysDue} days due)"
+                    : 'Recent Due',
 
             'Current Age' =>
                 'Current Age',
@@ -1099,6 +1125,19 @@ class VaccineSchedulingPriorityService
         ) {
             return
                 $labelComparison;
+        }
+
+        /*
+         * Most overdue first: candidate with the highest days_due
+         * is prioritized ahead of candidates with lower days_due.
+         */
+        $daysDueComparison =
+            ((int) ($b['days_due'] ?? 0))
+            <=>
+            ((int) ($a['days_due'] ?? 0));
+
+        if ($daysDueComparison !== 0) {
+            return $daysDueComparison;
         }
 
         $dateComparison =

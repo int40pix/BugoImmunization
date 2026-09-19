@@ -39,6 +39,9 @@ export type VaccinationOption = {
     completed_doses: number;
     doses_remaining: number;
     schedule_label: string;
+    days_due?: number;
+    days_overdue?: number;
+    target_wednesday?: string | null;
     recommended_date: string | null;
     eligible_date: string | null;
     available_stock: number;
@@ -587,13 +590,20 @@ export default function VaccinationManagement({
                                                         <span className="inline-flex items-center rounded border border-primary/20 bg-primary/5 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium text-primary">
                                                             Dose {option.dose_number} of {option.required_doses}
                                                         </span>
-                                                        <span
-                                                            className={`text-[10px] sm:text-xs font-semibold ${getPriorityClass(
-                                                                option.schedule_label,
-                                                            )}`}
-                                                        >
-                                                            {option.schedule_label}
-                                                        </span>
+                                                        <div className="inline-flex items-center gap-1.5 flex-wrap">
+                                                            <span
+                                                                className={`text-[10px] sm:text-xs font-semibold ${getPriorityClass(
+                                                                    option.schedule_label,
+                                                                )}`}
+                                                            >
+                                                                {option.schedule_label}
+                                                            </span>
+                                                            {option.days_due && option.days_due > 0 && option.schedule_label !== 'Current Age' ? (
+                                                                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
+                                                                    ({option.days_due} days due)
+                                                                </span>
+                                                            ) : null}
+                                                        </div>
                                                     </div>
                                                     <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 capitalize">
                                                         Category: {option.category}

@@ -190,6 +190,18 @@ class PatientImmunizationScheduleService
 
                     'allocation_rank' =>
                         null,
+
+                    'schedule_label' =>
+                        null,
+
+                    'days_due' =>
+                        0,
+
+                    'days_overdue' =>
+                        0,
+
+                    'target_wednesday' =>
+                        null,
                 ];
 
                 continue;
@@ -336,6 +348,30 @@ class PatientImmunizationScheduleService
                 &&
                 $dosesRemaining === 1;
 
+            $targetWednesday = $eligibleDate ? $this->getTargetWednesday($eligibleDate) : null;
+            $daysDue = ($eligibleDate && $today->greaterThan($eligibleDate))
+                ? (int) $today->diffInDays($eligibleDate)
+                : 0;
+
+            $scheduleLabel = 'Current Age';
+            $daysOverdue = 0;
+
+            if ($targetWednesday) {
+                if ($today->lessThanOrEqualTo($targetWednesday)) {
+                    $scheduleLabel = 'Current Age';
+                    $daysOverdue = 0;
+                } else {
+                    $daysPastWednesday = (int) $targetWednesday->diffInDays($today);
+                    $daysOverdue = $daysPastWednesday;
+
+                    if ($daysPastWednesday <= 14) {
+                        $scheduleLabel = 'Recent Due';
+                    } else {
+                        $scheduleLabel = 'Overdue';
+                    }
+                }
+            }
+
             $result[] = [
                 'vaccine_id' =>
                     $vaccine->id,
@@ -384,6 +420,19 @@ class PatientImmunizationScheduleService
                 'eligible_date' =>
                     $eligibleDate
                         ?->toDateString(),
+
+                'target_wednesday' =>
+                    $targetWednesday
+                        ?->toDateString(),
+
+                'days_due' =>
+                    $daysDue,
+
+                'days_overdue' =>
+                    $daysOverdue,
+
+                'schedule_label' =>
+                    $scheduleLabel,
 
                 'status' =>
                     $this->determineStatus(
@@ -481,6 +530,18 @@ class PatientImmunizationScheduleService
         return $result;
     }
 
+    /**
+     * First Wednesday on or after the given date.
+     */
+    public function getTargetWednesday(Carbon $date): Carbon
+    {
+        if ($date->isWednesday()) {
+            return $date->copy();
+        }
+
+        return $date->copy()->next(Carbon::WEDNESDAY);
+    }
+
     public function getSchedulingOptions(
         Patient $patient
     ): array {
@@ -493,105 +554,21 @@ class PatientImmunizationScheduleService
             return [];
         }
 
-        $today = Carbon::today();
-
-        $options =
-            collect(
-                $this->getSchedule(
-                    $patient
-                )
+        return collect(
+            $this->getSchedule(
+                $patient
             )
-                ->filter(
-                    fn ($item) =>
-                        ! $item['completed']
-                        &&
-                        $item['eligible']
-                )
-                ->sortBy(
-                    'recommended_date'
-                )
-                ->values();
-
-        if ($options->isEmpty()) {
-            return [];
-        }
-
-        /*
-         * Master schedule points must be calculated
-         * from the SAME applicable vaccine set.
-         *
-         * This prevents unassigned Optional vaccines
-         * from changing Current Age / Recent Due labels.
-         */
-        $reachedMasterDates =
-            $this
-                ->getMasterScheduleDates(
-                    $patient
-                )
-                ->filter(
-                    fn ($date) =>
-                        $date
-                            ->lessThanOrEqualTo(
-                                $today
-                            )
-                )
-                ->sortByDesc(
-                    fn ($date) =>
-                        $date->timestamp
-                )
-                ->values();
-
-        $currentDate =
-            $reachedMasterDates
-                ->get(0);
-
-        $recentDate =
-            $reachedMasterDates
-                ->get(1);
-
-        return $options
-            ->map(
-                function ($item) use (
-                    $currentDate,
-                    $recentDate
-                ) {
-                    $date =
-                        Carbon::parse(
-                            $item[
-                                'recommended_date'
-                            ]
-                        );
-
-                    if (
-                        $currentDate
-                        &&
-                        $date->isSameDay(
-                            $currentDate
-                        )
-                    ) {
-                        $label =
-                            'Current Age';
-                    } elseif (
-                        $recentDate
-                        &&
-                        $date->isSameDay(
-                            $recentDate
-                        )
-                    ) {
-                        $label =
-                            'Recent Due';
-                    } else {
-                        $label =
-                            'Overdue';
-                    }
-
-                    $item[
-                        'schedule_label'
-                    ] = $label;
-
-                    return $item;
-                }
+        )
+            ->filter(
+                fn ($item) =>
+                    ! $item['completed']
+                    &&
+                    $item['eligible']
             )
+            ->sortBy(
+                'recommended_date'
+            )
+            ->values()
             ->all();
     }
 

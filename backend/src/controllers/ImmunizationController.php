@@ -73,6 +73,15 @@ class ImmunizationController extends Controller
 
                     'schedule_label' =>
                         $candidate['schedule_label'] ?? null,
+
+                    'days_due' =>
+                        (int) ($candidate['days_due'] ?? 0),
+
+                    'days_overdue' =>
+                        (int) ($candidate['days_overdue'] ?? 0),
+
+                    'target_wednesday' =>
+                        $candidate['target_wednesday'] ?? null,
                 ];
             })
             ->values();
@@ -91,6 +100,15 @@ class ImmunizationController extends Controller
 
                     'schedule_label' =>
                         $item['schedule_label'],
+
+                    'days_due' =>
+                        (int) ($item['days_due'] ?? 0),
+
+                    'days_overdue' =>
+                        (int) ($item['days_overdue'] ?? 0),
+
+                    'target_wednesday' =>
+                        $item['target_wednesday'] ?? null,
 
                     'inventory_available' =>
                         $item['inventory_available'],

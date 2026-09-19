@@ -31,6 +31,9 @@ type TclRow = {
     vaccine_name: string;
     dose_number: number;
     schedule_label: string;
+    days_due?: number;
+    days_overdue?: number;
+    target_wednesday?: string | null;
     inventory_available: boolean;
     available_stock: number;
     is_already_scheduled: boolean;
@@ -48,6 +51,9 @@ type ScheduledRow = {
     scheduled_date: string | null;
     status: string;
     schedule_label: string | null;
+    days_due?: number;
+    days_overdue?: number;
+    target_wednesday?: string | null;
 };
 
 type CompletedRow = {
@@ -88,6 +94,7 @@ type ScheduledGroup = {
     patient_name: string;
     scheduled_date: string | null;
     schedule_label: string | null;
+    days_due?: number;
     rows: ScheduledRow[];
 };
 
@@ -293,6 +300,10 @@ export default function ImmunizationIndex({
                     existing.schedule_label = row.schedule_label;
                 }
 
+                if ((row.days_due ?? 0) > (existing.days_due ?? 0)) {
+                    existing.days_due = row.days_due;
+                }
+
                 return;
             }
 
@@ -303,6 +314,7 @@ export default function ImmunizationIndex({
                 patient_name: row.patient_name,
                 scheduled_date: row.scheduled_date,
                 schedule_label: row.schedule_label,
+                days_due: row.days_due,
                 rows: [row],
             });
         });
@@ -999,13 +1011,20 @@ export default function ImmunizationIndex({
                                                             >
                                                                 {row.patient_name}
                                                             </button>
-                                                            <span
-                                                                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${getPriorityClass(
-                                                                    row.schedule_label,
-                                                                )}`}
-                                                            >
-                                                                {row.schedule_label}
-                                                            </span>
+                                                            <div className="flex flex-col items-end gap-0.5 shrink-0">
+                                                                <span
+                                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getPriorityClass(
+                                                                        row.schedule_label,
+                                                                    )}`}
+                                                                >
+                                                                    {row.schedule_label}
+                                                                </span>
+                                                                {row.days_due && row.days_due > 0 && row.schedule_label !== 'Current Age' ? (
+                                                                    <span className="text-[10px] font-medium text-muted-foreground">
+                                                                        {row.days_due}d due
+                                                                    </span>
+                                                                ) : null}
+                                                            </div>
                                                         </div>
                                                         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                                                             <span className="font-mono bg-muted/70 px-1.5 py-0.2 rounded text-[10px] text-foreground/80">
@@ -1085,15 +1104,21 @@ export default function ImmunizationIndex({
                                                                     </td>
 
                                                                     <td className="border-r-2 px-6 py-5 text-center align-middle">
-                                                                        <span
-                                                                            className={`font-semibold ${getPriorityClass(
-                                                                                row.schedule_label,
-                                                                            )}`}
-                                                                        >
-                                                                            {
-                                                                                row.schedule_label
-                                                                            }
-                                                                        </span>
+                                                                        <div className="flex flex-col items-center justify-center gap-0.5">
+                                                                            <span
+                                                                                className={`font-semibold ${getPriorityClass(
+                                                                                    row.schedule_label,
+                                                                                )}`}
+                                                                            >
+                                                                                {row.schedule_label ??
+                                                                                    '—'}
+                                                                            </span>
+                                                                            {row.days_due && row.days_due > 0 && row.schedule_label !== 'Current Age' ? (
+                                                                                <span className="text-[11px] font-medium text-muted-foreground">
+                                                                                    {row.days_due} days due
+                                                                                </span>
+                                                                            ) : null}
+                                                                        </div>
                                                                     </td>
 
                                                                     <td className="px-6 py-5 text-center align-middle">
@@ -1190,13 +1215,20 @@ export default function ImmunizationIndex({
                                                                                 <span className="font-medium text-foreground truncate">
                                                                                     {row.vaccine_name}
                                                                                 </span>
-                                                                                <span
-                                                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${getPriorityClass(
-                                                                                        row.schedule_label,
-                                                                                    )}`}
-                                                                                >
-                                                                                    {row.schedule_label}
-                                                                                </span>
+                                                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                                                    {row.days_due && row.days_due > 0 && row.schedule_label !== 'Current Age' ? (
+                                                                                        <span className="text-[10px] text-muted-foreground">
+                                                                                            {row.days_due}d due
+                                                                                        </span>
+                                                                                    ) : null}
+                                                                                    <span
+                                                                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getPriorityClass(
+                                                                                            row.schedule_label,
+                                                                                        )}`}
+                                                                                    >
+                                                                                        {row.schedule_label}
+                                                                                    </span>
+                                                                                </div>
                                                                             </div>
                                                                             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                                                                                 <span>
@@ -1364,15 +1396,22 @@ export default function ImmunizationIndex({
                                                                                         }
                                                                                     </p>
 
-                                                                                    <p
-                                                                                        className={`text-center text-sm font-medium ${getPriorityClass(
-                                                                                            row.schedule_label,
-                                                                                        )}`}
-                                                                                    >
-                                                                                        {
-                                                                                            row.schedule_label
-                                                                                        }
-                                                                                    </p>
+                                                                                    <div className="flex flex-col items-center justify-center gap-0.5">
+                                                                                        <p
+                                                                                            className={`text-center text-sm font-medium ${getPriorityClass(
+                                                                                                row.schedule_label,
+                                                                                            )}`}
+                                                                                        >
+                                                                                            {
+                                                                                                row.schedule_label
+                                                                                            }
+                                                                                        </p>
+                                                                                        {row.days_due && row.days_due > 0 && row.schedule_label !== 'Current Age' ? (
+                                                                                            <span className="text-[11px] text-muted-foreground font-medium">
+                                                                                                {row.days_due} days due
+                                                                                            </span>
+                                                                                        ) : null}
+                                                                                    </div>
 
                                                                                     <div className="text-right">
                                                                                         <p
@@ -1457,13 +1496,20 @@ export default function ImmunizationIndex({
                                                                 )}
                                                                 <p className="font-semibold text-xs text-foreground truncate">{group.patient_name}</p>
                                                             </div>
-                                                            <span
-                                                                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${getPriorityClass(
-                                                                    group.schedule_label,
-                                                                )}`}
-                                                            >
-                                                                {group.schedule_label ?? '—'}
-                                                            </span>
+                                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                                {group.days_due && group.days_due > 0 && group.schedule_label !== 'Current Age' ? (
+                                                                    <span className="text-[10px] text-muted-foreground">
+                                                                        {group.days_due}d due
+                                                                    </span>
+                                                                ) : null}
+                                                                <span
+                                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getPriorityClass(
+                                                                        group.schedule_label,
+                                                                    )}`}
+                                                                >
+                                                                    {group.schedule_label ?? '—'}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                         <div className="flex items-center justify-between text-[11px] text-muted-foreground pl-5.5">
                                                             <span className="inline-flex items-center gap-1">
@@ -1591,14 +1637,21 @@ export default function ImmunizationIndex({
                                                                     </td>
 
                                                                     <td className="border-r-2 px-5 py-5 text-center align-middle">
-                                                                        <span
-                                                                            className={`font-semibold ${getPriorityClass(
-                                                                                group.schedule_label,
-                                                                            )}`}
-                                                                        >
-                                                                            {group.schedule_label ??
-                                                                                '—'}
-                                                                        </span>
+                                                                        <div className="flex flex-col items-center justify-center gap-0.5">
+                                                                            <span
+                                                                                className={`font-semibold ${getPriorityClass(
+                                                                                    group.schedule_label,
+                                                                                )}`}
+                                                                            >
+                                                                                {group.schedule_label ??
+                                                                                    '—'}
+                                                                            </span>
+                                                                            {group.days_due && group.days_due > 0 && group.schedule_label !== 'Current Age' ? (
+                                                                                <span className="text-[11px] text-muted-foreground font-medium">
+                                                                                    {group.days_due} days due
+                                                                                </span>
+                                                                            ) : null}
+                                                                        </div>
                                                                     </td>
 
                                                                     <td className="px-5 py-5 text-center align-middle">
@@ -1671,14 +1724,21 @@ export default function ImmunizationIndex({
                                                                                                 </td>
 
                                                                                                 <td className="px-6 py-4 text-center">
-                                                                                                    <span
-                                                                                                        className={`font-semibold ${getPriorityClass(
-                                                                                                            row.schedule_label,
-                                                                                                        )}`}
-                                                                                                    >
-                                                                                                        {row.schedule_label ??
-                                                                                                            '—'}
-                                                                                                    </span>
+                                                                                                    <div className="flex flex-col items-center justify-center gap-0.5">
+                                                                                                        <span
+                                                                                                            className={`font-semibold ${getPriorityClass(
+                                                                                                                row.schedule_label,
+                                                                                                            )}`}
+                                                                                                        >
+                                                                                                            {row.schedule_label ??
+                                                                                                                '—'}
+                                                                                                        </span>
+                                                                                                        {row.days_due && row.days_due > 0 && row.schedule_label !== 'Current Age' ? (
+                                                                                                            <span className="text-[10px] text-muted-foreground font-medium">
+                                                                                                                {row.days_due} days due
+                                                                                                            </span>
+                                                                                                        ) : null}
+                                                                                                    </div>
                                                                                                 </td>
                                                                                             </tr>
                                                                                         ),

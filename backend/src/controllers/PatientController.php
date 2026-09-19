@@ -605,6 +605,15 @@ class PatientController extends Controller
                     'schedule_label' =>
                         $option['schedule_label'],
 
+                    'days_due' =>
+                        (int) ($option['days_due'] ?? 0),
+
+                    'days_overdue' =>
+                        (int) ($option['days_overdue'] ?? 0),
+
+                    'target_wednesday' =>
+                        $option['target_wednesday'] ?? null,
+
                     'recommended_date' =>
                         $option['recommended_date'],
 
