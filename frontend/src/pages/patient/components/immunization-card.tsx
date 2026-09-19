@@ -881,6 +881,10 @@ const handleSaveCard = () => {
                         display: block !important;
                     }
 
+                    .immunization-print-area .immunization-table-wrapper {
+                        display: block !important;
+                    }
+
                     .immunization-print-area table {
                         min-width: 0 !important;
                         width: 100% !important;
@@ -1170,7 +1174,281 @@ const handleSaveCard = () => {
                         </p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto rounded-lg border-2">
+                    <>
+                        {/* Mobile Card List (< md, view mode) */}
+                        {!isCardEditing && (
+                            <div className="block md:hidden no-print space-y-3">
+                                {immunizationCard.map((vaccine) => {
+                                    const completedDoses = vaccine.doses.filter(
+                                        (d) => Boolean(d.record),
+                                    ).length;
+                                    const totalDoses =
+                                        vaccine.required_doses ||
+                                        vaccine.doses.length;
+                                    const isAllCompleted =
+                                        completedDoses >= totalDoses &&
+                                        totalDoses > 0;
+
+                                    return (
+                                        <div
+                                            key={`mobile-vaccine-${vaccine.vaccine_id}`}
+                                            className="rounded-lg border bg-card text-card-foreground shadow-xs overflow-hidden"
+                                        >
+                                            <div className="flex items-center justify-between border-b bg-muted/40 px-3.5 py-2.5">
+                                                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                                    <span className="font-bold text-sm text-foreground truncate">
+                                                        {vaccine.vaccine_name}
+                                                    </span>
+                                                    {vaccine.category !==
+                                                        'routine' && (
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-[10px] py-0 px-1.5 capitalize shrink-0"
+                                                        >
+                                                            {vaccine.category}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                <div className="shrink-0 ml-2">
+                                                    {isAllCompleted ? (
+                                                        <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-[10px] font-semibold px-2 py-0.5">
+                                                            Completed
+                                                        </Badge>
+                                                    ) : (
+                                                        <span className="text-[11px] font-medium text-muted-foreground">
+                                                            {completedDoses}/
+                                                            {totalDoses}{' '}
+                                                            {totalDoses === 1
+                                                                ? 'dose'
+                                                                : 'doses'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="divide-y divide-border/60">
+                                                {vaccine.doses.map((dose) => {
+                                                    const isDone = Boolean(
+                                                        dose.record,
+                                                    );
+                                                    const targetAge =
+                                                        formatRecommendedAge(
+                                                            dose.recommended_age,
+                                                        );
+
+                                                    return (
+                                                        <div
+                                                            key={`mobile-dose-${vaccine.vaccine_id}-${dose.dose_number}`}
+                                                            className={`p-3 space-y-1.5 transition-colors ${
+                                                                isDone
+                                                                    ? 'bg-emerald-500/[0.03]'
+                                                                    : ''
+                                                            }`}
+                                                        >
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <div className="flex items-center gap-2 min-w-0">
+                                                                    <span className="inline-flex items-center justify-center rounded-md bg-muted px-2 py-0.5 text-xs font-bold text-foreground border shrink-0">
+                                                                        Dose{' '}
+                                                                        {
+                                                                            dose.dose_number
+                                                                        }
+                                                                    </span>
+                                                                    <span className="text-xs text-muted-foreground truncate">
+                                                                        Age:{' '}
+                                                                        <span className="font-medium text-foreground">
+                                                                            {
+                                                                                targetAge
+                                                                            }
+                                                                        </span>
+                                                                    </span>
+                                                                </div>
+
+                                                                <div className="shrink-0">
+                                                                    {isDone ? (
+                                                                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                                                                            <Check className="h-3 w-3 stroke-[2.5]" />
+                                                                            {formatCompactDate(
+                                                                                dose
+                                                                                    .record
+                                                                                    ?.date_administered ??
+                                                                                    null,
+                                                                            )}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-xs text-muted-foreground/80 italic">
+                                                                            Not
+                                                                            yet
+                                                                            given
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {dose.record
+                                                                ?.remarks && (
+                                                                <p className="text-[11px] text-muted-foreground italic bg-muted/40 rounded px-2 py-1">
+                                                                    Note:{' '}
+                                                                    {
+                                                                        dose
+                                                                            .record
+                                                                            .remarks
+                                                                    }
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                {manualCardRowDrafts.map((row) => {
+                                    const completedManualDoses =
+                                        row.doses.filter((d) =>
+                                            Boolean(d.dateAdministered),
+                                        ).length;
+                                    const totalManualDoses = row.doseCount;
+                                    const isAllCompleted =
+                                        completedManualDoses >=
+                                            totalManualDoses &&
+                                        totalManualDoses > 0;
+
+                                    return (
+                                        <div
+                                            key={`mobile-manual-row-${row.localKey}`}
+                                            className="rounded-lg border bg-card text-card-foreground shadow-xs overflow-hidden"
+                                        >
+                                            <div className="flex items-center justify-between border-b bg-muted/40 px-3.5 py-2.5">
+                                                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                                    <span className="font-bold text-sm text-foreground truncate">
+                                                        {row.vaccineName ||
+                                                            'Historical Vaccine'}
+                                                    </span>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-[10px] py-0 px-1.5 shrink-0"
+                                                    >
+                                                        Historical
+                                                    </Badge>
+                                                </div>
+                                                <div className="shrink-0 ml-2">
+                                                    {isAllCompleted ? (
+                                                        <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-[10px] font-semibold px-2 py-0.5">
+                                                            Completed
+                                                        </Badge>
+                                                    ) : (
+                                                        <span className="text-[11px] font-medium text-muted-foreground">
+                                                            {
+                                                                completedManualDoses
+                                                            }
+                                                            /{totalManualDoses}{' '}
+                                                            {totalManualDoses ===
+                                                            1
+                                                                ? 'dose'
+                                                                : 'doses'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="divide-y divide-border/60">
+                                                {row.doses.map((dose) => {
+                                                    const isDone = Boolean(
+                                                        dose.dateAdministered,
+                                                    );
+                                                    const targetAge =
+                                                        formatRecommendedAge(
+                                                            dose.recommendedAge ||
+                                                                null,
+                                                        );
+
+                                                    return (
+                                                        <div
+                                                            key={`mobile-manual-dose-${row.localKey}-${dose.doseNumber}`}
+                                                            className={`p-3 space-y-1.5 transition-colors ${
+                                                                isDone
+                                                                    ? 'bg-emerald-500/[0.03]'
+                                                                    : ''
+                                                            }`}
+                                                        >
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <div className="flex items-center gap-2 min-w-0">
+                                                                    <span className="inline-flex items-center justify-center rounded-md bg-muted px-2 py-0.5 text-xs font-bold text-foreground border shrink-0">
+                                                                        Dose{' '}
+                                                                        {
+                                                                            dose.doseNumber
+                                                                        }
+                                                                    </span>
+                                                                    <span className="text-xs text-muted-foreground truncate">
+                                                                        Age:{' '}
+                                                                        <span className="font-medium text-foreground">
+                                                                            {
+                                                                                targetAge
+                                                                            }
+                                                                        </span>
+                                                                    </span>
+                                                                </div>
+
+                                                                <div className="shrink-0">
+                                                                    {isDone ? (
+                                                                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                                                                            <Check className="h-3 w-3 stroke-[2.5]" />
+                                                                            {formatCompactDate(
+                                                                                dose.dateAdministered,
+                                                                            )}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-xs text-muted-foreground/80 italic">
+                                                                            Not
+                                                                            yet
+                                                                            given
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {dose.remarks && (
+                                                                <p className="text-[11px] text-muted-foreground italic bg-muted/40 rounded px-2 py-1">
+                                                                    Note:{' '}
+                                                                    {
+                                                                        dose.remarks
+                                                                    }
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {row.remarks && (
+                                                <div className="border-t bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground">
+                                                    <span className="font-semibold text-foreground">
+                                                        Remarks:{' '}
+                                                    </span>
+                                                    {row.remarks}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {isCardEditing && (
+                            <div className="block md:hidden no-print rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+                                Scroll horizontally on the table below to edit dose dates and remarks.
+                            </div>
+                        )}
+
+                        {/* Desktop & Print Table (or all screens in edit mode) */}
+                        <div
+                            className={
+                                isCardEditing
+                                    ? 'overflow-x-auto rounded-lg border-2 immunization-table-wrapper'
+                                    : 'hidden md:block print:block overflow-x-auto rounded-lg border-2 immunization-table-wrapper'
+                            }
+                        >
                         <table
                             className={
                                 isCardEditing
@@ -1822,6 +2100,7 @@ const handleSaveCard = () => {
                             </tbody>
                         </table>
                     </div>
+                    </>
                 )}
 
                 <div className="print-only mt-8 px-2 pb-4">
