@@ -46,13 +46,13 @@ interface StaffIndexProps {
     filters: Filters;
 }
 
-function getRoleBadge(role: Staff['role']) {
+function getRoleBadge(role: Staff['role'], className = '') {
     switch (role) {
         case 'admin':
             return (
                 <Badge
                     variant="outline"
-                    className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                    className={`border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 ${className}`}
                 >
                     Administrator
                 </Badge>
@@ -61,7 +61,7 @@ function getRoleBadge(role: Staff['role']) {
             return (
                 <Badge
                     variant="outline"
-                    className="border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                    className={`border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 ${className}`}
                 >
                     Nurse
                 </Badge>
@@ -70,7 +70,7 @@ function getRoleBadge(role: Staff['role']) {
             return (
                 <Badge
                     variant="outline"
-                    className="border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                    className={`border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400 ${className}`}
                 >
                     Midwife
                 </Badge>
@@ -79,31 +79,36 @@ function getRoleBadge(role: Staff['role']) {
             return (
                 <Badge
                     variant="outline"
-                    className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    className={`border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ${className}`}
                 >
                     BHW
                 </Badge>
             );
         default:
             return (
-                <Badge variant="outline" className="capitalize">
+                <Badge variant="outline" className={`capitalize ${className}`}>
                     {role}
                 </Badge>
             );
     }
 }
 
-function getStatusBadge(status: Staff['status']) {
+function getStatusBadge(status: Staff['status'], className = '') {
     if (status === 'active') {
         return (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+            <span
+                className={`inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 ${className}`}
+            >
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 Active
             </span>
         );
     }
+
     return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+        <span
+            className={`inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-muted-foreground ${className}`}
+        >
             <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
             Inactive
         </span>
@@ -309,42 +314,39 @@ export default function StaffIndex({
                                 </div>
                             ) : (
                                 staff.map((member) => (
-                                    <div key={member.id} className="p-3 space-y-2 hover:bg-muted/15 transition-colors">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div className="flex items-center gap-2.5 min-w-0">
-                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-xs text-primary">
-                                                    {member.name
-                                                        .split(' ')
-                                                        .map((n) => n[0])
-                                                        .slice(0, 2)
-                                                        .join('')
-                                                        .toUpperCase()}
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-xs font-semibold text-foreground truncate">{member.name}</p>
-                                                    <p className="text-[11px] text-muted-foreground truncate">{member.email}</p>
-                                                </div>
+                                    <div
+                                        key={member.id}
+                                        className="flex items-center justify-between gap-2.5 p-3 hover:bg-muted/15 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-xs text-primary">
+                                                {member.name
+                                                    .split(' ')
+                                                    .map((n) => n[0])
+                                                    .slice(0, 2)
+                                                    .join('')
+                                                    .toUpperCase()}
                                             </div>
-                                            <div className="shrink-0">
-                                                {getStatusBadge(member.status)}
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                    <Link
+                                                        href={`/staff/${member.id}`}
+                                                        className="text-xs font-semibold text-foreground truncate hover:underline"
+                                                    >
+                                                        {member.name}
+                                                    </Link>
+                                                    {getRoleBadge(member.role, 'text-[10px] px-1.5 py-0 font-medium')}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px]">
-                                            <div className="flex items-center gap-1.5 flex-wrap">
-                                                {getRoleBadge(member.role)}
-                                                <span className="text-[10px] text-muted-foreground">
-                                                    {new Date(member.created_at).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                    })}
-                                                </span>
-                                            </div>
+
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            {getStatusBadge(member.status, 'px-2 py-0.5 text-[11px]')}
                                             <Button
                                                 asChild
                                                 variant="outline"
                                                 size="sm"
-                                                className="h-7 px-2.5 text-[11px] font-medium gap-1 shrink-0"
+                                                className="h-7 px-2 text-[11px] font-medium gap-1 shrink-0"
                                             >
                                                 <Link href={`/staff/${member.id}`}>
                                                     <Eye className="h-3 w-3 text-muted-foreground" />
