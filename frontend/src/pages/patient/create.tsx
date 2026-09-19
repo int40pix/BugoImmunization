@@ -25,10 +25,43 @@ type PatientCreateProps = {
     guardian: Guardian;
 };
 
+type PatientFormData = {
+    guardian_relationship: string;
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    nickname: string;
+    date_of_birth: string;
+    sex: string;
+    address: string;
+    mother_name: string;
+    father_name: string;
+    birth_type: string;
+    is_full_term: string;
+    multiple_birth: string;
+    birth_attendant: string;
+    blood_type: string;
+    birth_weight: string;
+    birth_length: string;
+    head_circumference: string;
+    chest_circumference: string;
+    birth_order: string;
+    birth_registration_date: string;
+    birth_registration_place: string;
+    birth_family_notes: string;
+    medical_background: string;
+    allergies: string;
+    existing_conditions: string;
+    bcg_received_at_birth: boolean;
+    bcg_date_administered: string;
+    hepb_received_at_birth: boolean;
+    hepb_date_administered: string;
+};
+
 export default function PatientCreate({ guardian }: PatientCreateProps) {
     const today = new Date().toISOString().split('T')[0];
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm<PatientFormData>({
         guardian_relationship: '',
         first_name: '',
         middle_name: '',
