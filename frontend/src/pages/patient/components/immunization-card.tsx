@@ -839,92 +839,8 @@ const handleSaveCard = () => {
     saveStructuredDraft(0);
 };
 
-    const totalPrintRows = Math.max(
-        immunizationCard.length + manualCardRowDrafts.length,
-        1,
-    );
-
-    const printStyleVars: React.CSSProperties = {
-        ['--print-row-count' as any]: totalPrintRows,
-        ['--print-title-size' as any]:
-            totalPrintRows <= 7
-                ? '16px'
-                : totalPrintRows <= 10
-                  ? '14px'
-                  : '12px',
-        ['--print-sub-size' as any]:
-            totalPrintRows <= 7 ? '8px' : '7px',
-        ['--print-patient-font-size' as any]:
-            totalPrintRows <= 7
-                ? '9px'
-                : totalPrintRows <= 10
-                  ? '8px'
-                  : '7px',
-        ['--print-header-pad' as any]:
-            totalPrintRows <= 7
-                ? '2px 4px 4px 4px'
-                : totalPrintRows <= 10
-                  ? '1px 4px 2px 4px'
-                  : '1px 3px 1px 3px',
-        ['--print-qr-size' as any]:
-            totalPrintRows <= 7
-                ? '48px'
-                : totalPrintRows <= 10
-                  ? '40px'
-                  : '34px',
-        ['--print-qr-pad' as any]: totalPrintRows <= 7 ? '3px' : '2px',
-        ['--print-th-size' as any]:
-            totalPrintRows <= 7
-                ? '8.5px'
-                : totalPrintRows <= 10
-                  ? '7.5px'
-                  : '6.5px',
-        ['--print-th-pad' as any]:
-            totalPrintRows <= 7
-                ? '2px 3px'
-                : totalPrintRows <= 10
-                  ? '1.5px 2px'
-                  : '1px 2px',
-        ['--print-td-size' as any]:
-            totalPrintRows <= 7
-                ? '8px'
-                : totalPrintRows <= 10
-                  ? '7px'
-                  : totalPrintRows <= 14
-                    ? '6px'
-                    : '5px',
-        ['--print-td-pad' as any]:
-            totalPrintRows <= 7
-                ? '1px 2px'
-                : totalPrintRows <= 10
-                  ? '0.5px 1.5px'
-                  : '0.5px 1px',
-        ['--print-sig-mt' as any]:
-            totalPrintRows <= 7
-                ? '6px'
-                : totalPrintRows <= 10
-                  ? '3px'
-                  : '2px',
-        ['--print-sig-pt' as any]:
-            totalPrintRows <= 7
-                ? '3px'
-                : totalPrintRows <= 10
-                  ? '2px'
-                  : '1px',
-        ['--print-sig-size' as any]:
-            totalPrintRows <= 7
-                ? '8px'
-                : totalPrintRows <= 10
-                  ? '7px'
-                  : '6px',
-        ['--print-footer-size' as any]:
-            totalPrintRows <= 7 ? '7px' : '6px',
-        ['--print-footer-mt' as any]:
-            totalPrintRows <= 7 ? '3px' : '1px',
-    };
-
     return (
-        <Card className="immunization-print-area" style={printStyleVars}>
+        <Card className="immunization-print-area">
             <style>{`
                 .print-only {
                     display: none;
@@ -933,16 +849,13 @@ const handleSaveCard = () => {
                 @media print {
                     @page {
                         size: A4 landscape;
-                        margin: 4mm 6mm;
+                        margin: 6mm 8mm;
                     }
 
                     html, body {
-                        height: 100% !important;
-                        max-height: 100% !important;
-                        overflow: hidden !important;
+                        background: #fff !important;
                         margin: 0 !important;
                         padding: 0 !important;
-                        background: #fff !important;
                     }
 
                     body * {
@@ -955,28 +868,18 @@ const handleSaveCard = () => {
                     }
 
                     .immunization-print-area {
-                        position: fixed !important;
+                        position: absolute !important;
                         left: 0 !important;
                         top: 0 !important;
-                        right: 0 !important;
-                        bottom: 0 !important;
                         width: 100% !important;
-                        height: 100% !important;
-                        max-height: 100% !important;
-                        box-sizing: border-box !important;
                         border: 0 !important;
                         box-shadow: none !important;
                         background: #fff !important;
                         color: #000 !important;
-                        display: flex !important;
-                        flex-direction: column !important;
-                        justify-content: space-between !important;
-                        page-break-inside: avoid !important;
-                        page-break-after: avoid !important;
-                        break-inside: avoid !important;
-                        break-after: avoid !important;
-                        overflow: hidden !important;
                         padding: 0 !important;
+                        margin: 0 !important;
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
                     }
 
                     .immunization-print-area .no-print {
@@ -988,9 +891,8 @@ const handleSaveCard = () => {
                     }
 
                     .immunization-print-area .print-header-container {
-                        flex-shrink: 0 !important;
                         border-bottom: 2px solid #000 !important;
-                        padding: var(--print-header-pad, 2px 4px 4px 4px) !important;
+                        padding: 4px 6px 6px 6px !important;
                     }
 
                     .immunization-print-area .print-header-grid {
@@ -1001,14 +903,14 @@ const handleSaveCard = () => {
                     }
 
                     .immunization-print-area .print-header-title {
-                        font-size: var(--print-title-size, 16px) !important;
+                        font-size: 16px !important;
                         font-weight: 700 !important;
-                        margin: 0 !important;
+                        margin: 2px 0 0 0 !important;
                         line-height: 1.15 !important;
                     }
 
                     .immunization-print-area .print-header-sub {
-                        font-size: var(--print-sub-size, 8px) !important;
+                        font-size: 8.5px !important;
                         letter-spacing: 0.15em !important;
                         font-weight: 600 !important;
                         text-transform: uppercase !important;
@@ -1016,12 +918,12 @@ const handleSaveCard = () => {
                     }
 
                     .immunization-print-area .print-patient-grid {
-                        margin-top: 3px !important;
+                        margin-top: 5px !important;
                         display: grid !important;
                         grid-template-columns: repeat(4, auto) !important;
                         justify-content: space-between !important;
-                        gap: 8px !important;
-                        font-size: var(--print-patient-font-size, 9px) !important;
+                        gap: 12px !important;
+                        font-size: 9.5px !important;
                         line-height: 1.2 !important;
                     }
 
@@ -1031,46 +933,41 @@ const handleSaveCard = () => {
                         align-items: center !important;
                         justify-content: center !important;
                         border: 1px solid #000 !important;
-                        padding: var(--print-qr-pad, 3px) !important;
+                        padding: 3px 5px !important;
                         background: #fff !important;
                         flex-shrink: 0 !important;
                     }
 
                     .immunization-print-area .print-qr-box svg {
                         display: block !important;
-                        width: var(--print-qr-size, 48px) !important;
-                        height: var(--print-qr-size, 48px) !important;
+                        width: 52px !important;
+                        height: 52px !important;
                     }
 
                     .immunization-print-area .print-qr-box p {
-                        font-size: 6.5px !important;
-                        line-height: 1 !important;
+                        font-size: 7px !important;
+                        line-height: 1.1 !important;
                         margin: 1px 0 0 0 !important;
                     }
 
                     .immunization-print-area .immunization-table-wrapper {
-                        display: flex !important;
-                        flex-direction: column !important;
-                        flex: 1 1 auto !important;
-                        min-height: 0 !important;
-                        overflow: hidden !important;
+                        display: block !important;
+                        overflow: visible !important;
                         border: 1.5px solid #000 !important;
                         border-radius: 0 !important;
-                        margin: 1px 0 !important;
+                        margin-top: 6px !important;
                     }
 
                     .immunization-print-area table {
                         min-width: 0 !important;
                         width: 100% !important;
-                        height: 100% !important;
                         border-collapse: collapse !important;
                         table-layout: fixed !important;
                         color: #000 !important;
-                        font-size: var(--print-td-size, 8px) !important;
+                        font-size: 9.5px !important;
                     }
 
                     .immunization-print-area thead {
-                        flex-shrink: 0 !important;
                         display: table-header-group !important;
                     }
 
@@ -1084,11 +981,11 @@ const handleSaveCard = () => {
                     .immunization-print-area th {
                         border-right: 1px solid #000 !important;
                         border-color: #000 !important;
-                        padding: var(--print-th-pad, 2px 3px) !important;
-                        font-size: var(--print-th-size, 8.5px) !important;
+                        padding: 4px 5px !important;
+                        font-size: 9.5px !important;
                         font-weight: 700 !important;
                         text-align: center !important;
-                        line-height: 1.15 !important;
+                        line-height: 1.2 !important;
                         background: #f3f4f6 !important;
                     }
 
@@ -1098,13 +995,10 @@ const handleSaveCard = () => {
 
                     .immunization-print-area tbody {
                         display: table-row-group !important;
-                        height: 100% !important;
                     }
 
                     .immunization-print-area tbody tr {
                         border-bottom: 1px solid #000 !important;
-                        height: calc(100% / var(--print-row-count, 7)) !important;
-                        max-height: calc(100% / var(--print-row-count, 7)) !important;
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
                     }
@@ -1116,11 +1010,10 @@ const handleSaveCard = () => {
                     .immunization-print-area td {
                         border-right: 1px solid #000 !important;
                         border-color: #000 !important;
-                        padding: var(--print-td-pad, 1px 2px) !important;
-                        font-size: var(--print-td-size, 8px) !important;
-                        line-height: 1.15 !important;
+                        padding: 2px 4px !important;
+                        font-size: 9.5px !important;
+                        line-height: 1.2 !important;
                         vertical-align: middle !important;
-                        height: inherit !important;
                     }
 
                     .immunization-print-area td:last-child {
@@ -1129,28 +1022,28 @@ const handleSaveCard = () => {
 
                     .immunization-print-area td > div,
                     .immunization-print-area td [class*="min-h-"] {
-                        min-height: 0 !important;
-                        height: 100% !important;
-                        padding-top: 1px !important;
-                        padding-bottom: 1px !important;
+                        min-height: 42px !important;
+                        height: auto !important;
+                        padding-top: 2px !important;
+                        padding-bottom: 2px !important;
                     }
 
                     .immunization-print-area .text-sm {
-                        font-size: var(--print-td-size, 8px) !important;
-                        line-height: 1.15 !important;
+                        font-size: 9.5px !important;
+                        line-height: 1.2 !important;
                     }
 
                     .immunization-print-area .text-xs {
-                        font-size: calc(var(--print-td-size, 8px) * 0.9) !important;
+                        font-size: 8px !important;
                         line-height: 1.1 !important;
                     }
 
                     .immunization-print-area .text-base {
-                        font-size: var(--print-td-size, 8px) !important;
+                        font-size: 9.5px !important;
                     }
 
                     .immunization-print-area [class*="text-[10px]"] {
-                        font-size: calc(var(--print-td-size, 8px) * 0.8) !important;
+                        font-size: 7.5px !important;
                     }
 
                     .immunization-print-area .text-muted-foreground {
@@ -1160,15 +1053,16 @@ const handleSaveCard = () => {
                     .immunization-print-area .badge,
                     .immunization-print-area [class*="Badge"] {
                         border-color: #555 !important;
-                        padding: 0 2px !important;
-                        font-size: calc(var(--print-td-size, 8px) * 0.8) !important;
-                        margin-top: 1px !important;
+                        padding: 0 3px !important;
+                        font-size: 7.5px !important;
+                        margin-top: 2px !important;
                     }
 
                     .immunization-print-area .print-signatures-container {
-                        flex-shrink: 0 !important;
-                        margin-top: var(--print-sig-mt, 6px) !important;
+                        margin-top: 12px !important;
                         padding: 0 12px 2px 12px !important;
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
                     }
 
                     .immunization-print-area .print-signatures-grid {
@@ -1176,18 +1070,18 @@ const handleSaveCard = () => {
                         grid-template-columns: 1fr 1fr !important;
                         gap: 48px !important;
                         text-align: center !important;
-                        font-size: var(--print-sig-size, 8px) !important;
+                        font-size: 9px !important;
                     }
 
                     .immunization-print-area .print-signature-line {
                         border-top: 1px solid #000 !important;
-                        padding-top: var(--print-sig-pt, 3px) !important;
+                        padding-top: 3px !important;
                     }
 
                     .immunization-print-area .print-footer-text {
-                        margin-top: var(--print-footer-mt, 3px) !important;
+                        margin-top: 4px !important;
                         text-align: center !important;
-                        font-size: var(--print-footer-size, 7px) !important;
+                        font-size: 7.5px !important;
                         color: #555 !important;
                     }
                 }
@@ -1232,7 +1126,7 @@ const handleSaveCard = () => {
                     <div className="print-qr-box">
                         <QRCodeSVG
                             value={patientUrl}
-                            size={48}
+                            size={52}
                             level="H"
                             marginSize={1}
                             title={`${patientName} - ${patient.patient_id}`}
