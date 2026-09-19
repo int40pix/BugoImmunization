@@ -488,18 +488,18 @@ export default function VaccinationManagement({
 
     return (
         <Card>
-            <CardHeader className="border-b">
+            <CardHeader className="border-b p-3.5 sm:p-6">
                 <div className="flex items-start gap-3">
-                    <div className="rounded-lg border p-2">
+                    <div className="rounded-lg border p-2 shrink-0">
                         <Syringe className="h-5 w-5" />
                     </div>
 
                     <div>
-                        <CardTitle>
+                        <CardTitle className="text-base sm:text-lg">
                             Vaccination Management
                         </CardTitle>
 
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
                             Review eligible vaccines and
                             record vaccine administration.
                         </p>
@@ -507,7 +507,7 @@ export default function VaccinationManagement({
                 </div>
             </CardHeader>
 
-            <CardContent className="space-y-4 pt-6">
+            <CardContent className="space-y-4 p-3 sm:p-6">
                 {flash?.success && (
                     <div className="flex items-start gap-3 rounded-lg border border-green-500/30 bg-green-500/5 p-4">
                         <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />
@@ -535,19 +535,19 @@ export default function VaccinationManagement({
                 )}
 
                 {/* TWO-COLUMN WORKSPACE: LEFT (ELIGIBLE FOR ADMINISTRATION) / RIGHT (ADMINISTRATION HISTORY) */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start">
                     {/* LEFT COLUMN: VACCINES DUE / ELIGIBLE FOR ADMINISTRATION */}
                     <div className="rounded-xl border bg-card overflow-hidden shadow-sm flex flex-col">
-                        <div className="flex items-center justify-between border-b bg-muted/20 px-5 py-3.5">
+                        <div className="flex items-center justify-between border-b bg-muted/20 px-3.5 sm:px-5 py-3 sm:py-3.5">
                             <div className="flex items-center gap-2">
                                 <Syringe className="h-4 w-4 text-primary" />
-                                <h3 className="font-semibold text-sm text-foreground">
+                                <h3 className="font-semibold text-xs sm:text-sm text-foreground">
                                     Eligible for Administration
                                 </h3>
                             </div>
                             <Badge
                                 variant="outline"
-                                className={`text-xs ${
+                                className={`text-[11px] sm:text-xs ${
                                     vaccinationOptions.length > 0
                                         ? 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400 font-medium'
                                         : 'border-border text-muted-foreground'
@@ -579,26 +579,26 @@ export default function VaccinationManagement({
                                     return (
                                         <div
                                             key={key}
-                                            className="p-4 transition-colors hover:bg-muted/10 flex flex-col gap-3"
+                                            className="p-3 sm:p-4 transition-colors hover:bg-muted/10 flex flex-col gap-2.5 sm:gap-3"
                                         >
-                                            <div className="flex items-start justify-between gap-3">
+                                            <div className="flex items-start justify-between gap-2.5">
                                                 <div className="min-w-0">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <span className="font-semibold text-sm text-foreground">
+                                                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                                        <span className="font-semibold text-xs sm:text-sm text-foreground">
                                                             {option.vaccine_name}
                                                         </span>
-                                                        <span className="inline-flex items-center rounded border border-primary/20 bg-primary/5 px-2 py-0.5 text-xs font-medium text-primary">
+                                                        <span className="inline-flex items-center rounded border border-primary/20 bg-primary/5 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium text-primary">
                                                             Dose {option.dose_number} of {option.required_doses}
                                                         </span>
                                                         <span
-                                                            className={`text-xs font-semibold ${getPriorityClass(
+                                                            className={`text-[10px] sm:text-xs font-semibold ${getPriorityClass(
                                                                 option.schedule_label,
                                                             )}`}
                                                         >
                                                             {option.schedule_label}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-muted-foreground mt-0.5 capitalize">
+                                                    <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 capitalize">
                                                         Category: {option.category}
                                                         {option.scheduled_date &&
                                                             ` • Scheduled: ${formatDate(
@@ -612,7 +612,7 @@ export default function VaccinationManagement({
                                                     size="sm"
                                                     disabled={!canAdminister || Boolean(administeringKey)}
                                                     onClick={() => handleOpenAdministration(option)}
-                                                    className="shrink-0"
+                                                    className="shrink-0 h-8 text-xs px-2.5 sm:px-3"
                                                 >
                                                     <Syringe className="mr-1.5 h-3.5 w-3.5" />
                                                     Administer
@@ -746,14 +746,14 @@ export default function VaccinationManagement({
 
                     {/* RIGHT COLUMN: IMMUNIZATION & ADMINISTRATION HISTORY */}
                     <div className="rounded-xl border bg-card overflow-hidden shadow-sm flex flex-col">
-                        <div className="flex items-center justify-between border-b bg-muted/20 px-5 py-3.5">
+                        <div className="flex items-center justify-between border-b bg-muted/20 px-3.5 sm:px-5 py-3 sm:py-3.5">
                             <div className="flex items-center gap-2">
                                 <History className="h-4 w-4 text-primary" />
-                                <h3 className="font-semibold text-sm text-foreground">
+                                <h3 className="font-semibold text-xs sm:text-sm text-foreground">
                                     Administration History
                                 </h3>
                             </div>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-[11px] sm:text-xs">
                                 {historyRecords.length} Recorded
                             </Badge>
                         </div>
@@ -771,80 +771,150 @@ export default function VaccinationManagement({
                                 </p>
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-xs">
-                                    <thead className="bg-muted/30 border-b text-muted-foreground font-semibold">
-                                        <tr>
-                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Date</th>
-                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Vaccine & Dose</th>
-                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Batch #</th>
-                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Site / Route</th>
-                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Vaccinator</th>
-                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Consent By</th>
-                                            <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Remarks</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y">
-                                        {historyRecords.map((record) => {
-                                            const batchNo =
-                                                record.batch_number ||
-                                                (typeof record.inventory_transaction === 'object' && record.inventory_transaction !== null
-                                                    ? record.inventory_transaction.batch_number
-                                                    : null) ||
-                                                (typeof record.inventoryTransaction === 'object' && record.inventoryTransaction !== null
-                                                    ? record.inventoryTransaction.batch_number
-                                                    : null) ||
-                                                '—';
+                            <>
+                                {/* Mobile View (< md): Stacked card items with 100% data visibility, zero horizontal clipping */}
+                                <div className="block md:hidden divide-y divide-border/60">
+                                    {historyRecords.map((record) => {
+                                        const batchNo =
+                                            record.batch_number ||
+                                            (typeof record.inventory_transaction === 'object' && record.inventory_transaction !== null
+                                                ? record.inventory_transaction.batch_number
+                                                : null) ||
+                                            (typeof record.inventoryTransaction === 'object' && record.inventoryTransaction !== null
+                                                ? record.inventoryTransaction.batch_number
+                                                : null) ||
+                                            '—';
 
-                                            const vaccinator =
-                                                (typeof record.administered_by === 'object' && record.administered_by !== null
-                                                    ? record.administered_by.name
-                                                    : null) ||
-                                                (typeof record.administeredBy === 'object' && record.administeredBy !== null
-                                                    ? record.administeredBy.name
-                                                    : null) ||
-                                                'Clinic Staff';
+                                        const vaccinator =
+                                            (typeof record.administered_by === 'object' && record.administered_by !== null
+                                                ? record.administered_by.name
+                                                : null) ||
+                                            (typeof record.administeredBy === 'object' && record.administeredBy !== null
+                                                ? record.administeredBy.name
+                                                : null) ||
+                                            'Clinic Staff';
 
-                                            return (
-                                                <tr key={record.id} className="hover:bg-muted/20 transition-colors">
-                                                    <td className="px-3.5 py-3 font-medium whitespace-nowrap">
-                                                        {formatDate(record.date_administered)}
-                                                    </td>
-                                                    <td className="px-3.5 py-3 whitespace-nowrap">
-                                                        <div className="font-semibold text-foreground">
+                                        return (
+                                            <div key={record.id} className="p-3.5 space-y-2 hover:bg-muted/10 transition-colors">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="min-w-0">
+                                                        <span className="font-semibold text-xs text-foreground">
                                                             {record.vaccine?.name ?? 'Vaccine'}
-                                                        </div>
-                                                        <div className="text-[11px] text-muted-foreground">
+                                                        </span>
+                                                        <span className="ml-1.5 inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
                                                             Dose {record.dose_number}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-3.5 py-3 font-mono font-medium whitespace-nowrap">
-                                                        {batchNo}
-                                                    </td>
-                                                    <td
-                                                        className="px-3.5 py-3 text-muted-foreground max-w-[130px] truncate"
-                                                        title={record.injection_site || undefined}
-                                                    >
-                                                        {record.injection_site || '—'}
-                                                    </td>
-                                                    <td className="px-3.5 py-3 whitespace-nowrap">
-                                                        {vaccinator}
-                                                    </td>
-                                                    <td className="px-3.5 py-3 text-muted-foreground whitespace-nowrap">
-                                                        {record.consent_given_by || '—'}
-                                                    </td>
-                                                    <td
-                                                        className="px-3.5 py-3 text-muted-foreground max-w-[140px] truncate"
-                                                        title={record.remarks || undefined}
-                                                    >
-                                                        {record.remarks || '—'}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-[11px] font-medium text-foreground whitespace-nowrap shrink-0">
+                                                        {formatDate(record.date_administered)}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center justify-between text-[11px] gap-2">
+                                                    <span className="inline-flex items-center gap-1 font-mono text-[10px] bg-muted/70 px-1.5 py-0.5 rounded text-muted-foreground">
+                                                        <span>Lot:</span>
+                                                        <span className="font-semibold text-foreground">{batchNo}</span>
+                                                    </span>
+                                                    <span className="text-muted-foreground truncate text-right">
+                                                        Site: <span className="text-foreground font-medium">{record.injection_site || '—'}</span>
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/40 gap-2">
+                                                    <span className="truncate">
+                                                        By: <span className="text-foreground font-medium">{vaccinator}</span>
+                                                    </span>
+                                                    <span className="truncate text-right">
+                                                        Consent: <span className="text-foreground font-medium">{record.consent_given_by || '—'}</span>
+                                                    </span>
+                                                </div>
+
+                                                {record.remarks && (
+                                                    <p className="text-[11px] text-muted-foreground italic bg-muted/30 rounded px-2 py-1">
+                                                        Note: {record.remarks}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Desktop View (md+): Fluid table */}
+                                <div className="hidden md:block overflow-x-auto">
+                                    <table className="w-full text-xs min-w-[650px]">
+                                        <thead className="bg-muted/30 border-b text-muted-foreground font-semibold">
+                                            <tr>
+                                                <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Date</th>
+                                                <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Vaccine & Dose</th>
+                                                <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Batch #</th>
+                                                <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Site / Route</th>
+                                                <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Vaccinator</th>
+                                                <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Consent By</th>
+                                                <th className="px-3.5 py-2.5 text-left whitespace-nowrap">Remarks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y">
+                                            {historyRecords.map((record) => {
+                                                const batchNo =
+                                                    record.batch_number ||
+                                                    (typeof record.inventory_transaction === 'object' && record.inventory_transaction !== null
+                                                        ? record.inventory_transaction.batch_number
+                                                        : null) ||
+                                                    (typeof record.inventoryTransaction === 'object' && record.inventoryTransaction !== null
+                                                        ? record.inventoryTransaction.batch_number
+                                                        : null) ||
+                                                    '—';
+
+                                                const vaccinator =
+                                                    (typeof record.administered_by === 'object' && record.administered_by !== null
+                                                        ? record.administered_by.name
+                                                        : null) ||
+                                                    (typeof record.administeredBy === 'object' && record.administeredBy !== null
+                                                        ? record.administeredBy.name
+                                                        : null) ||
+                                                    'Clinic Staff';
+
+                                                return (
+                                                    <tr key={record.id} className="hover:bg-muted/20 transition-colors">
+                                                        <td className="px-3.5 py-3 font-medium whitespace-nowrap">
+                                                            {formatDate(record.date_administered)}
+                                                        </td>
+                                                        <td className="px-3.5 py-3 whitespace-nowrap">
+                                                            <div className="font-semibold text-foreground">
+                                                                {record.vaccine?.name ?? 'Vaccine'}
+                                                            </div>
+                                                            <div className="text-[11px] text-muted-foreground">
+                                                                Dose {record.dose_number}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3.5 py-3 font-mono font-medium whitespace-nowrap">
+                                                            {batchNo}
+                                                        </td>
+                                                        <td
+                                                            className="px-3.5 py-3 text-muted-foreground max-w-[130px] truncate"
+                                                            title={record.injection_site || undefined}
+                                                        >
+                                                            {record.injection_site || '—'}
+                                                        </td>
+                                                        <td className="px-3.5 py-3 whitespace-nowrap">
+                                                            {vaccinator}
+                                                        </td>
+                                                        <td className="px-3.5 py-3 text-muted-foreground whitespace-nowrap">
+                                                            {record.consent_given_by || '—'}
+                                                        </td>
+                                                        <td
+                                                            className="px-3.5 py-3 text-muted-foreground max-w-[140px] truncate"
+                                                            title={record.remarks || undefined}
+                                                        >
+                                                            {record.remarks || '—'}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>
@@ -1106,11 +1176,12 @@ export default function VaccinationManagement({
                                     )}
                                 </div>
 
-                                <div className="flex items-center gap-2 justify-end">
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                                     <Button
                                         type="button"
                                         variant="outline"
                                         size="sm"
+                                        className="h-9 sm:h-8 text-xs w-full sm:w-auto"
                                         disabled={Boolean(administeringKey)}
                                         onClick={handleCloseAdministration}
                                     >
@@ -1120,6 +1191,7 @@ export default function VaccinationManagement({
                                     <Button
                                         type="button"
                                         size="sm"
+                                        className="h-9 sm:h-8 text-xs w-full sm:w-auto"
                                         disabled={!isAdministrationReady || Boolean(administeringKey)}
                                         onClick={handleSubmitAdministration}
                                     >

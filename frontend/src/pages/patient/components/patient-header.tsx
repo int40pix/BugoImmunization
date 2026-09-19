@@ -298,12 +298,12 @@ export default function PatientHeader({
                         </div>
                     </div>
 
-                    <div className="col-12 col-md-5 d-flex flex-wrap items-center justify-content-start justify-content-md-end gap-2">
+                    <div className="col-12 col-md-5 d-flex items-center justify-content-start justify-content-md-end gap-2">
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="h-8 text-xs"
+                            className="h-8.5 sm:h-8 text-xs flex-1 md:flex-initial"
                             onClick={() =>
                                 setQrOpen(
                                     true,
@@ -318,7 +318,7 @@ export default function PatientHeader({
                             type="button"
                             variant="default"
                             size="sm"
-                            className="h-8 text-xs"
+                            className="h-8.5 sm:h-8 text-xs flex-1 md:flex-initial"
                             onClick={() => router.visit(`/patients/${patientRecordId}/edit`)}
                         >
                             <Pencil className="mr-1.5 h-3.5 w-3.5" />

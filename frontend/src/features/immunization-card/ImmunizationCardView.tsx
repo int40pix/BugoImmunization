@@ -49,7 +49,7 @@ export const ImmunizationCardView: React.FC<ImmunizationCardViewProps> = ({
             </div>
 
             <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[650px]">
                     <thead className="border-b border-border bg-muted/50 uppercase tracking-wider text-muted-foreground">
                         <tr>
                             <th className="px-3 py-2.5">Vaccine</th>

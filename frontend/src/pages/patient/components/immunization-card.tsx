@@ -1008,12 +1008,12 @@ const handleSaveCard = () => {
                     </div>
 
                     {!isCardEditing ? (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-8 text-xs"
+                                className="h-8 text-xs flex-1 sm:flex-initial"
                                 onClick={() => window.print()}
                             >
                                 <Printer className="mr-1.5 h-3.5 w-3.5" />
@@ -1024,7 +1024,7 @@ const handleSaveCard = () => {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-8 text-xs"
+                                className="h-8 text-xs flex-1 sm:flex-initial"
                                 onClick={handleStartCardEdit}
                             >
                                 <Pencil className="mr-1.5 h-3.5 w-3.5" />
@@ -1032,12 +1032,12 @@ const handleSaveCard = () => {
                             </Button>
                         </div>
                     ) : (
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-8 text-xs"
+                                className="h-8 text-xs flex-1 sm:flex-initial"
                                 disabled={savingCard}
                                 onClick={handleCancelCardEdit}
                             >
@@ -1048,7 +1048,7 @@ const handleSaveCard = () => {
                             <Button
                                 type="button"
                                 size="sm"
-                                className="h-8 text-xs"
+                                className="h-8 text-xs flex-1 sm:flex-initial"
                                 disabled={savingCard}
                                 onClick={handleSaveCard}
                             >

@@ -461,7 +461,7 @@ export default function PatientIndex() {
 
                             <CardContent className="p-0">
                                 {/* Mobile View (< md): Compact card list, zero horizontal scroll */}
-                                <div className="d-block d-md-none divide-y divide-border/60 rounded-lg border">
+                                <div className="block md:hidden divide-y divide-border/60 rounded-lg border">
                                     {patients.length === 0 ? (
                                         <div className="p-6 text-center space-y-2">
                                             <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -533,8 +533,8 @@ export default function PatientIndex() {
                                 </div>
 
                                 {/* Desktop View (md+): Fluid table with full details */}
-                                <div className="d-none d-md-block w-full overflow-x-auto rounded-lg border">
-                                    <table className="w-full table-fixed text-left text-xs">
+                                <div className="hidden md:block w-full overflow-x-auto rounded-lg border">
+                                    <table className="w-full table-fixed text-left text-xs min-w-[750px]">
                                         <thead className="bg-muted/30">
                                             <tr className="border-b">
                                                 <th className="w-[12%] border-r px-2.5 py-3 font-medium">

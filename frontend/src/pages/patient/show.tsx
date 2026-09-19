@@ -163,7 +163,7 @@ export default function PatientShow() {
         <AppLayout>
             <Head title={`${patientName} - Patient Profile`} />
 
-            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7">
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 sm:gap-6 p-3.5 sm:p-6 lg:p-7">
                 <PatientHeader
                     patientRecordId={patient.id}
                     patientName={patientName}
@@ -180,11 +180,11 @@ export default function PatientShow() {
 
                 {activeSection === 'general' && (
                     <Card>
-                        <CardHeader className="border-b">
+                        <CardHeader className="border-b p-4 sm:p-6">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
-                                    <CardTitle>General Information</CardTitle>
-                                    <p className="mt-1 text-sm text-muted-foreground">
+                                    <CardTitle className="text-base sm:text-lg">General Information</CardTitle>
+                                    <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
                                         Patient, family, birth, and medical information.
                                     </p>
                                 </div>
@@ -192,17 +192,19 @@ export default function PatientShow() {
                                 <Button
                                     type="button"
                                     variant="outline"
+                                    size="sm"
+                                    className="h-8 text-xs w-full sm:w-auto"
                                     asChild
                                 >
                                     <Link href={`/patients/${patient.id}/edit`}>
-                                        <Pencil className="mr-2 h-4 w-4" />
+                                        <Pencil className="mr-2 h-3.5 w-3.5" />
                                         Edit Information
                                     </Link>
                                 </Button>
                             </div>
                         </CardHeader>
 
-                        <CardContent className="space-y-7 pt-6">
+                        <CardContent className="space-y-5 sm:space-y-7 p-3.5 sm:p-6 pt-4 sm:pt-6">
                             <InfoSection icon={UserRound} title="Patient Information">
                                 <InfoGrid>
                                     <InfoItem label="Patient ID" value={patient.patient_id} />

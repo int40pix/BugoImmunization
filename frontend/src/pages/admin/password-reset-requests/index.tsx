@@ -431,156 +431,262 @@ export default function PasswordResetRequestsIndex({ requests = [] }: PageProps)
                                 </p>
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left text-xs">
-                                    <thead className="border-b bg-muted/40 text-muted-foreground font-medium uppercase tracking-wider">
-                                        <tr>
-                                            <th className="px-6 py-3.5">Requester Account</th>
-                                            <th className="px-6 py-3.5">Account Role</th>
-                                            <th className="px-6 py-3.5">Requested At</th>
-                                            <th className="px-6 py-3.5">Status</th>
-                                            <th className="px-6 py-3.5">Resolution Details</th>
-                                            <th className="px-6 py-3.5 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y">
-                                        {filteredRequests.map((req) => {
-                                            const isPending = req.status === 'pending';
-                                            const roleBadgeColor = req.user.is_guardian
-                                                ? 'bg-purple-500/10 text-purple-700 border-purple-500/20'
-                                                : req.user.role === 'admin'
-                                                  ? 'bg-red-500/10 text-red-700 border-red-500/20'
-                                                  : 'bg-blue-500/10 text-blue-700 border-blue-500/20';
+                            <>
+                                {/* Mobile View (< md): Stacked request cards */}
+                                <div className="block md:hidden divide-y divide-border/60">
+                                    {filteredRequests.map((req) => {
+                                        const isPending = req.status === 'pending';
+                                        const roleBadgeColor = req.user.is_guardian
+                                            ? 'bg-purple-500/10 text-purple-700 border-purple-500/20'
+                                            : req.user.role === 'admin'
+                                              ? 'bg-red-500/10 text-red-700 border-red-500/20'
+                                              : 'bg-blue-500/10 text-blue-700 border-blue-500/20';
 
-                                            return (
-                                                <tr
-                                                    key={req.id}
-                                                    className="hover:bg-muted/20 transition-colors"
-                                                >
-                                                    {/* Requester Account */}
-                                                    <td className="px-6 py-4">
-                                                        <div className="font-semibold text-foreground">
+                                        return (
+                                            <div key={req.id} className="p-3.5 space-y-2.5 hover:bg-muted/10 transition-colors">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="min-w-0">
+                                                        <div className="font-semibold text-xs text-foreground">
                                                             {req.user.name}
                                                         </div>
-                                                        <div className="text-muted-foreground font-mono text-[11px]">
+                                                        <div className="text-muted-foreground font-mono text-[10px] truncate">
                                                             {req.user.email}
                                                         </div>
                                                         {req.guardian?.guardian_no && (
-                                                            <div className="text-[11px] text-muted-foreground">
+                                                            <div className="text-[10px] text-muted-foreground">
                                                                 Guardian No: {req.guardian.guardian_no}
                                                             </div>
                                                         )}
-                                                    </td>
-
-                                                    {/* Account Role */}
-                                                    <td className="px-6 py-4">
+                                                    </div>
+                                                    <div className="flex flex-col items-end gap-1 shrink-0">
                                                         <Badge
                                                             variant="outline"
-                                                            className={`capitalize font-medium ${roleBadgeColor}`}
+                                                            className={`capitalize font-medium text-[10px] ${roleBadgeColor}`}
                                                         >
                                                             {req.user.role_label}
                                                         </Badge>
-                                                    </td>
-
-                                                    {/* Requested At */}
-                                                    <td className="px-6 py-4 text-muted-foreground">
-                                                        {req.requested_at ? (
-                                                            <div>
-                                                                <p className="font-medium text-foreground">
-                                                                    {new Date(req.requested_at).toLocaleDateString('en-US', {
-                                                                        month: 'short',
-                                                                        day: 'numeric',
-                                                                        year: 'numeric',
-                                                                    })}
-                                                                </p>
-                                                                <p className="text-[11px]">
-                                                                    {new Date(req.requested_at).toLocaleTimeString('en-US', {
-                                                                        hour: '2-digit',
-                                                                        minute: '2-digit',
-                                                                    })}
-                                                                </p>
-                                                            </div>
-                                                        ) : (
-                                                            '—'
-                                                        )}
-                                                    </td>
-
-                                                    {/* Status Badge */}
-                                                    <td className="px-6 py-4">
                                                         {isPending ? (
                                                             <Badge
                                                                 variant="outline"
-                                                                className="bg-amber-500/10 text-amber-700 border-amber-500/30 gap-1"
+                                                                className="bg-amber-500/10 text-amber-700 border-amber-500/30 gap-1 text-[10px]"
                                                             >
-                                                                <Clock className="h-3 w-3" />
-                                                                Pending Action
+                                                                <Clock className="h-2.5 w-2.5" />
+                                                                Pending
                                                             </Badge>
                                                         ) : (
                                                             <Badge
                                                                 variant="outline"
-                                                                className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 gap-1"
+                                                                className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 gap-1 text-[10px]"
                                                             >
-                                                                <CheckCircle2 className="h-3 w-3" />
+                                                                <CheckCircle2 className="h-2.5 w-2.5" />
                                                                 Resolved
                                                             </Badge>
                                                         )}
-                                                    </td>
+                                                    </div>
+                                                </div>
 
-                                                    {/* Resolution Details */}
-                                                    <td className="px-6 py-4 text-muted-foreground">
-                                                        {req.resolved_by ? (
-                                                            <div>
-                                                                <p className="font-medium text-foreground">
-                                                                    By {req.resolved_by}
-                                                                </p>
-                                                                <p className="text-[11px]">
-                                                                    {req.resolved_at
-                                                                        ? new Date(req.resolved_at).toLocaleDateString('en-US', {
-                                                                              month: 'short',
-                                                                              day: 'numeric',
-                                                                              hour: '2-digit',
-                                                                              minute: '2-digit',
-                                                                          })
-                                                                        : ''}
-                                                                </p>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-muted-foreground/60 italic">
-                                                                Awaiting administrator
+                                                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/40">
+                                                    <div>
+                                                        <span>Requested: </span>
+                                                        <span className="text-foreground font-medium">
+                                                            {req.requested_at
+                                                                ? new Date(req.requested_at).toLocaleDateString('en-US', {
+                                                                      month: 'short',
+                                                                      day: 'numeric',
+                                                                  })
+                                                                : '—'}
+                                                        </span>
+                                                    </div>
+                                                    {req.resolved_by && (
+                                                        <div>
+                                                            <span>Resolved: </span>
+                                                            <span className="text-foreground font-medium">
+                                                                By {req.resolved_by}
                                                             </span>
-                                                        )}
-                                                    </td>
+                                                        </div>
+                                                    )}
+                                                </div>
 
-                                                    {/* Actions */}
-                                                    <td className="px-6 py-4 text-right">
-                                                        {isPending ? (
-                                                            <Button
-                                                                size="sm"
-                                                                variant="default"
-                                                                className="h-8 gap-1.5 text-xs bg-amber-600 hover:bg-amber-700 text-white"
-                                                                onClick={() => setSelectedRequest(req)}
-                                                            >
-                                                                <KeyRound className="h-3.5 w-3.5" />
-                                                                Generate Temporary Password
-                                                            </Button>
-                                                        ) : (
-                                                            <Button
-                                                                size="sm"
+                                                <div className="pt-1">
+                                                    {isPending ? (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="default"
+                                                            className="w-full h-8 gap-1.5 text-xs bg-amber-600 hover:bg-amber-700 text-white"
+                                                            onClick={() => setSelectedRequest(req)}
+                                                        >
+                                                            <KeyRound className="h-3.5 w-3.5" />
+                                                            Generate Temporary Password
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="w-full h-8 gap-1.5 text-xs text-muted-foreground"
+                                                            onClick={() => setSelectedRequest(req)}
+                                                        >
+                                                            <RefreshCw className="h-3.5 w-3.5" />
+                                                            Regenerate Temporary Password
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Desktop View (md+): Fluid table */}
+                                <div className="hidden md:block overflow-x-auto">
+                                    <table className="w-full text-left text-xs min-w-[750px]">
+                                        <thead className="border-b bg-muted/40 text-muted-foreground font-medium uppercase tracking-wider">
+                                            <tr>
+                                                <th className="px-6 py-3.5">Requester Account</th>
+                                                <th className="px-6 py-3.5">Account Role</th>
+                                                <th className="px-6 py-3.5">Requested At</th>
+                                                <th className="px-6 py-3.5">Status</th>
+                                                <th className="px-6 py-3.5">Resolution Details</th>
+                                                <th className="px-6 py-3.5 text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y">
+                                            {filteredRequests.map((req) => {
+                                                const isPending = req.status === 'pending';
+                                                const roleBadgeColor = req.user.is_guardian
+                                                    ? 'bg-purple-500/10 text-purple-700 border-purple-500/20'
+                                                    : req.user.role === 'admin'
+                                                      ? 'bg-red-500/10 text-red-700 border-red-500/20'
+                                                      : 'bg-blue-500/10 text-blue-700 border-blue-500/20';
+
+                                                return (
+                                                    <tr
+                                                        key={req.id}
+                                                        className="hover:bg-muted/20 transition-colors"
+                                                    >
+                                                        {/* Requester Account */}
+                                                        <td className="px-6 py-4">
+                                                            <div className="font-semibold text-foreground">
+                                                                {req.user.name}
+                                                            </div>
+                                                            <div className="text-muted-foreground font-mono text-[11px]">
+                                                                {req.user.email}
+                                                            </div>
+                                                            {req.guardian?.guardian_no && (
+                                                                <div className="text-[11px] text-muted-foreground">
+                                                                    Guardian No: {req.guardian.guardian_no}
+                                                                </div>
+                                                            )}
+                                                        </td>
+
+                                                        {/* Account Role */}
+                                                        <td className="px-6 py-4">
+                                                            <Badge
                                                                 variant="outline"
-                                                                className="h-8 gap-1.5 text-xs text-muted-foreground"
-                                                                onClick={() => setSelectedRequest(req)}
+                                                                className={`capitalize font-medium ${roleBadgeColor}`}
                                                             >
-                                                                <RefreshCw className="h-3.5 w-3.5" />
-                                                                Regenerate
-                                                            </Button>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                                {req.user.role_label}
+                                                            </Badge>
+                                                        </td>
+
+                                                        {/* Requested At */}
+                                                        <td className="px-6 py-4 text-muted-foreground">
+                                                            {req.requested_at ? (
+                                                                <div>
+                                                                    <p className="font-medium text-foreground">
+                                                                        {new Date(req.requested_at).toLocaleDateString('en-US', {
+                                                                            month: 'short',
+                                                                            day: 'numeric',
+                                                                            year: 'numeric',
+                                                                        })}
+                                                                    </p>
+                                                                    <p className="text-[11px]">
+                                                                        {new Date(req.requested_at).toLocaleTimeString('en-US', {
+                                                                            hour: '2-digit',
+                                                                            minute: '2-digit',
+                                                                        })}
+                                                                    </p>
+                                                                </div>
+                                                            ) : (
+                                                                '—'
+                                                            )}
+                                                        </td>
+
+                                                        {/* Status Badge */}
+                                                        <td className="px-6 py-4">
+                                                            {isPending ? (
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-amber-500/10 text-amber-700 border-amber-500/30 gap-1"
+                                                                >
+                                                                    <Clock className="h-3 w-3" />
+                                                                    Pending Action
+                                                                </Badge>
+                                                            ) : (
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 gap-1"
+                                                                >
+                                                                    <CheckCircle2 className="h-3 w-3" />
+                                                                    Resolved
+                                                                </Badge>
+                                                            )}
+                                                        </td>
+
+                                                        {/* Resolution Details */}
+                                                        <td className="px-6 py-4 text-muted-foreground">
+                                                            {req.resolved_by ? (
+                                                                <div>
+                                                                    <p className="font-medium text-foreground">
+                                                                        By {req.resolved_by}
+                                                                    </p>
+                                                                    <p className="text-[11px]">
+                                                                        {req.resolved_at
+                                                                            ? new Date(req.resolved_at).toLocaleDateString('en-US', {
+                                                                                  month: 'short',
+                                                                                  day: 'numeric',
+                                                                                  hour: '2-digit',
+                                                                                  minute: '2-digit',
+                                                                              })
+                                                                            : ''}
+                                                                    </p>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-muted-foreground/60 italic">
+                                                                    Awaiting administrator
+                                                                </span>
+                                                            )}
+                                                        </td>
+
+                                                        {/* Actions */}
+                                                        <td className="px-6 py-4 text-right">
+                                                            {isPending ? (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="default"
+                                                                    className="h-8 gap-1.5 text-xs bg-amber-600 hover:bg-amber-700 text-white"
+                                                                    onClick={() => setSelectedRequest(req)}
+                                                                >
+                                                                    <KeyRound className="h-3.5 w-3.5" />
+                                                                    Generate Temporary Password
+                                                                </Button>
+                                                            ) : (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    className="h-8 gap-1.5 text-xs text-muted-foreground"
+                                                                    onClick={() => setSelectedRequest(req)}
+                                                                >
+                                                                    <RefreshCw className="h-3.5 w-3.5" />
+                                                                    Regenerate
+                                                                </Button>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
                         )}
                     </CardContent>
                 </Card>

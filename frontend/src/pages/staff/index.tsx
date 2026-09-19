@@ -296,7 +296,7 @@ export default function StaffIndex({
 
                     <CardContent className="p-0">
                         {/* Mobile View (< md): Compact card list, fits 100% width on any phone */}
-                        <div className="d-block d-md-none divide-y divide-border/60">
+                        <div className="block md:hidden divide-y divide-border/60">
                             {staff.length === 0 ? (
                                 <div className="p-6 text-center space-y-2">
                                     <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -358,8 +358,8 @@ export default function StaffIndex({
                         </div>
 
                         {/* Desktop View (md+): Fluid table with full details */}
-                        <div className="d-none d-md-block w-full overflow-x-auto">
-                            <table className="w-full text-left text-sm">
+                        <div className="hidden md:block w-full overflow-x-auto">
+                            <table className="w-full text-left text-sm min-w-[650px]">
                                 <thead className="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
                                     <tr>
                                         <th className="px-4 lg:px-6 py-3.5 font-medium">Personnel</th>
