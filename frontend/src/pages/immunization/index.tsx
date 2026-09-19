@@ -792,7 +792,7 @@ export default function ImmunizationIndex({
                                 <button
                                     type="button"
                                     onClick={() => setViewMode('tcl')}
-                                    className={`shrink-0 px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-medium transition-colors ${
+                                    className={`shrink-0 whitespace-nowrap px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors ${
                                         viewMode === 'tcl'
                                             ? 'bg-foreground text-background font-semibold'
                                             : 'hover:bg-muted text-muted-foreground'
@@ -806,7 +806,7 @@ export default function ImmunizationIndex({
                                     onClick={() =>
                                         setViewMode('scheduled')
                                     }
-                                    className={`shrink-0 border-l px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-medium transition-colors ${
+                                    className={`shrink-0 whitespace-nowrap border-l px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors ${
                                         viewMode === 'scheduled'
                                             ? 'bg-foreground text-background font-semibold'
                                             : 'hover:bg-muted text-muted-foreground'
@@ -820,7 +820,7 @@ export default function ImmunizationIndex({
                                     onClick={() =>
                                         setViewMode('history')
                                     }
-                                    className={`shrink-0 border-l px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-medium transition-colors ${
+                                    className={`shrink-0 whitespace-nowrap border-l px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors ${
                                         viewMode === 'history'
                                             ? 'bg-foreground text-background font-semibold'
                                             : 'hover:bg-muted text-muted-foreground'
@@ -832,14 +832,14 @@ export default function ImmunizationIndex({
                         </div>
                     </CardHeader>
 
-                    <CardContent className="pt-6">
+                    <CardContent className="p-2 sm:p-6 sm:pt-0">
                         {viewMode === 'tcl' ? (
                             <div className="w-full max-w-full overflow-hidden rounded-lg border">
-                                <div className="flex max-w-full overflow-x-auto no-scrollbar items-center gap-2 border-b bg-muted/20 px-3 sm:px-5 py-3 sm:py-4">
+                                <div className="flex max-w-full overflow-x-auto no-scrollbar items-center gap-1.5 sm:gap-2 border-b bg-muted/20 px-2.5 sm:px-5 py-2.5 sm:py-3">
                                     <button
                                         type="button"
                                         onClick={() => setStatusFilter('all')}
-                                        className={`shrink-0 inline-flex items-center gap-2 rounded-md border px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors ${
+                                        className={`shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 sm:gap-2 rounded-md border px-2.5 sm:px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
                                             statusFilter === 'all'
                                                 ? 'bg-foreground text-background'
                                                 : 'bg-background hover:bg-muted'
@@ -847,7 +847,7 @@ export default function ImmunizationIndex({
                                     >
                                         All
                                         <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+                                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
                                                 statusFilter === 'all'
                                                     ? 'bg-background/20'
                                                     : 'bg-muted text-muted-foreground'
@@ -860,7 +860,7 @@ export default function ImmunizationIndex({
                                     <button
                                         type="button"
                                         onClick={() => setStatusFilter('current')}
-                                        className={`inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
+                                        className={`shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 sm:gap-2 rounded-md border px-2.5 sm:px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
                                             statusFilter === 'current'
                                                 ? 'bg-foreground text-background'
                                                 : 'bg-background hover:bg-muted'
@@ -868,7 +868,7 @@ export default function ImmunizationIndex({
                                     >
                                         Current Age
                                         <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+                                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
                                                 statusFilter === 'current'
                                                     ? 'bg-background/20'
                                                     : 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
@@ -881,7 +881,7 @@ export default function ImmunizationIndex({
                                     <button
                                         type="button"
                                         onClick={() => setStatusFilter('recent')}
-                                        className={`inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
+                                        className={`shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 sm:gap-2 rounded-md border px-2.5 sm:px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
                                             statusFilter === 'recent'
                                                 ? 'bg-foreground text-background'
                                                 : 'bg-background hover:bg-muted'
@@ -889,7 +889,7 @@ export default function ImmunizationIndex({
                                     >
                                         Recent Due
                                         <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+                                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
                                                 statusFilter === 'recent'
                                                     ? 'bg-background/20'
                                                     : 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300'
@@ -902,7 +902,7 @@ export default function ImmunizationIndex({
                                     <button
                                         type="button"
                                         onClick={() => setStatusFilter('overdue')}
-                                        className={`inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
+                                        className={`shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 sm:gap-2 rounded-md border px-2.5 sm:px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
                                             statusFilter === 'overdue'
                                                 ? 'bg-foreground text-background'
                                                 : liveCounts.overdue > 0
@@ -912,7 +912,7 @@ export default function ImmunizationIndex({
                                     >
                                         Overdue
                                         <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+                                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
                                                 statusFilter === 'overdue'
                                                     ? 'bg-background/20'
                                                     : liveCounts.overdue > 0
@@ -1116,8 +1116,9 @@ export default function ImmunizationIndex({
                                     </>
                                 ) : (
                                     <div>
-                                        {patientGroups.map(
-                                            (patient, index) => {
+                                        {/* Mobile View (< md): Compact Grouped Patient Cards */}
+                                        <div className="d-block d-md-none divide-y divide-border/60">
+                                            {patientGroups.map((patient) => {
                                                 const isExpanded =
                                                     expandedPatients.has(
                                                         patient.patient_id,
@@ -1125,151 +1126,106 @@ export default function ImmunizationIndex({
 
                                                 return (
                                                     <div
-                                                        key={
-                                                            patient.patient_id
-                                                        }
-                                                        className={
-                                                            index !==
-                                                            patientGroups.length -
-                                                                1
-                                                                ? 'border-b'
-                                                                : ''
-                                                        }
+                                                        key={patient.patient_id}
+                                                        className="p-3 space-y-2 hover:bg-muted/15 transition-colors"
                                                     >
-                                                        <button
-                                                            type="button"
+                                                        <div
                                                             onClick={() =>
                                                                 togglePatient(
                                                                     patient.patient_id,
                                                                 )
                                                             }
-                                                            aria-expanded={
-                                                                isExpanded
-                                                            }
-                                                            className="grid w-full grid-cols-[36px_minmax(0,1fr)] sm:grid-cols-[44px_minmax(0,1fr)_260px] items-center gap-2 sm:gap-3 px-3 sm:px-5 py-3.5 sm:py-5 text-left transition-colors hover:bg-muted/30"
+                                                            className="cursor-pointer space-y-1.5"
                                                         >
-                                                            <div className="flex items-center justify-center text-muted-foreground">
-                                                                {isExpanded ? (
-                                                                    <ChevronDown className="h-4 w-4" />
-                                                                ) : (
-                                                                    <ChevronRight className="h-4 w-4" />
-                                                                )}
-                                                            </div>
-
-                                                            <div className="min-w-0">
-                                                                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                                                                    <p className="font-semibold text-sm sm:text-base">
-                                                                        {
-                                                                            patient.patient_name
-                                                                        }
-                                                                    </p>
-
-                                                                    <p className="text-xs text-muted-foreground">
-                                                                        {patient.patient_code ??
-                                                                            'No Patient ID'}
+                                                            <div className="flex items-start justify-between gap-2">
+                                                                <div className="min-w-0">
+                                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                                        <span className="font-semibold text-xs sm:text-sm text-foreground truncate">
+                                                                            {patient.patient_name}
+                                                                        </span>
+                                                                        <span className="font-mono bg-muted/80 px-1.5 py-0.5 rounded text-[10px] text-muted-foreground shrink-0">
+                                                                            {patient.patient_code ?? '—'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="mt-0.5 text-[11px] text-muted-foreground truncate">
+                                                                        {getVaccineSummary(patient)}
                                                                     </p>
                                                                 </div>
-
-                                                                <p className="mt-1 truncate text-xs sm:text-sm text-muted-foreground">
-                                                                    {getVaccineSummary(
-                                                                        patient,
+                                                                <div className="flex items-center gap-1.5 shrink-0 text-muted-foreground pt-0.5">
+                                                                    <span className="text-[10px] font-medium text-foreground/80 bg-muted/60 px-2 py-0.5 rounded-full">
+                                                                        {patient.rows.length}{' '}
+                                                                        {patient.rows.length === 1
+                                                                            ? 'vaccine'
+                                                                            : 'vaccines'}
+                                                                    </span>
+                                                                    {isExpanded ? (
+                                                                        <ChevronDown className="h-3.5 w-3.5" />
+                                                                    ) : (
+                                                                        <ChevronRight className="h-3.5 w-3.5" />
                                                                     )}
-                                                                </p>
+                                                                </div>
                                                             </div>
-
-                                                            <div className="col-span-2 sm:col-span-1 border-t sm:border-t-0 sm:border-l pt-2 sm:pt-0 pl-10 sm:pl-6 text-left sm:text-right">
-                                                                <p className="text-xs sm:text-sm font-medium">
-                                                                    {getGroupSummary(
-                                                                        patient,
-                                                                    )}
-                                                                </p>
-
-                                                                <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-muted-foreground">
+                                                            <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
+                                                                <span className="text-[10px] text-muted-foreground">
+                                                                    {getGroupSummary(patient)}
+                                                                </span>
+                                                                <span className="text-[10px] font-medium text-primary shrink-0">
                                                                     {isExpanded
                                                                         ? 'Hide details'
                                                                         : 'View details'}
-                                                                </p>
+                                                                </span>
                                                             </div>
-                                                        </button>
+                                                        </div>
 
                                                         {isExpanded && (
-                                                            <div className="border-t bg-muted/10 px-3 sm:px-6 py-2 sm:pl-[72px] min-w-0 max-w-full">
-                                                                {patient.rows.map(
-                                                                    (
-                                                                        row,
-                                                                        rowIndex,
-                                                                    ) => {
-                                                                        const status =
-                                                                            getTclStatus(
-                                                                                row,
-                                                                            );
+                                                            <div className="border-t border-border/40 pt-2 space-y-1.5">
+                                                                {patient.rows.map((row) => {
+                                                                    const status =
+                                                                        getTclStatus(row);
+                                                                    const scheduledDate =
+                                                                        formatDate(
+                                                                            row.scheduled_date,
+                                                                        );
 
-                                                                        const scheduledDate =
-                                                                            formatDate(
-                                                                                row.scheduled_date,
-                                                                            );
-
-                                                                        return (
-                                                                            <div
-                                                                                key={`${row.patient_id}-${row.vaccine_id}-${row.dose_number}`}
-                                                                                className={`grid gap-4 py-4 sm:grid-cols-[minmax(180px,1.4fr)_100px_minmax(120px,1fr)_minmax(170px,1.2fr)] sm:items-center ${
-                                                                                    rowIndex !==
-                                                                                    patient
-                                                                                        .rows
-                                                                                        .length -
-                                                                                        1
-                                                                                        ? 'border-b'
-                                                                                        : ''
-                                                                                }`}
-                                                                            >
-                                                                                <p className="text-sm font-medium">
-                                                                                    {
-                                                                                        row.vaccine_name
-                                                                                    }
-                                                                                </p>
-
-                                                                                <p className="text-center text-sm text-muted-foreground">
-                                                                                    Dose{' '}
-                                                                                    {
-                                                                                        row.dose_number
-                                                                                    }
-                                                                                </p>
-
-                                                                                <p
-                                                                                    className={`text-center text-sm font-medium ${getPriorityClass(
+                                                                    return (
+                                                                        <div
+                                                                            key={`${row.patient_id}-${row.vaccine_id}-${row.dose_number}`}
+                                                                            className="flex flex-col gap-1 py-2 px-2.5 rounded-md bg-muted/30 text-xs"
+                                                                        >
+                                                                            <div className="flex items-center justify-between gap-2">
+                                                                                <span className="font-medium text-foreground truncate">
+                                                                                    {row.vaccine_name}
+                                                                                </span>
+                                                                                <span
+                                                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${getPriorityClass(
                                                                                         row.schedule_label,
                                                                                     )}`}
                                                                                 >
-                                                                                    {
-                                                                                        row.schedule_label
-                                                                                    }
-                                                                                </p>
-
-                                                                                <div className="text-right">
-                                                                                    <p
-                                                                                        className={`text-sm ${status.className}`}
-                                                                                    >
-                                                                                        {
-                                                                                            status.text
-                                                                                        }
-                                                                                    </p>
-
-                                                                                    {scheduledDate && (
-                                                                                        <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                                                            <CalendarDays className="h-3.5 w-3.5" />
-
-                                                                                            {
-                                                                                                scheduledDate
-                                                                                            }
-                                                                                        </p>
-                                                                                    )}
-                                                                                </div>
+                                                                                    {row.schedule_label}
+                                                                                </span>
                                                                             </div>
-                                                                        );
-                                                                    },
-                                                                )}
-
-                                                                <div className="flex justify-end border-t py-3">
+                                                                            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                                                                                <span>
+                                                                                    Dose {row.dose_number}
+                                                                                </span>
+                                                                                <span
+                                                                                    className={`font-medium ${status.className}`}
+                                                                                >
+                                                                                    {status.text}
+                                                                                </span>
+                                                                            </div>
+                                                                            {scheduledDate && (
+                                                                                <div className="text-[10px] text-muted-foreground inline-flex items-center gap-1 pt-0.5">
+                                                                                    <CalendarDays className="h-3 w-3" />
+                                                                                    <span>
+                                                                                        Scheduled: {scheduledDate}
+                                                                                    </span>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                                <div className="pt-1.5 flex justify-end">
                                                                     <button
                                                                         type="button"
                                                                         onClick={() =>
@@ -1280,18 +1236,198 @@ export default function ImmunizationIndex({
                                                                                 ),
                                                                             )
                                                                         }
-                                                                        className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-xs font-medium transition-colors hover:bg-muted"
+                                                                        className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
                                                                     >
                                                                         <Eye className="h-3.5 w-3.5" />
-                                                                        View patient record
+                                                                        View full patient record
                                                                     </button>
                                                                 </div>
                                                             </div>
                                                         )}
                                                     </div>
                                                 );
-                                            },
-                                        )}
+                                            })}
+                                        </div>
+
+                                        {/* Desktop View (md+): Fluid Accordion Table */}
+                                        <div className="d-none d-md-block">
+                                            {patientGroups.map(
+                                                (patient, index) => {
+                                                    const isExpanded =
+                                                        expandedPatients.has(
+                                                            patient.patient_id,
+                                                        );
+
+                                                    return (
+                                                        <div
+                                                            key={
+                                                                patient.patient_id
+                                                            }
+                                                            className={
+                                                                index !==
+                                                                patientGroups.length -
+                                                                    1
+                                                                    ? 'border-b'
+                                                                    : ''
+                                                            }
+                                                        >
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    togglePatient(
+                                                                        patient.patient_id,
+                                                                    )
+                                                                }
+                                                                aria-expanded={
+                                                                    isExpanded
+                                                                }
+                                                                className="grid w-full grid-cols-[44px_minmax(0,1fr)_260px] items-center gap-3 px-5 py-5 text-left transition-colors hover:bg-muted/30"
+                                                            >
+                                                                <div className="flex items-center justify-center text-muted-foreground">
+                                                                    {isExpanded ? (
+                                                                        <ChevronDown className="h-4 w-4" />
+                                                                    ) : (
+                                                                        <ChevronRight className="h-4 w-4" />
+                                                                    )}
+                                                                </div>
+
+                                                                <div className="min-w-0">
+                                                                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                                                        <p className="font-semibold text-base">
+                                                                            {
+                                                                                patient.patient_name
+                                                                            }
+                                                                        </p>
+
+                                                                        <p className="text-xs text-muted-foreground">
+                                                                            {patient.patient_code ??
+                                                                                'No Patient ID'}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <p className="mt-1 truncate text-sm text-muted-foreground">
+                                                                        {getVaccineSummary(
+                                                                            patient,
+                                                                        )}
+                                                                    </p>
+                                                                </div>
+
+                                                                <div className="border-l pl-6 text-right">
+                                                                    <p className="text-sm font-medium">
+                                                                        {getGroupSummary(
+                                                                            patient,
+                                                                        )}
+                                                                    </p>
+
+                                                                    <p className="mt-1 text-xs text-muted-foreground">
+                                                                        {isExpanded
+                                                                            ? 'Hide details'
+                                                                            : 'View details'}
+                                                                    </p>
+                                                                </div>
+                                                            </button>
+
+                                                            {isExpanded && (
+                                                                <div className="border-t bg-muted/10 px-6 py-2 pl-[72px] min-w-0 max-w-full">
+                                                                    {patient.rows.map(
+                                                                        (
+                                                                            row,
+                                                                            rowIndex,
+                                                                        ) => {
+                                                                            const status =
+                                                                                getTclStatus(
+                                                                                    row,
+                                                                                );
+
+                                                                            const scheduledDate =
+                                                                                formatDate(
+                                                                                    row.scheduled_date,
+                                                                                );
+
+                                                                            return (
+                                                                                <div
+                                                                                    key={`${row.patient_id}-${row.vaccine_id}-${row.dose_number}`}
+                                                                                    className={`grid gap-4 py-4 grid-cols-[minmax(180px,1.4fr)_100px_minmax(120px,1fr)_minmax(170px,1.2fr)] items-center ${
+                                                                                        rowIndex !==
+                                                                                        patient
+                                                                                            .rows
+                                                                                            .length -
+                                                                                            1
+                                                                                            ? 'border-b'
+                                                                                            : ''
+                                                                                    }`}
+                                                                                >
+                                                                                    <p className="text-sm font-medium">
+                                                                                        {
+                                                                                            row.vaccine_name
+                                                                                        }
+                                                                                    </p>
+
+                                                                                    <p className="text-center text-sm text-muted-foreground">
+                                                                                        Dose{' '}
+                                                                                        {
+                                                                                            row.dose_number
+                                                                                        }
+                                                                                    </p>
+
+                                                                                    <p
+                                                                                        className={`text-center text-sm font-medium ${getPriorityClass(
+                                                                                            row.schedule_label,
+                                                                                        )}`}
+                                                                                    >
+                                                                                        {
+                                                                                            row.schedule_label
+                                                                                        }
+                                                                                    </p>
+
+                                                                                    <div className="text-right">
+                                                                                        <p
+                                                                                            className={`text-sm ${status.className}`}
+                                                                                        >
+                                                                                            {
+                                                                                                status.text
+                                                                                            }
+                                                                                        </p>
+
+                                                                                        {scheduledDate && (
+                                                                                            <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                                                                <CalendarDays className="h-3.5 w-3.5" />
+
+                                                                                                {
+                                                                                                    scheduledDate
+                                                                                                }
+                                                                                            </p>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        },
+                                                                    )}
+
+                                                                    <div className="flex justify-end border-t py-3">
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                router.visit(
+                                                                                    route(
+                                                                                        'patients.show',
+                                                                                        patient.patient_id,
+                                                                                    ),
+                                                                                )
+                                                                            }
+                                                                            className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-xs font-medium transition-colors hover:bg-muted"
+                                                                        >
+                                                                            <Eye className="h-3.5 w-3.5" />
+                                                                            View patient record
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                },
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
