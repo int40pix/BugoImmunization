@@ -1435,20 +1435,361 @@ const handleSaveCard = () => {
                             </div>
                         )}
 
+                        {/* Mobile Edit Card List (< md, edit mode) */}
                         {isCardEditing && (
-                            <div className="block md:hidden no-print rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
-                                Scroll horizontally on the table below to edit dose dates and remarks.
+                            <div className="block md:hidden no-print space-y-3">
+                                <div className="rounded-lg border border-primary/20 bg-primary/5 px-3.5 py-2.5 text-xs text-primary flex items-center justify-between">
+                                    <div className="flex items-center gap-2 font-medium">
+                                        <Pencil className="h-3.5 w-3.5 shrink-0" />
+                                        <span>Editing Immunization Card</span>
+                                    </div>
+                                    <span className="text-[11px] text-muted-foreground">
+                                        Mobile Mode
+                                    </span>
+                                </div>
+
+                                {immunizationCard.map((vaccine) => (
+                                    <div
+                                        key={`mobile-edit-vaccine-${vaccine.vaccine_id}`}
+                                        className="rounded-lg border bg-card text-card-foreground shadow-xs overflow-hidden"
+                                    >
+                                        <div className="flex items-center justify-between border-b bg-muted/40 px-3.5 py-2.5">
+                                            <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                                <span className="font-bold text-sm text-foreground truncate">
+                                                    {vaccine.vaccine_name}
+                                                </span>
+                                                {vaccine.category !==
+                                                    'routine' && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-[10px] py-0 px-1.5 capitalize shrink-0"
+                                                    >
+                                                        {vaccine.category}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <span className="text-[11px] font-medium text-muted-foreground shrink-0">
+                                                {vaccine.required_doses}{' '}
+                                                {vaccine.required_doses === 1
+                                                    ? 'dose'
+                                                    : 'doses'}
+                                            </span>
+                                        </div>
+
+                                        <div className="divide-y divide-border/60 p-3 space-y-3">
+                                            {vaccine.doses.map((dose) => {
+                                                const draft = getDraft(
+                                                    vaccine.vaccine_id,
+                                                    dose.dose_number,
+                                                );
+                                                const targetAge =
+                                                    formatRecommendedAge(
+                                                        dose.recommended_age,
+                                                    );
+
+                                                return (
+                                                    <div
+                                                        key={`mobile-edit-dose-${vaccine.vaccine_id}-${dose.dose_number}`}
+                                                        className="space-y-2 pt-2 first:pt-0"
+                                                    >
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-bold text-foreground border">
+                                                                Dose{' '}
+                                                                {
+                                                                    dose.dose_number
+                                                                }
+                                                            </span>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                Target:{' '}
+                                                                <span className="font-medium text-foreground">
+                                                                    {
+                                                                        targetAge
+                                                                    }
+                                                                </span>
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="space-y-1.5">
+                                                            <div>
+                                                                <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
+                                                                    Date Administered (Petsa)
+                                                                </label>
+                                                                <Input
+                                                                    type="date"
+                                                                    className="h-9 text-xs w-full"
+                                                                    value={
+                                                                        draft?.dateAdministered ??
+                                                                        ''
+                                                                    }
+                                                                    min={formatDateForInput(
+                                                                        patient.date_of_birth,
+                                                                    )}
+                                                                    max={getTodayForInput()}
+                                                                    onChange={(
+                                                                        event,
+                                                                    ) =>
+                                                                        updateDraft(
+                                                                            vaccine.vaccine_id,
+                                                                            dose.dose_number,
+                                                                            {
+                                                                                dateAdministered:
+                                                                                    event
+                                                                                        .target
+                                                                                        .value,
+                                                                            },
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </div>
+
+                                                            <div>
+                                                                <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
+                                                                    Remarks (Optional)
+                                                                </label>
+                                                                <Input
+                                                                    type="text"
+                                                                    placeholder="e.g. Batch #, site, reactions"
+                                                                    maxLength={
+                                                                        1000
+                                                                    }
+                                                                    className="h-8 text-xs w-full"
+                                                                    value={
+                                                                        draft?.remarks ??
+                                                                        ''
+                                                                    }
+                                                                    onChange={(
+                                                                        event,
+                                                                    ) =>
+                                                                        updateDraft(
+                                                                            vaccine.vaccine_id,
+                                                                            dose.dose_number,
+                                                                            {
+                                                                                remarks:
+                                                                                    event
+                                                                                        .target
+                                                                                        .value,
+                                                                            },
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {manualCardRowDrafts.map((row) => (
+                                    <div
+                                        key={`mobile-edit-manual-row-${row.localKey}`}
+                                        className="rounded-lg border bg-card text-card-foreground shadow-xs overflow-hidden"
+                                    >
+                                        <div className="border-b bg-muted/40 p-3 space-y-2.5">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                                    Historical Vaccine
+                                                </span>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-500/10 px-2"
+                                                    disabled={
+                                                        savingCard
+                                                    }
+                                                    onClick={() =>
+                                                        handleRemoveManualCardRow(
+                                                            row,
+                                                        )
+                                                    }
+                                                >
+                                                    <Trash2 className="mr-1 h-3 w-3" />
+                                                    Remove
+                                                </Button>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-[1fr_80px] gap-2">
+                                                <div>
+                                                    <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
+                                                        Vaccine Name
+                                                    </label>
+                                                    <Input
+                                                        type="text"
+                                                        value={
+                                                            row.vaccineName
+                                                        }
+                                                        placeholder="Vaccine name"
+                                                        maxLength={
+                                                            255
+                                                        }
+                                                        className="h-9 text-xs"
+                                                        onChange={(
+                                                            event,
+                                                        ) =>
+                                                            updateManualCardRowDraft(
+                                                                row.localKey,
+                                                                {
+                                                                    vaccineName:
+                                                                        event
+                                                                            .target
+                                                                            .value,
+                                                                },
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
+                                                        Doses (1-10)
+                                                    </label>
+                                                    <Input
+                                                        type="number"
+                                                        min={1}
+                                                        max={10}
+                                                        value={
+                                                            row.doseCount
+                                                        }
+                                                        className="h-9 text-xs text-center"
+                                                        onChange={(
+                                                            event,
+                                                        ) =>
+                                                            updateManualDoseCount(
+                                                                row.localKey,
+                                                                Number(
+                                                                    event
+                                                                        .target
+                                                                        .value,
+                                                                ) ||
+                                                                    1,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="divide-y divide-border/60 p-3 space-y-3">
+                                            {row.doses.map((dose) => (
+                                                <div
+                                                    key={`mobile-edit-manual-dose-${row.localKey}-${dose.doseNumber}`}
+                                                    className="space-y-2 pt-2 first:pt-0"
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-bold text-foreground border">
+                                                            Dose{' '}
+                                                            {
+                                                                dose.doseNumber
+                                                            }
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="space-y-1.5">
+                                                        <div>
+                                                            <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
+                                                                Recommended Age
+                                                            </label>
+                                                            <Input
+                                                                type="text"
+                                                                placeholder="e.g. 9 months"
+                                                                maxLength={
+                                                                    100
+                                                                }
+                                                                className="h-8 text-xs w-full"
+                                                                value={
+                                                                    dose.recommendedAge
+                                                                }
+                                                                onChange={(
+                                                                    event,
+                                                                ) =>
+                                                                    updateManualDose(
+                                                                        row.localKey,
+                                                                        dose.doseNumber,
+                                                                        {
+                                                                            recommendedAge:
+                                                                                event
+                                                                                    .target
+                                                                                    .value,
+                                                                        },
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
+                                                                Date Administered
+                                                            </label>
+                                                            <Input
+                                                                type="date"
+                                                                className="h-9 text-xs w-full"
+                                                                value={
+                                                                    dose.dateAdministered
+                                                                }
+                                                                min={formatDateForInput(
+                                                                    patient.date_of_birth,
+                                                                )}
+                                                                max={getTodayForInput()}
+                                                                onChange={(
+                                                                    event,
+                                                                ) =>
+                                                                    updateManualDose(
+                                                                        row.localKey,
+                                                                        dose.doseNumber,
+                                                                        {
+                                                                            dateAdministered:
+                                                                                event
+                                                                                    .target
+                                                                                    .value,
+                                                                        },
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
+                                                                Remarks
+                                                            </label>
+                                                            <Input
+                                                                type="text"
+                                                                placeholder="Remarks"
+                                                                maxLength={
+                                                                    1000
+                                                                }
+                                                                className="h-8 text-xs w-full"
+                                                                value={
+                                                                    dose.remarks
+                                                                }
+                                                                onChange={(
+                                                                    event,
+                                                                ) =>
+                                                                    updateManualDose(
+                                                                        row.localKey,
+                                                                        dose.doseNumber,
+                                                                        {
+                                                                            remarks:
+                                                                                event
+                                                                                    .target
+                                                                                    .value,
+                                                                        },
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
 
-                        {/* Desktop & Print Table (or all screens in edit mode) */}
-                        <div
-                            className={
-                                isCardEditing
-                                    ? 'overflow-x-auto rounded-lg border-2 immunization-table-wrapper'
-                                    : 'hidden md:block print:block overflow-x-auto rounded-lg border-2 immunization-table-wrapper'
-                            }
-                        >
+                        {/* Desktop & Print Table */}
+                        <div className="hidden md:block print:block overflow-x-auto rounded-lg border-2 immunization-table-wrapper">
                         <table
                             className={
                                 isCardEditing
@@ -2124,20 +2465,45 @@ const handleSaveCard = () => {
                 </div>
 
                 {isCardEditing && (
-                    <div className="no-print flex justify-start">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            disabled={
-                                savingCard
-                            }
-                            onClick={
-                                handleAddManualCardRow
-                            }
-                        >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Historical Vaccine Row
-                        </Button>
+                    <div className="no-print space-y-3">
+                        <div className="flex justify-start">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full sm:w-auto h-9 text-xs"
+                                disabled={savingCard}
+                                onClick={handleAddManualCardRow}
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Historical Vaccine Row
+                            </Button>
+                        </div>
+
+                        {/* Mobile bottom Save / Cancel bar */}
+                        <div className="flex items-center gap-2 pt-2 border-t md:hidden">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-9 text-xs flex-1"
+                                disabled={savingCard}
+                                onClick={handleCancelCardEdit}
+                            >
+                                <X className="mr-1.5 h-3.5 w-3.5" />
+                                Cancel
+                            </Button>
+
+                            <Button
+                                type="button"
+                                size="sm"
+                                className="h-9 text-xs flex-1"
+                                disabled={savingCard}
+                                onClick={handleSaveCard}
+                            >
+                                <Save className="mr-1.5 h-3.5 w-3.5" />
+                                {savingCard ? 'Saving...' : 'Save Changes'}
+                            </Button>
+                        </div>
                     </div>
                 )}
 
