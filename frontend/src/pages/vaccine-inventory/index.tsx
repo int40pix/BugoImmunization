@@ -337,44 +337,71 @@ export default function VaccineInventoryIndex() {
                             value={
                                 summary.total_usable_stock
                             }
-                            description="Total active non-expired doses"
+                            description="Active non-expired doses"
                         />
                     </div>
 
-                    <div className="col-6 col-md-4 col-xl">
+                    <div className="col-4 col-md-4 col-xl">
                         <SummaryCard
                             label="Low Stock"
                             value={
                                 summary.low_stock_vaccines
                             }
-                            description="Vaccines low in aggregate stock"
+                            description="Low stock alerts"
                         />
                     </div>
 
-                    <div className="col-6 col-md-4 col-xl">
+                    <div className="col-4 col-md-4 col-xl">
                         <SummaryCard
                             label="Out of Stock"
                             value={
                                 summary.out_of_stock_vaccines
                             }
-                            description="Vaccines with no usable doses"
+                            description="No usable stock"
                         />
                     </div>
 
-                    <div className="col-12 col-sm-6 col-md-4 col-xl">
+                    <div className="col-4 col-md-4 col-xl">
                         <SummaryCard
                             label="Expiring Soon"
                             value={
                                 summary.expiring_soon_vaccines
                             }
-                            description="Vaccines with a batch ≤ 30 days"
+                            description="Batch ≤ 30 days"
                         />
                     </div>
                 </div>
 
-                <Card className="min-w-0 max-w-full">
-                    <CardContent className="pt-6">
-                        <div className="row g-3 mx-0 w-full">
+                <Card className="min-w-0 max-w-full overflow-hidden">
+                    <CardHeader className="border-b px-4 sm:px-6 py-3.5 sm:py-4">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <CardTitle className="text-sm sm:text-base font-semibold">
+                                    Vaccine Inventory Records
+                                </CardTitle>
+
+                                <p className="text-[11px] sm:text-xs text-muted-foreground">
+                                    Each row represents one vaccine.
+                                    Expand a row to inspect its
+                                    physical batches.
+                                </p>
+                            </div>
+
+                            <Badge variant="secondary" className="text-xs shrink-0 self-start sm:self-auto">
+                                {
+                                    summary.total_existing_batches
+                                }{' '}
+                                {summary.total_existing_batches ===
+                                1
+                                    ? 'active batch'
+                                    : 'active batches'}
+                            </Badge>
+                        </div>
+                    </CardHeader>
+
+                    {/* Integrated Filter Bar */}
+                    <div className="border-b bg-muted/20 px-3 sm:px-6 py-2.5 sm:py-3">
+                        <div className="row g-2 g-sm-3 mx-0 w-full">
                             <div className="col-12 col-md-4">
                                 <div className="relative">
                                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -387,127 +414,98 @@ export default function VaccineInventoryIndex() {
                                             )
                                         }
                                         placeholder="Search vaccine or batch..."
-                                        className="pl-10"
+                                        className="pl-10 h-8.5 sm:h-9 text-xs sm:text-sm bg-background"
                                     />
                                 </div>
                             </div>
 
-                            <div className="col-12 col-md-4">
+                            <div className="col-6 col-md-4">
+                                <Select
+                                    value={status}
+                                    onValueChange={
+                                        setStatus
+                                    }
+                                >
+                                    <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
+                                        <SelectValue placeholder="All statuses" />
+                                    </SelectTrigger>
 
-                            <Select
-                                value={status}
-                                onValueChange={
-                                    setStatus
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All statuses" />
-                                </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            All statuses
+                                        </SelectItem>
 
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        All statuses
-                                    </SelectItem>
+                                        <SelectItem value="out-of-stock">
+                                            Out of Stock
+                                        </SelectItem>
 
-                                    <SelectItem value="out-of-stock">
-                                        Out of Stock
-                                    </SelectItem>
+                                        <SelectItem value="low-stock">
+                                            Low Stock
+                                        </SelectItem>
 
-                                    <SelectItem value="low-stock">
-                                        Low Stock
-                                    </SelectItem>
+                                        <SelectItem value="available">
+                                            Available
+                                        </SelectItem>
 
-                                    <SelectItem value="available">
-                                        Available
-                                    </SelectItem>
+                                        <SelectItem value="insufficient">
+                                            Insufficient Demand
+                                        </SelectItem>
 
-                                    <SelectItem value="insufficient">
-                                        Insufficient Demand Coverage
-                                    </SelectItem>
+                                        <SelectItem value="sufficient">
+                                            Sufficient Demand
+                                        </SelectItem>
 
-                                    <SelectItem value="sufficient">
-                                        Sufficient Demand Coverage
-                                    </SelectItem>
-
-                                    <SelectItem value="no-demand">
-                                        No Current Demand
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                                        <SelectItem value="no-demand">
+                                            No Current Demand
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
-                            <div className="col-12 col-md-4">
-                            <Select
-                                value={vaccineId}
-                                onValueChange={
-                                    setVaccineId
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All vaccines" />
-                                </SelectTrigger>
+                            <div className="col-6 col-md-4">
+                                <Select
+                                    value={vaccineId}
+                                    onValueChange={
+                                        setVaccineId
+                                    }
+                                >
+                                    <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
+                                        <SelectValue placeholder="All vaccines" />
+                                    </SelectTrigger>
 
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        All vaccines
-                                    </SelectItem>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            All vaccines
+                                        </SelectItem>
 
-                                    {vaccineOptions.map(
-                                        (vaccine) => (
-                                            <SelectItem
-                                                key={
-                                                    vaccine.id
-                                                }
-                                                value={String(
-                                                    vaccine.id,
-                                                )}
-                                            >
-                                                {
-                                                    vaccine.name
-                                                }
-                                            </SelectItem>
-                                        ),
-                                    )}
-                                </SelectContent>
-                            </Select>
+                                        {vaccineOptions.map(
+                                            (vaccine) => (
+                                                <SelectItem
+                                                    key={
+                                                        vaccine.id
+                                                    }
+                                                    value={String(
+                                                        vaccine.id,
+                                                    )}
+                                                >
+                                                    {
+                                                        vaccine.name
+                                                    }
+                                                </SelectItem>
+                                            ),
+                                        )}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
 
                         {loading && (
-                            <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                <LoaderCircle className="h-3.5 w-3.5 animate-spin text-primary" />
                                 Updating inventory...
                             </div>
                         )}
-                    </CardContent>
-                </Card>
-
-                <Card className="min-w-0 max-w-full overflow-hidden">
-                    <CardHeader className="border-b">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <CardTitle>
-                                    Vaccine Inventory Records
-                                </CardTitle>
-
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    Each row represents one vaccine.
-                                    Expand a row to inspect its
-                                    physical batches.
-                                </p>
-                            </div>
-
-                            <Badge variant="outline">
-                                {
-                                    summary.total_existing_batches
-                                }{' '}
-                                {summary.total_existing_batches ===
-                                1
-                                    ? 'active batch'
-                                    : 'active batches'}
-                            </Badge>
-                        </div>
-                    </CardHeader>
+                    </div>
 
                     <CardContent className="p-0">
                         {vaccines.length === 0 ? (
@@ -925,16 +923,16 @@ function SummaryCard({
 }) {
     return (
         <Card className="h-full">
-            <CardContent className="p-3 sm:p-5">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+            <CardContent className="p-2.5 sm:p-5">
+                <p className="text-[11px] sm:text-sm font-medium text-muted-foreground truncate">
                     {label}
                 </p>
 
-                <p className="mt-1 sm:mt-2 text-xl sm:text-3xl font-bold">
+                <p className="mt-0.5 sm:mt-2 text-lg sm:text-3xl font-bold">
                     {value}
                 </p>
 
-                <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs text-muted-foreground line-clamp-1 sm:line-clamp-none">
+                <p className="mt-0.5 sm:mt-2 text-[10px] sm:text-xs text-muted-foreground line-clamp-1 sm:line-clamp-none">
                     {description}
                 </p>
             </CardContent>

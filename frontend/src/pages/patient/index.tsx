@@ -320,28 +320,27 @@ export default function PatientIndex() {
                 <div className="rounded-2xl border bg-background/70 p-4 sm:p-5 shadow-sm min-w-0 max-w-full">
                     <div className="row g-3 mx-0 w-full align-items-center justify-content-between">
                         <div className="col-12 col-md-6">
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-2xl font-bold">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h1 className="text-xl sm:text-2xl font-bold">
                                     Patient Management
                                 </h1>
                                 <Badge variant="secondary">Staff View</Badge>
+                                <Badge variant="outline" className="text-xs">
+                                    {patients.length} patients
+                                </Badge>
                             </div>
 
-                            <p className="mt-1.5 text-muted-foreground">
+                            <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground">
                                 Manage pediatric patient records and their registered family accounts.
                             </p>
                         </div>
 
-                        <div className="col-12 col-md-6 d-flex flex-wrap items-center justify-content-start justify-content-md-end gap-1.5 sm:gap-2">
-                            <Badge variant="outline" className="text-xs">
-                                {patients.length} total patients
-                            </Badge>
-
+                        <div className="col-12 col-md-6 flex items-center justify-start justify-content-md-end gap-2">
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3 gap-1.5"
+                                className="flex-1 sm:flex-initial h-8.5 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3 gap-1.5"
                                 onClick={() => setScannerOpen(true)}
                             >
                                 <ScanLine className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -351,7 +350,7 @@ export default function PatientIndex() {
                             <Button
                                 type="button"
                                 size="sm"
-                                className="h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3 gap-1.5"
+                                className="flex-1 sm:flex-initial h-8.5 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3 gap-1.5"
                                 onClick={() => router.visit('/guardians/create')}
                             >
                                 <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -391,16 +390,29 @@ export default function PatientIndex() {
 
                 {activeTab === 'patients' && (
                     <>
-                        <Card className="min-w-0 max-w-full">
-                            <CardContent className="pt-5">
-                                <div className="row g-3 mx-0 w-full">
-                                    <div className="col-12 col-md-4">
+                        <Card className="min-w-0 max-w-full overflow-hidden">
+                            <CardHeader className="flex flex-row items-center justify-between border-b px-4 sm:px-6 py-3.5 sm:py-4">
+                                <div>
+                                    <CardTitle className="text-sm sm:text-base font-semibold">Patient Records</CardTitle>
+                                    <p className="text-[11px] sm:text-xs text-muted-foreground">
+                                        Active pediatric health profiles and immunization timelines
+                                    </p>
+                                </div>
+                                <Badge variant="secondary" className="text-xs shrink-0">
+                                    {patients.length} {patients.length === 1 ? 'patient' : 'patients'}
+                                </Badge>
+                            </CardHeader>
+
+                            {/* Integrated Filter Bar */}
+                            <div className="border-b bg-muted/20 px-3 sm:px-6 py-2.5 sm:py-3">
+                                <div className="row g-2 g-sm-3 mx-0 w-full">
+                                    <div className="col-12 col-md-6">
                                         <div className="relative">
                                             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                             <Input
                                                 type="search"
-                                                placeholder="Search patient..."
-                                                className="h-10 pl-10"
+                                                placeholder="Search patient by name or ID..."
+                                                className="h-8.5 sm:h-9 pl-10 text-xs sm:text-sm bg-background"
                                                 value={search}
                                                 onChange={(event) =>
                                                     setSearch(event.target.value)
@@ -409,9 +421,9 @@ export default function PatientIndex() {
                                         </div>
                                     </div>
 
-                                    <div className="col-12 col-md-4">
+                                    <div className="col-6 col-md-3">
                                         <Select value={sex} onValueChange={setSex}>
-                                            <SelectTrigger className="h-10">
+                                            <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -428,9 +440,9 @@ export default function PatientIndex() {
                                         </Select>
                                     </div>
 
-                                    <div className="col-12 col-md-4">
+                                    <div className="col-6 col-md-3">
                                         <Select disabled>
-                                            <SelectTrigger className="h-10">
+                                            <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background opacity-60">
                                                 <SelectValue placeholder="Completion Status" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -445,15 +457,9 @@ export default function PatientIndex() {
                                         </Select>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
 
-                        <Card className="min-w-0 max-w-full overflow-hidden">
-                            <CardHeader className="pb-3">
-                                <CardTitle>Patient Records</CardTitle>
-                            </CardHeader>
-
-                            <CardContent className="pt-0">
+                            <CardContent className="p-0">
                                 {/* Mobile View (< md): Compact card list, zero horizontal scroll */}
                                 <div className="d-block d-md-none divide-y divide-border/60 rounded-lg border">
                                     {patients.length === 0 ? (
@@ -670,14 +676,30 @@ export default function PatientIndex() {
 
                 {activeTab === 'families' && (
                     <>
-                        <Card className="min-w-0 max-w-full">
-                            <CardContent className="space-y-4 pt-5">
-                                <div className="relative max-w-xl">
+                        <Card className="min-w-0 max-w-full overflow-hidden">
+                            <CardHeader className="flex flex-row items-center justify-between border-b px-4 sm:px-6 py-3.5 sm:py-4">
+                                <div>
+                                    <CardTitle className="text-sm sm:text-base font-semibold">Registered Families</CardTitle>
+                                    <p className="text-[11px] sm:text-xs text-muted-foreground">
+                                        Select a family to view guardian details and manage its children.
+                                    </p>
+                                </div>
+                                <Badge variant="secondary" className="text-xs shrink-0">
+                                    {filteredFamilies.length}{' '}
+                                    {filteredFamilies.length === 1
+                                        ? 'family'
+                                        : 'families'}
+                                </Badge>
+                            </CardHeader>
+
+                            {/* Integrated Filter Bar */}
+                            <div className="border-b bg-muted/20 px-3 sm:px-6 py-2.5 sm:py-3 space-y-2">
+                                <div className="relative w-full max-w-md">
                                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         type="search"
                                         placeholder="Search guardian, child, Family ID, or Patient ID..."
-                                        className="h-10 pl-10"
+                                        className="h-8.5 sm:h-9 pl-10 text-xs sm:text-sm bg-background"
                                         value={familySearch}
                                         onChange={(event) =>
                                             setFamilySearch(event.target.value)
@@ -685,7 +707,7 @@ export default function PatientIndex() {
                                     />
                                 </div>
 
-                                <div className="flex max-w-full overflow-x-auto no-scrollbar items-center gap-1 rounded-lg border border-border/50 bg-muted/30 p-1 text-xs">
+                                <div className="flex max-w-full overflow-x-auto no-scrollbar items-center gap-1 rounded-lg border border-border/50 bg-background/70 p-1 text-xs">
                                     {(
                                         [
                                             ['all', 'All'],
@@ -701,9 +723,9 @@ export default function PatientIndex() {
                                             onClick={() =>
                                                 setFamilyStatusFilter(value)
                                             }
-                                            className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                                            className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
                                                 familyStatusFilter === value
-                                                    ? 'bg-background text-foreground shadow-xs font-semibold'
+                                                    ? 'bg-foreground text-background shadow-xs font-semibold'
                                                     : 'text-muted-foreground hover:text-foreground'
                                             }`}
                                         >
@@ -711,26 +733,9 @@ export default function PatientIndex() {
                                         </button>
                                     ))}
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
 
-                        <Card className="min-w-0 max-w-full overflow-hidden">
-                            <CardHeader className="flex flex-row items-center justify-between gap-4 pb-3">
-                                <div>
-                                    <CardTitle>Registered Families</CardTitle>
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        Select a family to view guardian details and manage its children.
-                                    </p>
-                                </div>
-                                <Badge variant="outline">
-                                    {filteredFamilies.length}{' '}
-                                    {filteredFamilies.length === 1
-                                        ? 'family'
-                                        : 'families'}
-                                </Badge>
-                            </CardHeader>
-
-                            <CardContent className="space-y-3">
+                            <CardContent className="p-3 sm:p-6 space-y-3">
                                 {filteredFamilies.length === 0 ? (
                                     <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
                                         No registered families found for this filter.

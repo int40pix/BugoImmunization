@@ -349,10 +349,26 @@ export default function VaccineInventoryTransactions() {
                     </Card>
                 </div>
 
-                {/* Filter Controls Card */}
-                <Card className="border-border/60 shadow-2xs">
-                    <CardContent className="p-3 sm:p-4">
-                        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 items-center">
+                {/* Transactions Table Card with Integrated Filters */}
+                <Card className="border-border/60 shadow-2xs overflow-hidden">
+                    <CardHeader className="border-b px-4 sm:px-6 py-3.5 sm:py-4">
+                        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <CardTitle className="text-sm sm:text-base font-semibold">Transaction Ledger</CardTitle>
+                                <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                                    Showing {transactions.from ?? 0} to {transactions.to ?? 0} of{' '}
+                                    {transactions.total} records
+                                </p>
+                            </div>
+                            <Badge variant="secondary" className="self-start sm:self-auto font-mono text-xs">
+                                Page {transactions.current_page} of {transactions.last_page}
+                            </Badge>
+                        </div>
+                    </CardHeader>
+
+                    {/* Integrated Filter Controls */}
+                    <div className="border-b bg-muted/20 px-3 sm:px-6 py-2.5 sm:py-3">
+                        <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 items-center">
                             {/* Search */}
                             <div className="relative sm:col-span-2 lg:col-span-3 xl:col-span-4 min-w-0">
                                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -360,15 +376,15 @@ export default function VaccineInventoryTransactions() {
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Search batch, vaccine, patient, or staff..."
-                                    className="pl-10 h-9 text-xs"
+                                    className="pl-10 h-8.5 sm:h-9 text-xs sm:text-sm bg-background"
                                 />
                             </div>
 
                             {/* Transaction Type */}
                             <div className="sm:col-span-1 lg:col-span-2 min-w-0">
                                 <Select value={type} onValueChange={setType}>
-                                    <SelectTrigger className="h-9 text-xs">
-                                        <SelectValue placeholder="All Transaction Types" />
+                                    <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
+                                        <SelectValue placeholder="All Types" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">All Types</SelectItem>
@@ -385,7 +401,7 @@ export default function VaccineInventoryTransactions() {
                             {/* Vaccine Selector */}
                             <div className="sm:col-span-1 lg:col-span-2 min-w-0">
                                 <Select value={vaccineId} onValueChange={setVaccineId}>
-                                    <SelectTrigger className="h-9 text-xs">
+                                    <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
                                         <SelectValue placeholder="All Vaccines" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -406,7 +422,7 @@ export default function VaccineInventoryTransactions() {
                                         type="date"
                                         value={dateFrom}
                                         onChange={(e) => setDateFrom(e.target.value)}
-                                        className="h-9 text-xs px-2 min-w-0 flex-1"
+                                        className="h-8.5 sm:h-9 text-xs px-2 min-w-0 flex-1 bg-background"
                                         title="Date From"
                                     />
                                     <span className="text-xs text-muted-foreground shrink-0 select-none">to</span>
@@ -414,7 +430,7 @@ export default function VaccineInventoryTransactions() {
                                         type="date"
                                         value={dateTo}
                                         onChange={(e) => setDateTo(e.target.value)}
-                                        className="h-9 text-xs px-2 min-w-0 flex-1"
+                                        className="h-8.5 sm:h-9 text-xs px-2 min-w-0 flex-1 bg-background"
                                         title="Date To"
                                     />
                                 </div>
@@ -424,7 +440,7 @@ export default function VaccineInventoryTransactions() {
                                         variant="ghost"
                                         size="sm"
                                         onClick={handleClearFilters}
-                                        className="h-9 px-2.5 text-xs text-muted-foreground hover:text-foreground shrink-0"
+                                        className="h-8.5 sm:h-9 px-2.5 text-xs text-muted-foreground hover:text-foreground shrink-0"
                                         title="Clear all filters"
                                     >
                                         <RotateCcw className="mr-1 h-3.5 w-3.5" />
@@ -435,30 +451,12 @@ export default function VaccineInventoryTransactions() {
                         </div>
 
                         {loading && (
-                            <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                                 <LoaderCircle className="h-3.5 w-3.5 animate-spin text-primary" />
                                 Updating transaction ledger...
                             </div>
                         )}
-                    </CardContent>
-                </Card>
-
-                {/* Transactions Table Card */}
-                <Card className="border-border/60 shadow-2xs">
-                    <CardHeader className="border-b py-4">
-                        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <CardTitle className="text-base font-semibold">Transaction Ledger</CardTitle>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                    Showing {transactions.from ?? 0} to {transactions.to ?? 0} of{' '}
-                                    {transactions.total} records
-                                </p>
-                            </div>
-                            <Badge variant="outline" className="self-start sm:self-auto font-mono text-xs">
-                                Page {transactions.current_page} of {transactions.last_page}
-                            </Badge>
-                        </div>
-                    </CardHeader>
+                    </div>
 
                     <CardContent className="p-0">
                         {transactions.data.length === 0 ? (

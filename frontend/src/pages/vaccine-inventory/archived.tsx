@@ -455,173 +455,71 @@ export default function ArchivedVaccineInventory() {
 
 
                 {/* ========================================================= */}
-                {/* FILTERS */}
+                {/* ARCHIVED TABLE WITH INTEGRATED FILTERS */}
                 {/* ========================================================= */}
 
-                <Card>
-
-                    <CardContent className="p-3 sm:p-4">
-
-                        <div className="grid gap-3 md:grid-cols-3">
-
-
-                            {/* SEARCH */}
-
-                            <div className="relative">
-
-                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-
-                                <Input
-                                    type="search"
-                                    placeholder="Search archived batches..."
-                                    className="pl-10"
-                                    value={
-                                        search
-                                    }
-                                    onChange={(
-                                        e
-                                    ) =>
-                                        setSearch(
-                                            e.target.value
-                                        )
-                                    }
-                                />
-
-                            </div>
-
-
-                            {/* VACCINE FILTER */}
-
-                            <Select
-                                value={
-                                    vaccineId
-                                }
-                                onValueChange={(
-                                    value
-                                ) =>
-                                    setVaccineId(
-                                        value
-                                    )
-                                }
-                            >
-
-                                <SelectTrigger>
-
-                                    <SelectValue placeholder="All vaccines" />
-
-                                </SelectTrigger>
-
-
-                                <SelectContent>
-
-                                    <SelectItem value="all">
-
-                                        All Vaccines
-
-                                    </SelectItem>
-
-
-                                    {vaccineOptions.map(
-                                        (
-                                            vaccine
-                                        ) => (
-
-                                            <SelectItem
-                                                key={
-                                                    vaccine.id
-                                                }
-                                                value={
-                                                    String(
-                                                        vaccine.id
-                                                    )
-                                                }
-                                            >
-
-                                                {
-                                                    vaccine.name
-                                                }
-
-                                            </SelectItem>
-
-                                        )
-                                    )}
-
-                                </SelectContent>
-
-                            </Select>
-
-
-                            {/* ARCHIVE REASON */}
-
-                            <Select
-                                value={
-                                    archiveReason
-                                }
-                                onValueChange={(
-                                    value
-                                ) =>
-                                    setArchiveReason(
-                                        value
-                                    )
-                                }
-                            >
-
-                                <SelectTrigger>
-
-                                    <SelectValue placeholder="All archive reasons" />
-
-                                </SelectTrigger>
-
-
-                                <SelectContent>
-
-                                    <SelectItem value="all">
-
-                                        All Archive Reasons
-
-                                    </SelectItem>
-
-
-                                    <SelectItem value="expired">
-
-                                        Expired
-
-                                    </SelectItem>
-
-
-                                    <SelectItem value="out_of_stock">
-
-                                        Out of Stock
-
-                                    </SelectItem>
-
-                                </SelectContent>
-
-                            </Select>
-
-
-                        </div>
-
-                    </CardContent>
-
-                </Card>
-
-
-                {/* ========================================================= */}
-                {/* ARCHIVED TABLE */}
-                {/* ========================================================= */}
-
-                <Card>
-
-
-                    <CardHeader>
-
-                        <CardTitle>
+                <Card className="min-w-0 max-w-full overflow-hidden">
+                    <CardHeader className="border-b px-4 sm:px-6 py-3.5 sm:py-4">
+                        <CardTitle className="text-sm sm:text-base font-semibold">
                             Archived Records
                         </CardTitle>
-
                     </CardHeader>
+
+                    {/* Integrated Filter Bar */}
+                    <div className="border-b bg-muted/20 px-3 sm:px-6 py-2.5 sm:py-3">
+                        <div className="row g-2 g-sm-3 mx-0 w-full">
+                            <div className="col-12 col-md-4">
+                                <div className="relative">
+                                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        type="search"
+                                        placeholder="Search archived batches..."
+                                        className="pl-10 h-8.5 sm:h-9 text-xs sm:text-sm bg-background"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="col-6 col-md-4">
+                                <Select
+                                    value={vaccineId}
+                                    onValueChange={(value) => setVaccineId(value)}
+                                >
+                                    <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
+                                        <SelectValue placeholder="All vaccines" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Vaccines</SelectItem>
+                                        {vaccineOptions.map((vaccine) => (
+                                            <SelectItem
+                                                key={vaccine.id}
+                                                value={String(vaccine.id)}
+                                            >
+                                                {vaccine.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="col-6 col-md-4">
+                                <Select
+                                    value={archiveReason}
+                                    onValueChange={(value) => setArchiveReason(value)}
+                                >
+                                    <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
+                                        <SelectValue placeholder="All archive reasons" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Archive Reasons</SelectItem>
+                                        <SelectItem value="expired">Expired</SelectItem>
+                                        <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
 
 
                     <CardContent className="p-0 sm:p-6">

@@ -228,29 +228,42 @@ export default function StaffIndex({
                     </div>
                 </div>
 
-                {/* Filters */}
-                <Card className="min-w-0 max-w-full">
-                    <CardContent className="p-4 sm:p-5">
-                        <div className="row g-3 mx-0 w-full">
+                {/* Staff Accounts Card with Integrated Filters */}
+                <Card className="min-w-0 max-w-full overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between border-b px-4 sm:px-6 py-3.5 sm:py-4">
+                        <div>
+                            <CardTitle className="text-sm sm:text-base font-semibold">Staff Accounts</CardTitle>
+                            <p className="text-[11px] sm:text-xs text-muted-foreground">
+                                Registered personnel and operational access credentials
+                            </p>
+                        </div>
+                        <Badge variant="secondary" className="text-xs shrink-0">
+                            {staff.length} {staff.length === 1 ? 'account' : 'accounts'}
+                        </Badge>
+                    </CardHeader>
+
+                    {/* Integrated Filter Bar */}
+                    <div className="border-b bg-muted/20 px-3 sm:px-6 py-2.5 sm:py-3">
+                        <div className="row g-2 g-sm-3 mx-0 w-full">
                             <div className="col-12 col-md-4">
                                 <div className="relative">
                                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         type="search"
                                         placeholder="Search staff by name or email..."
-                                        className="pl-10"
+                                        className="pl-10 h-8.5 sm:h-9 text-xs sm:text-sm bg-background"
                                         defaultValue={filters.search ?? ''}
                                         onChange={(e) => updateFilters('search', e.target.value)}
                                     />
                                 </div>
                             </div>
 
-                            <div className="col-12 col-md-4">
+                            <div className="col-6 col-md-4">
                                 <Select
                                     value={filters.role ?? 'all'}
                                     onValueChange={(value) => updateFilters('role', value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
                                         <SelectValue placeholder="All roles" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -263,12 +276,12 @@ export default function StaffIndex({
                                 </Select>
                             </div>
 
-                            <div className="col-12 col-md-4">
+                            <div className="col-6 col-md-4">
                                 <Select
                                     value={filters.status ?? 'all'}
                                     onValueChange={(value) => updateFilters('status', value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
                                         <SelectValue placeholder="All statuses" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -279,22 +292,7 @@ export default function StaffIndex({
                                 </Select>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
-
-                {/* Table */}
-                <Card className="min-w-0 max-w-full overflow-hidden">
-                    <CardHeader className="flex flex-row items-center justify-between border-b px-4 sm:px-6 py-4">
-                        <div>
-                            <CardTitle className="text-base font-semibold">Staff Accounts</CardTitle>
-                            <p className="text-xs text-muted-foreground">
-                                Registered personnel and operational access credentials
-                            </p>
-                        </div>
-                        <Badge variant="secondary" className="text-xs">
-                            {staff.length} {staff.length === 1 ? 'account' : 'accounts'}
-                        </Badge>
-                    </CardHeader>
+                    </div>
 
                     <CardContent className="p-0">
                         {/* Mobile View (< md): Compact card list, fits 100% width on any phone */}

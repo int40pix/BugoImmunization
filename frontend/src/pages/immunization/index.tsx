@@ -731,55 +731,11 @@ export default function ImmunizationIndex({
                     </div>
                 )}
 
-                <Card className="min-w-0 max-w-full">
-                    <CardContent className="pt-6">
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="relative">
-                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-                                <Input
-                                    type="search"
-                                    value={search}
-                                    onChange={(event) =>
-                                        setSearch(event.target.value)
-                                    }
-                                    placeholder="Search patient or Patient ID..."
-                                    className="pl-10"
-                                />
-                            </div>
-
-                            <Select
-                                value={vaccineFilter}
-                                onValueChange={setVaccineFilter}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All vaccines" />
-                                </SelectTrigger>
-
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        All vaccines
-                                    </SelectItem>
-
-                                    {vaccines.map((vaccine) => (
-                                        <SelectItem
-                                            key={vaccine.id}
-                                            value={String(vaccine.id)}
-                                        >
-                                            {vaccine.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </CardContent>
-                </Card>
-
                 <Card className="min-w-0 max-w-full overflow-hidden">
-                    <CardHeader className="border-b py-5 sm:py-6">
-                        <div className="flex flex-col gap-4 sm:gap-5">
+                    <CardHeader className="border-b py-4 sm:py-5">
+                        <div className="flex flex-col gap-3 sm:gap-4">
                             <div>
-                                <CardTitle className="text-xl sm:text-2xl">
+                                <CardTitle className="text-lg sm:text-xl font-semibold">
                                     {getTrackingTitle()}
                                 </CardTitle>
 
@@ -831,6 +787,49 @@ export default function ImmunizationIndex({
                             </div>
                         </div>
                     </CardHeader>
+
+                    {/* Integrated Filter Bar */}
+                    <div className="border-b bg-muted/20 px-3 sm:px-6 py-2.5 sm:py-3">
+                        <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2">
+                            <div className="relative">
+                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                                <Input
+                                    type="search"
+                                    value={search}
+                                    onChange={(event) =>
+                                        setSearch(event.target.value)
+                                    }
+                                    placeholder="Search patient or Patient ID..."
+                                    className="pl-10 h-8.5 sm:h-9 text-xs sm:text-sm bg-background"
+                                />
+                            </div>
+
+                            <Select
+                                value={vaccineFilter}
+                                onValueChange={setVaccineFilter}
+                            >
+                                <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
+                                    <SelectValue placeholder="All vaccines" />
+                                </SelectTrigger>
+
+                                <SelectContent>
+                                    <SelectItem value="all">
+                                        All vaccines
+                                    </SelectItem>
+
+                                    {vaccines.map((vaccine) => (
+                                        <SelectItem
+                                            key={vaccine.id}
+                                            value={String(vaccine.id)}
+                                        >
+                                            {vaccine.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
 
                     <CardContent className="p-2 sm:p-6 sm:pt-0">
                         {viewMode === 'tcl' ? (
@@ -1137,21 +1136,16 @@ export default function ImmunizationIndex({
                                                             }
                                                             className="cursor-pointer space-y-1.5"
                                                         >
-                                                            <div className="flex items-start justify-between gap-2">
-                                                                <div className="min-w-0">
-                                                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                                                        <span className="font-semibold text-xs sm:text-sm text-foreground truncate">
-                                                                            {patient.patient_name}
-                                                                        </span>
-                                                                        <span className="font-mono bg-muted/80 px-1.5 py-0.5 rounded text-[10px] text-muted-foreground shrink-0">
-                                                                            {patient.patient_code ?? '—'}
-                                                                        </span>
-                                                                    </div>
-                                                                    <p className="mt-0.5 text-[11px] text-muted-foreground truncate">
-                                                                        {getVaccineSummary(patient)}
-                                                                    </p>
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                                    <span className="font-semibold text-xs text-foreground truncate">
+                                                                        {patient.patient_name}
+                                                                    </span>
+                                                                    <span className="font-mono bg-muted/70 px-1.5 py-0.2 rounded text-[10px] text-muted-foreground shrink-0 font-medium">
+                                                                        {patient.patient_code ?? '—'}
+                                                                    </span>
                                                                 </div>
-                                                                <div className="flex items-center gap-1.5 shrink-0 text-muted-foreground pt-0.5">
+                                                                <div className="flex items-center gap-1.5 shrink-0">
                                                                     <span className="text-[10px] font-medium text-foreground/80 bg-muted/60 px-2 py-0.5 rounded-full">
                                                                         {patient.rows.length}{' '}
                                                                         {patient.rows.length === 1
@@ -1159,20 +1153,20 @@ export default function ImmunizationIndex({
                                                                             : 'vaccines'}
                                                                     </span>
                                                                     {isExpanded ? (
-                                                                        <ChevronDown className="h-3.5 w-3.5" />
+                                                                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                                                                     ) : (
-                                                                        <ChevronRight className="h-3.5 w-3.5" />
+                                                                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                                                                     )}
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
-                                                                <span className="text-[10px] text-muted-foreground">
-                                                                    {getGroupSummary(patient)}
-                                                                </span>
-                                                                <span className="text-[10px] font-medium text-primary shrink-0">
+                                                                <p className="text-[11px] text-muted-foreground truncate">
+                                                                    {getVaccineSummary(patient)}
+                                                                </p>
+                                                                <span className="text-[10px] font-medium text-primary shrink-0 ml-2">
                                                                     {isExpanded
-                                                                        ? 'Hide details'
-                                                                        : 'View details'}
+                                                                        ? 'Hide'
+                                                                        : 'Details'}
                                                                 </span>
                                                             </div>
                                                         </div>

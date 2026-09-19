@@ -25,7 +25,8 @@ export function InventorySubnav({ current }: InventorySubnavProps) {
                     }`}
                 >
                     <Package className="h-4 w-4" />
-                    Active Batches
+                    <span className="sm:hidden">Active</span>
+                    <span className="hidden sm:inline">Active Batches</span>
                 </Link>
 
                 <Link
@@ -37,7 +38,8 @@ export function InventorySubnav({ current }: InventorySubnavProps) {
                     }`}
                 >
                     <History className="h-4 w-4" />
-                    Transaction History
+                    <span className="sm:hidden">History</span>
+                    <span className="hidden sm:inline">Transaction History</span>
                 </Link>
 
                 <Link
@@ -49,7 +51,8 @@ export function InventorySubnav({ current }: InventorySubnavProps) {
                     }`}
                 >
                     <Archive className="h-4 w-4" />
-                    Archived Batches
+                    <span className="sm:hidden">Archived</span>
+                    <span className="hidden sm:inline">Archived Batches</span>
                 </Link>
             </div>
 
