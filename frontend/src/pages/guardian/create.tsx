@@ -7,6 +7,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,6 +26,7 @@ import {
     MapPin,
     Pencil,
     ShieldAlert,
+    Syringe,
     UserRound,
     UsersRound,
 } from 'lucide-react';
@@ -65,6 +67,10 @@ type ChildForm = {
     medical_background: string;
     allergies: string;
     existing_conditions: string;
+    bcg_received_at_birth: boolean;
+    bcg_date_administered: string;
+    hepb_received_at_birth: boolean;
+    hepb_date_administered: string;
 };
 
 type FamilyForm = {
@@ -111,6 +117,10 @@ const emptyChild = (): ChildForm => ({
     medical_background: '',
     allergies: '',
     existing_conditions: '',
+    bcg_received_at_birth: false,
+    bcg_date_administered: '',
+    hepb_received_at_birth: false,
+    hepb_date_administered: '',
 });
 
 const femaleRelationships = [
@@ -1061,6 +1071,96 @@ export default function GuardianCreate() {
                                         </Field>
                                     </div>
                                 </RegistrationSection>
+
+                                <RegistrationSection
+                                    icon={Syringe}
+                                    title="Birth Dose Immunizations (Hospital / Birth Facility)"
+                                    description="Record routine BCG and Hepatitis B doses given at birth to log them directly to the child's immunization card."
+                                >
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        {/* BCG toggle */}
+                                        <div className="rounded-lg border p-3.5 space-y-2.5 bg-muted/15">
+                                            <div className="flex items-start space-x-2.5">
+                                                <Checkbox
+                                                    id="reg_bcg_received"
+                                                    checked={child.bcg_received_at_birth}
+                                                    onCheckedChange={(checked) => {
+                                                        const isChecked = Boolean(checked);
+                                                        setChild('bcg_received_at_birth', isChecked);
+                                                        if (isChecked && !child.bcg_date_administered) {
+                                                            setChild('bcg_date_administered', child.date_of_birth || '');
+                                                        }
+                                                    }}
+                                                />
+                                                <div className="grid gap-0.5 leading-none">
+                                                    <Label htmlFor="reg_bcg_received" className="text-xs font-semibold cursor-pointer text-foreground">
+                                                        BCG Vaccine (At Birth)
+                                                    </Label>
+                                                    <p className="text-[11px] text-muted-foreground leading-normal">
+                                                        Administered at birth for tuberculosis protection.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {child.bcg_received_at_birth && (
+                                                <div className="pt-1 space-y-1">
+                                                    <Label htmlFor="reg_bcg_date" className="text-[11px] font-medium text-muted-foreground">
+                                                        Date Administered
+                                                    </Label>
+                                                    <Input
+                                                        id="reg_bcg_date"
+                                                        type="date"
+                                                        className="h-8 text-xs bg-background"
+                                                        value={child.bcg_date_administered || child.date_of_birth || ''}
+                                                        max={new Date().toISOString().split('T')[0]}
+                                                        onChange={(e) => setChild('bcg_date_administered', e.target.value)}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Hep B toggle */}
+                                        <div className="rounded-lg border p-3.5 space-y-2.5 bg-muted/15">
+                                            <div className="flex items-start space-x-2.5">
+                                                <Checkbox
+                                                    id="reg_hepb_received"
+                                                    checked={child.hepb_received_at_birth}
+                                                    onCheckedChange={(checked) => {
+                                                        const isChecked = Boolean(checked);
+                                                        setChild('hepb_received_at_birth', isChecked);
+                                                        if (isChecked && !child.hepb_date_administered) {
+                                                            setChild('hepb_date_administered', child.date_of_birth || '');
+                                                        }
+                                                    }}
+                                                />
+                                                <div className="grid gap-0.5 leading-none">
+                                                    <Label htmlFor="reg_hepb_received" className="text-xs font-semibold cursor-pointer text-foreground">
+                                                        Hepatitis B (Birth Dose)
+                                                    </Label>
+                                                    <p className="text-[11px] text-muted-foreground leading-normal">
+                                                        Given within 24 hours of birth in hospital or lying-in.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {child.hepb_received_at_birth && (
+                                                <div className="pt-1 space-y-1">
+                                                    <Label htmlFor="reg_hepb_date" className="text-[11px] font-medium text-muted-foreground">
+                                                        Date Administered
+                                                    </Label>
+                                                    <Input
+                                                        id="reg_hepb_date"
+                                                        type="date"
+                                                        className="h-8 text-xs bg-background"
+                                                        value={child.hepb_date_administered || child.date_of_birth || ''}
+                                                        max={new Date().toISOString().split('T')[0]}
+                                                        onChange={(e) => setChild('hepb_date_administered', e.target.value)}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </RegistrationSection>
                             </CardContent>
 
                             {/* Standardized Form Card Footer */}
@@ -1330,6 +1430,31 @@ export default function GuardianCreate() {
                                         <SummaryItem
                                             label="Existing Conditions"
                                             value={child.existing_conditions || 'None reported'}
+                                        />
+                                    </div>
+                                </RegistrationSection>
+
+                                <RegistrationSection
+                                    icon={Syringe}
+                                    title="Birth Dose Immunizations"
+                                    description="Doses administered at birth"
+                                >
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        <SummaryItem
+                                            label="BCG Vaccine"
+                                            value={
+                                                child.bcg_received_at_birth
+                                                    ? `Received at birth (${child.bcg_date_administered || child.date_of_birth || 'Birth date'})`
+                                                    : 'Not administered at birth'
+                                            }
+                                        />
+                                        <SummaryItem
+                                            label="Hepatitis B (Birth Dose)"
+                                            value={
+                                                child.hepb_received_at_birth
+                                                    ? `Received at birth (${child.hepb_date_administered || child.date_of_birth || 'Birth date'})`
+                                                    : 'Not administered at birth'
+                                            }
                                         />
                                     </div>
                                 </RegistrationSection>

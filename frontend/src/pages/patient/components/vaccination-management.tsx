@@ -139,9 +139,9 @@ export default function VaccinationManagement({
 
     const [consentObtained, setConsentObtained] = useState(false);
     const [consentGivenBy, setConsentGivenBy] = useState('');
-    const [healthScreened, setHealthScreened] = useState(false);
-    const [allergyChecked, setAllergyChecked] = useState(false);
-    const [fiveRightsVerified, setFiveRightsVerified] = useState(false);
+    const [healthScreened, setHealthScreened] = useState(true);
+    const [allergyChecked, setAllergyChecked] = useState(true);
+    const [fiveRightsVerified, setFiveRightsVerified] = useState(true);
     const [injectionSite, setInjectionSite] = useState('Anterolateral Right Thigh (IM)');
 
     const [assigningOptionalVaccineId, setAssigningOptionalVaccineId] =
@@ -305,9 +305,9 @@ export default function VaccinationManagement({
         setConsentGivenBy(
             patient.guardian?.name || patient.guardian_name || ''
         );
-        setHealthScreened(false);
-        setAllergyChecked(false);
-        setFiveRightsVerified(false);
+        setHealthScreened(true);
+        setAllergyChecked(true);
+        setFiveRightsVerified(true);
 
         const isOral =
             option.vaccine_name.toLowerCase().includes('opv') ||
@@ -325,17 +325,14 @@ export default function VaccinationManagement({
         setAdministrationRemarks('');
         setConsentObtained(false);
         setConsentGivenBy('');
-        setHealthScreened(false);
-        setAllergyChecked(false);
-        setFiveRightsVerified(false);
+        setHealthScreened(true);
+        setAllergyChecked(true);
+        setFiveRightsVerified(true);
     };
 
     const isAdministrationReady =
         consentObtained &&
-        consentGivenBy.trim().length > 0 &&
-        healthScreened &&
-        allergyChecked &&
-        fiveRightsVerified;
+        consentGivenBy.trim().length > 0;
 
     const handleSubmitAdministration = () => {
         if (!selectedAdministration || administeringKey || !isAdministrationReady) {
@@ -1064,7 +1061,7 @@ export default function VaccinationManagement({
                                                     htmlFor="health-screened"
                                                     className="text-xs font-medium leading-normal cursor-pointer select-none text-foreground"
                                                 >
-                                                    Health Assessment Cleared <span className="text-destructive">*</span>
+                                                    Health Assessment Cleared
                                                 </label>
                                                 <p className="text-[11px] text-muted-foreground">
                                                     Child has been physically evaluated today with no acute high fever, moderate-to-severe illness, or active contraindications.
@@ -1084,7 +1081,7 @@ export default function VaccinationManagement({
                                                     htmlFor="allergy-checked"
                                                     className="text-xs font-medium leading-normal cursor-pointer select-none text-foreground"
                                                 >
-                                                    Allergy & Adverse Reaction Check <span className="text-destructive">*</span>
+                                                    Allergy & Adverse Reaction Check
                                                 </label>
                                                 <p className="text-[11px] text-muted-foreground">
                                                     Verified no prior severe anaphylactic or hypersensitivity reaction to previous doses of this vaccine or vaccine components.
@@ -1104,7 +1101,7 @@ export default function VaccinationManagement({
                                                     htmlFor="five-rights"
                                                     className="text-xs font-medium leading-normal cursor-pointer select-none text-foreground"
                                                 >
-                                                    Five Rights of Medication Verified <span className="text-destructive">*</span>
+                                                    Five Rights of Medication Verified
                                                 </label>
                                                 <p className="text-[11px] text-muted-foreground">
                                                     Right Patient, Right Vaccine, Right Dose Number, Right Route, and Right Time (batch not expired and cold chain maintained).
@@ -1117,28 +1114,33 @@ export default function VaccinationManagement({
                                 {/* SECTION 3: ADMINISTRATION DETAILS & REMARKS */}
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <div className="space-y-1.5">
-                                        <Label className="text-xs font-medium">
+                                        <Label htmlFor="injection-site-input" className="text-xs font-medium">
                                             Injection Site & Route
                                         </Label>
-                                        <Select
+                                        <Input
+                                            id="injection-site-input"
+                                            type="text"
+                                            list="injection-site-suggestions"
                                             value={injectionSite}
-                                            onValueChange={setInjectionSite}
+                                            onChange={(e) => setInjectionSite(e.target.value)}
+                                            placeholder="e.g. Anterolateral Right Thigh (IM), Left Deltoid, Oral"
+                                            className="h-9 text-xs bg-background"
                                             disabled={Boolean(administeringKey)}
-                                        >
-                                            <SelectTrigger className="h-9 text-xs">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Anterolateral Right Thigh (IM)">Anterolateral Right Thigh (IM)</SelectItem>
-                                                <SelectItem value="Anterolateral Left Thigh (IM)">Anterolateral Left Thigh (IM)</SelectItem>
-                                                <SelectItem value="Right Deltoid (IM/SC)">Right Deltoid (IM/SC)</SelectItem>
-                                                <SelectItem value="Left Deltoid (IM/SC)">Left Deltoid (IM/SC)</SelectItem>
-                                                <SelectItem value="Oral (Drops)">Oral (Drops)</SelectItem>
-                                                <SelectItem value="Subcutaneous Right Arm">Subcutaneous Right Arm</SelectItem>
-                                                <SelectItem value="Subcutaneous Left Arm">Subcutaneous Left Arm</SelectItem>
-                                                <SelectItem value="Other (Specified in Remarks)">Other (Specified in Remarks)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        />
+                                        <datalist id="injection-site-suggestions">
+                                            <option value="Anterolateral Right Thigh (IM)" />
+                                            <option value="Anterolateral Left Thigh (IM)" />
+                                            <option value="Right Deltoid (IM/SC)" />
+                                            <option value="Left Deltoid (IM/SC)" />
+                                            <option value="Oral (Drops)" />
+                                            <option value="Subcutaneous Right Arm" />
+                                            <option value="Subcutaneous Left Arm" />
+                                            <option value="Left Thigh" />
+                                            <option value="Right Thigh" />
+                                            <option value="Intramuscular (IM)" />
+                                            <option value="Subcutaneous (SC)" />
+                                            <option value="Intradermal (ID)" />
+                                        </datalist>
                                     </div>
 
                                     <div className="space-y-1.5">
@@ -1171,7 +1173,7 @@ export default function VaccinationManagement({
                                 <div className="text-xs text-muted-foreground">
                                     {!isAdministrationReady && (
                                         <span className="text-amber-600 dark:text-amber-400 font-medium">
-                                            * Complete consent & checklist to proceed
+                                            * Informed consent and caregiver name required to proceed
                                         </span>
                                     )}
                                 </div>

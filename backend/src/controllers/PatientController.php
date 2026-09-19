@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Guardian;
+use App\Models\ImmunizationRecord;
 use App\Models\Patient;
 use App\Models\Vaccine;
 use App\Services\PatientImmunizationScheduleService;
@@ -327,6 +328,28 @@ class PatientController extends Controller
                 'string',
                 'max:1000',
             ],
+
+            'bcg_received_at_birth' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'bcg_date_administered' => [
+                'nullable',
+                'date',
+                'before_or_equal:today',
+            ],
+
+            'hepb_received_at_birth' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'hepb_date_administered' => [
+                'nullable',
+                'date',
+                'before_or_equal:today',
+            ],
         ]);
 
         $patient = Patient::create([
@@ -372,6 +395,33 @@ class PatientController extends Controller
                 $validated['existing_conditions'] ?? null,
             'status' => 'Active',
         ]);
+
+        $bcgVaccine = Vaccine::where('name', 'like', '%BCG%')->first();
+        $hepbVaccine = Vaccine::where('name', 'like', '%Hepatitis B%')->first();
+
+        if ($request->boolean('bcg_received_at_birth') && $bcgVaccine) {
+            ImmunizationRecord::create([
+                'patient_id' => $patient->id,
+                'vaccine_id' => $bcgVaccine->id,
+                'dose_number' => 1,
+                'date_administered' => $request->input('bcg_date_administered') ?: $patient->date_of_birth,
+                'administered_by' => null,
+                'source' => 'Hospital / Birth Facility',
+                'remarks' => 'Received at birth',
+            ]);
+        }
+
+        if ($request->boolean('hepb_received_at_birth') && $hepbVaccine) {
+            ImmunizationRecord::create([
+                'patient_id' => $patient->id,
+                'vaccine_id' => $hepbVaccine->id,
+                'dose_number' => 1,
+                'date_administered' => $request->input('hepb_date_administered') ?: $patient->date_of_birth,
+                'administered_by' => null,
+                'source' => 'Hospital / Birth Facility',
+                'remarks' => 'Birth dose received at birth',
+            ]);
+        }
 
         /*
          * Immediately refresh the global scheduler after the new child exists.

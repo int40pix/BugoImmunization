@@ -1,10 +1,11 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Baby, ClipboardList, HeartPulse, UserRound, Users } from 'lucide-react';
+import { ArrowLeft, Baby, ClipboardList, HeartPulse, Syringe, UserRound, Users } from 'lucide-react';
 import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
@@ -56,6 +57,11 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
         medical_background: '',
         allergies: '',
         existing_conditions: '',
+
+        bcg_received_at_birth: false,
+        bcg_date_administered: '',
+        hepb_received_at_birth: false,
+        hepb_date_administered: '',
     });
 
     const breadcrumbs = [
@@ -416,6 +422,106 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
                                         placeholder="Chronic conditions or ongoing pediatric health issues..."
                                     />
                                 </Field>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Birth Dose Vaccines (BCG & Hepatitis B) */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <Syringe className="h-5 w-5 text-primary" />
+                                <CardTitle className="text-lg">Birth Dose Immunizations (Hospital / Birth Facility)</CardTitle>
+                            </div>
+                            <CardDescription>
+                                Mark routine birth doses already administered (e.g. at the hospital or lying-in clinic). These will automatically be recorded on the child's immunization card upon creation.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                {/* BCG toggle */}
+                                <div className="rounded-lg border p-4 space-y-3 bg-muted/20">
+                                    <div className="flex items-start space-x-2.5">
+                                        <Checkbox
+                                            id="bcg_received"
+                                            checked={data.bcg_received_at_birth}
+                                            onCheckedChange={(checked) => {
+                                                const isChecked = Boolean(checked);
+                                                setData((prev) => ({
+                                                    ...prev,
+                                                    bcg_received_at_birth: isChecked,
+                                                    bcg_date_administered: isChecked ? (prev.bcg_date_administered || prev.date_of_birth || today) : '',
+                                                }));
+                                            }}
+                                        />
+                                        <div className="grid gap-1 leading-none">
+                                            <Label htmlFor="bcg_received" className="text-sm font-semibold cursor-pointer text-foreground">
+                                                BCG Vaccine (At Birth)
+                                            </Label>
+                                            <p className="text-xs text-muted-foreground">
+                                                Protects against childhood tuberculosis meningitis and disseminated disease.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {data.bcg_received_at_birth && (
+                                        <div className="pt-1.5 space-y-1">
+                                            <Label htmlFor="bcg_date" className="text-xs font-medium">
+                                                Date Administered
+                                            </Label>
+                                            <Input
+                                                id="bcg_date"
+                                                type="date"
+                                                className="h-9 text-xs bg-background"
+                                                value={data.bcg_date_administered || data.date_of_birth || today}
+                                                max={today}
+                                                onChange={(e) => setData('bcg_date_administered', e.target.value)}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Hep B toggle */}
+                                <div className="rounded-lg border p-4 space-y-3 bg-muted/20">
+                                    <div className="flex items-start space-x-2.5">
+                                        <Checkbox
+                                            id="hepb_received"
+                                            checked={data.hepb_received_at_birth}
+                                            onCheckedChange={(checked) => {
+                                                const isChecked = Boolean(checked);
+                                                setData((prev) => ({
+                                                    ...prev,
+                                                    hepb_received_at_birth: isChecked,
+                                                    hepb_date_administered: isChecked ? (prev.hepb_date_administered || prev.date_of_birth || today) : '',
+                                                }));
+                                            }}
+                                        />
+                                        <div className="grid gap-1 leading-none">
+                                            <Label htmlFor="hepb_received" className="text-sm font-semibold cursor-pointer text-foreground">
+                                                Hepatitis B (Birth Dose)
+                                            </Label>
+                                            <p className="text-xs text-muted-foreground">
+                                                Given within 24 hours of birth to prevent perinatal HBV transmission.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {data.hepb_received_at_birth && (
+                                        <div className="pt-1.5 space-y-1">
+                                            <Label htmlFor="hepb_date" className="text-xs font-medium">
+                                                Date Administered
+                                            </Label>
+                                            <Input
+                                                id="hepb_date"
+                                                type="date"
+                                                className="h-9 text-xs bg-background"
+                                                value={data.hepb_date_administered || data.date_of_birth || today}
+                                                max={today}
+                                                onChange={(e) => setData('hepb_date_administered', e.target.value)}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

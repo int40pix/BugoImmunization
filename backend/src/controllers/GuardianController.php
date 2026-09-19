@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Guardian;
+use App\Models\ImmunizationRecord;
 use App\Models\Patient;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\Vaccine;
 use App\Services\VaccineSchedulingPriorityService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -435,6 +437,28 @@ class GuardianController extends Controller
                     'string',
                     'max:1000',
                 ],
+
+                'children.*.bcg_received_at_birth' => [
+                    'nullable',
+                    'boolean',
+                ],
+
+                'children.*.bcg_date_administered' => [
+                    'nullable',
+                    'date',
+                    'before_or_equal:today',
+                ],
+
+                'children.*.hepb_received_at_birth' => [
+                    'nullable',
+                    'boolean',
+                ],
+
+                'children.*.hepb_date_administered' => [
+                    'nullable',
+                    'date',
+                    'before_or_equal:today',
+                ],
             ]);
 
         $guardian =
@@ -805,6 +829,33 @@ class GuardianController extends Controller
                             'status' =>
                                 'Active',
                         ]);
+
+                        $bcgVaccine = Vaccine::where('name', 'like', '%BCG%')->first();
+                        $hepbVaccine = Vaccine::where('name', 'like', '%Hepatitis B%')->first();
+
+                        if (!empty($child['bcg_received_at_birth']) && $bcgVaccine) {
+                            ImmunizationRecord::create([
+                                'patient_id' => $patient->id,
+                                'vaccine_id' => $bcgVaccine->id,
+                                'dose_number' => 1,
+                                'date_administered' => !empty($child['bcg_date_administered']) ? $child['bcg_date_administered'] : $patient->date_of_birth,
+                                'administered_by' => null,
+                                'source' => 'Hospital / Birth Facility',
+                                'remarks' => 'Received at birth',
+                            ]);
+                        }
+
+                        if (!empty($child['hepb_received_at_birth']) && $hepbVaccine) {
+                            ImmunizationRecord::create([
+                                'patient_id' => $patient->id,
+                                'vaccine_id' => $hepbVaccine->id,
+                                'dose_number' => 1,
+                                'date_administered' => !empty($child['hepb_date_administered']) ? $child['hepb_date_administered'] : $patient->date_of_birth,
+                                'administered_by' => null,
+                                'source' => 'Hospital / Birth Facility',
+                                'remarks' => 'Birth dose received at birth',
+                            ]);
+                        }
                     }
 
                     return $guardian;
