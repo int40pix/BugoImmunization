@@ -616,12 +616,15 @@ class GuardianController extends Controller
                                 'active',
                         ]);
 
+                    $bcgVaccine = Vaccine::where('name', 'like', '%BCG%')->first();
+                    $hepbVaccine = Vaccine::where('name', 'like', '%Hepatitis B%')->first();
+
                     foreach (
                         $validated[
                             'children'
                         ] as $child
                     ) {
-                        Patient::create([
+                        $patient = Patient::create([
                             'guardian_id' =>
                                 $guardian
                                     ->id,
@@ -829,9 +832,6 @@ class GuardianController extends Controller
                             'status' =>
                                 'Active',
                         ]);
-
-                        $bcgVaccine = Vaccine::where('name', 'like', '%BCG%')->first();
-                        $hepbVaccine = Vaccine::where('name', 'like', '%Hepatitis B%')->first();
 
                         if (!empty($child['bcg_received_at_birth']) && $bcgVaccine) {
                             ImmunizationRecord::create([
