@@ -348,27 +348,47 @@ class PatientImmunizationScheduleService
                 &&
                 $dosesRemaining === 1;
 
-            $targetWednesday = $eligibleDate ? $this->getTargetWednesday($eligibleDate) : null;
+            $eligibleWednesday = $eligibleDate ? $this->getTargetWednesday($eligibleDate) : null;
             $daysDue = ($eligibleDate && $today->greaterThan($eligibleDate))
-                ? (int) $today->diffInDays($eligibleDate)
+                ? (int) abs($today->diffInDays($eligibleDate))
                 : 0;
 
+            $targetWednesday = $eligibleWednesday;
             $scheduleLabel = 'Current Age';
             $daysOverdue = 0;
 
-            if ($targetWednesday) {
-                if ($today->lessThanOrEqualTo($targetWednesday)) {
+            if ($eligibleWednesday) {
+                if ($today->lessThanOrEqualTo($eligibleWednesday)) {
                     $scheduleLabel = 'Current Age';
                     $daysOverdue = 0;
                 } else {
-                    $daysPastWednesday = (int) $targetWednesday->diffInDays($today);
-                    $daysOverdue = $daysPastWednesday;
+                    $daysPastEligibleWed = (int) abs($today->diffInDays($eligibleWednesday));
+                    $daysOverdue = $daysPastEligibleWed;
 
-                    if ($daysPastWednesday <= 14) {
+                    if ($daysPastEligibleWed <= 14) {
                         $scheduleLabel = 'Recent Due';
                     } else {
                         $scheduleLabel = 'Overdue';
                     }
+                }
+            }
+
+            if ($scheduledDose && $scheduledDose->scheduled_date) {
+                $appointmentDate = Carbon::parse($scheduledDose->scheduled_date)->startOfDay();
+                $targetWednesday = $appointmentDate;
+
+                if ($today->greaterThan($appointmentDate)) {
+                    $daysPastAppointment = (int) abs($today->diffInDays($appointmentDate));
+                    $daysOverdue = $daysPastAppointment;
+
+                    if ($daysPastAppointment <= 14) {
+                        $scheduleLabel = 'Recent Due';
+                    } else {
+                        $scheduleLabel = 'Overdue';
+                    }
+                } elseif ($scheduleLabel !== 'Overdue') {
+                    $scheduleLabel = 'Current Age';
+                    $daysOverdue = 0;
                 }
             }
 
