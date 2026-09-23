@@ -72,9 +72,16 @@ type Patient = {
     immunizationRecords: ImmunizationRecord[];
 };
 
+export type StaffUser = {
+    id: number;
+    name: string;
+    role: string;
+};
+
 type PageProps = {
     patient: Patient;
     vaccinationOptions: VaccinationOption[];
+    staffUsers?: StaffUser[];
     immunizationCard: ImmunizationCardVaccine[];
     optionalVaccines: OptionalVaccine[];
     immunizationCardRows: ManualCardRow[];
@@ -88,6 +95,7 @@ export default function PatientShow() {
     const {
         patient,
         vaccinationOptions = [],
+        staffUsers = [],
         immunizationCard = [],
         optionalVaccines = [],
         immunizationCardRows = [],
@@ -126,11 +134,23 @@ export default function PatientShow() {
         const birth = parseDate(dob);
         if (!birth) return '—';
         const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        birth.setHours(0, 0, 0, 0);
+
+        if (birth > today) return '—';
+
         let months =
             (today.getFullYear() - birth.getFullYear()) * 12 +
             (today.getMonth() - birth.getMonth());
         if (today.getDate() < birth.getDate()) months -= 1;
         months = Math.max(0, months);
+
+        if (months === 0) {
+            const diffTime = today.getTime() - birth.getTime();
+            const days = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+            return `${days} ${days === 1 ? 'day' : 'days'}`;
+        }
+
         if (months < 12) return `${months} ${months === 1 ? 'month' : 'months'}`;
         const years = Math.floor(months / 12);
         const rem = months % 12;
@@ -278,6 +298,7 @@ export default function PatientShow() {
                         patientName={patientName}
                         vaccinationOptions={vaccinationOptions}
                         optionalVaccines={optionalVaccines}
+                        staffUsers={staffUsers}
                         flash={flash}
                         errors={errors}
                     />

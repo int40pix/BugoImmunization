@@ -8,6 +8,7 @@ use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\GuardianPortalController;
 use App\Http\Controllers\ImmunizationController;
 use App\Http\Controllers\ImmunizationRecordController;
+use App\Http\Controllers\ImmunizationReminderController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientImmunizationCardRowController;
@@ -828,6 +829,39 @@ Route::middleware([
         ]
     )->name(
         'immunization.administer'
+    );
+
+
+    Route::post(
+        'immunization/schedules/{schedule}/send-reminder',
+        [
+            ImmunizationReminderController::class,
+            'sendScheduleReminder',
+        ]
+    )->name(
+        'immunization.schedules.send-reminder'
+    );
+
+
+    Route::post(
+        'immunization/patients/{patient}/send-reminder',
+        [
+            ImmunizationReminderController::class,
+            'sendPatientReminder',
+        ]
+    )->name(
+        'immunization.patients.send-reminder'
+    );
+
+
+    Route::post(
+        'immunization/reminders/send-bulk',
+        [
+            ImmunizationReminderController::class,
+            'sendBulkReminders',
+        ]
+    )->name(
+        'immunization.reminders.send-bulk'
     );
 
 

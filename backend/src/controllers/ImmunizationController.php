@@ -226,16 +226,40 @@ class ImmunizationController extends Controller
                 'string',
                 'max:1000',
             ],
+
+            'administered_by' => [
+                'nullable',
+                'integer',
+                'exists:users,id',
+            ],
+
+            'date_administered' => [
+                'nullable',
+                'date',
+                'before_or_equal:today',
+            ],
+
+            'vaccine_inventory_id' => [
+                'nullable',
+                'integer',
+                'exists:vaccine_inventories,id',
+            ],
         ]);
 
         try {
             $administrationService->administer(
                 patient: $patient,
                 vaccineId: (int) $validated['vaccine_id'],
-                administeredBy: $request->user()?->id,
+                administeredBy: ! empty($validated['administered_by'])
+                    ? (int) $validated['administered_by']
+                    : $request->user()?->id,
                 remarks: $validated['remarks'] ?? null,
                 consentGivenBy: $validated['consent_given_by'] ?? null,
                 injectionSite: $validated['injection_site'] ?? null,
+                dateAdministered: $validated['date_administered'] ?? null,
+                vaccineInventoryId: ! empty($validated['vaccine_inventory_id'])
+                    ? (int) $validated['vaccine_inventory_id']
+                    : null,
             );
         } catch (DomainException $exception) {
             return back()->withErrors([

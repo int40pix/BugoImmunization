@@ -239,6 +239,46 @@ class PatientImmunizationScheduleService
                     ?->inventoryBatch;
 
             /*
+             * If not reserved on a prior appointment, resolve the
+             * FEFO batch that will be deducted during walk-in administration.
+             */
+            $fefoBatch = null;
+            if (! $reservedBatch && $inventoryAvailable) {
+                $fefoBatch = VaccineInventory::query()
+                    ->where('vaccine_id', $vaccine->id)
+                    ->where('is_archived', false)
+                    ->where('quantity', '>', 0)
+                    ->whereDate('expiration_date', '>=', $today)
+                    ->orderBy('expiration_date')
+                    ->orderBy('date_received')
+                    ->orderBy('id')
+                    ->first();
+            }
+
+            $effectiveBatch = $reservedBatch ?: $fefoBatch;
+
+            /*
+             * Collect all usable physical batches for staff selection or audit.
+             */
+            $availableBatches = VaccineInventory::query()
+                ->where('vaccine_id', $vaccine->id)
+                ->where('is_archived', false)
+                ->where('quantity', '>', 0)
+                ->whereDate('expiration_date', '>=', $today)
+                ->orderBy('expiration_date')
+                ->orderBy('date_received')
+                ->orderBy('id')
+                ->get()
+                ->map(fn ($b) => [
+                    'id' => $b->id,
+                    'batch_number' => $b->batch_number,
+                    'quantity' => (int) $b->quantity,
+                    'expiration_date' => $b->expiration_date?->toDateString(),
+                ])
+                ->values()
+                ->all();
+
+            /*
              * The reserved batch is usable only if
              * it still exists, is active, has stock,
              * belongs to this vaccine, and is not expired.
@@ -506,25 +546,28 @@ class PatientImmunizationScheduleService
                         ?->toDateString(),
 
                 'reserved_batch_id' =>
-                    $reservedBatch
+                    $effectiveBatch
                         ?->id,
 
                 'reserved_batch_number' =>
-                    $reservedBatch
+                    $effectiveBatch
                         ?->batch_number,
 
                 'reserved_batch_expiration_date' =>
-                    $reservedBatch
+                    $effectiveBatch
                         ?->expiration_date
                         ?->toDateString(),
 
                 'reserved_batch_quantity' =>
-                    $reservedBatch !== null
-                        ? (int) $reservedBatch->quantity
+                    $effectiveBatch !== null
+                        ? (int) $effectiveBatch->quantity
                         : null,
 
                 'reserved_batch_usable' =>
-                    $reservedBatchUsable,
+                    $reservedBatch ? $reservedBatchUsable : ($fefoBatch !== null),
+
+                'available_batches' =>
+                    $availableBatches,
 
                 /*
                  * Frozen allocation / priority information

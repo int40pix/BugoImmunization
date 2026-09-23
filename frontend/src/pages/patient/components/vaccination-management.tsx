@@ -17,15 +17,18 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
     CalendarDays,
     CheckCircle2,
     History,
     Info,
+    MapPin,
+    Package,
     ShieldCheck,
     Syringe,
+    UserCheck,
     X,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -121,6 +124,7 @@ type VaccinationManagementProps = {
         administration?: string;
         optional_vaccine?: string;
     };
+    staffUsers?: any[];
 };
 
 export default function VaccinationManagement({
@@ -128,14 +132,27 @@ export default function VaccinationManagement({
     patientName,
     vaccinationOptions,
     optionalVaccines,
+    staffUsers,
     flash,
     errors,
 }: VaccinationManagementProps) {
+    const { auth } = usePage<{
+        auth?: {
+            user?: {
+                id: number;
+                name: string;
+                role?: string;
+            } | null;
+        };
+    }>().props;
+
     const [administeringKey, setAdministeringKey] =
         useState<string | null>(null);
 
     const [selectedAdministration, setSelectedAdministration] =
         useState<VaccinationOption | null>(null);
+
+    const [showProceedModal, setShowProceedModal] = useState(false);
 
     const [administrationRemarks, setAdministrationRemarks] =
         useState('');
@@ -145,7 +162,8 @@ export default function VaccinationManagement({
     const [healthScreened, setHealthScreened] = useState(true);
     const [allergyChecked, setAllergyChecked] = useState(true);
     const [fiveRightsVerified, setFiveRightsVerified] = useState(true);
-    const [injectionSite, setInjectionSite] = useState('Anterolateral Right Thigh (IM)');
+    const [injectionSite, setInjectionSite] = useState('');
+    const [isCustomSite, setIsCustomSite] = useState(false);
 
     const [assigningOptionalVaccineId, setAssigningOptionalVaccineId] =
         useState<number | null>(null);
@@ -303,6 +321,7 @@ export default function VaccinationManagement({
         }
 
         setSelectedAdministration(option);
+        setShowProceedModal(false);
         setAdministrationRemarks('');
         setConsentObtained(false);
         setConsentGivenBy(
@@ -311,12 +330,8 @@ export default function VaccinationManagement({
         setHealthScreened(true);
         setAllergyChecked(true);
         setFiveRightsVerified(true);
-
-        const isOral =
-            option.vaccine_name.toLowerCase().includes('opv') ||
-            option.vaccine_name.toLowerCase().includes('oral') ||
-            option.vaccine_name.toLowerCase().includes('rotavirus');
-        setInjectionSite(isOral ? 'Oral (Drops)' : 'Anterolateral Right Thigh (IM)');
+        setInjectionSite('');
+        setIsCustomSite(false);
     };
 
     const handleCloseAdministration = () => {
@@ -325,12 +340,15 @@ export default function VaccinationManagement({
         }
 
         setSelectedAdministration(null);
+        setShowProceedModal(false);
         setAdministrationRemarks('');
         setConsentObtained(false);
         setConsentGivenBy('');
         setHealthScreened(true);
         setAllergyChecked(true);
         setFiveRightsVerified(true);
+        setInjectionSite('');
+        setIsCustomSite(false);
     };
 
     const isAdministrationReady =
@@ -354,7 +372,7 @@ export default function VaccinationManagement({
                     selectedAdministration.vaccine_id,
                 consent_obtained: true,
                 consent_given_by: consentGivenBy.trim(),
-                injection_site: injectionSite,
+                injection_site: injectionSite.trim() || null,
                 remarks:
                     administrationRemarks.trim() ||
                     null,
@@ -363,7 +381,12 @@ export default function VaccinationManagement({
                 preserveScroll: true,
 
                 onSuccess: () => {
+                    setShowProceedModal(false);
                     handleCloseAdministration();
+                },
+
+                onError: () => {
+                    setShowProceedModal(false);
                 },
 
                 onFinish: () => {
@@ -485,6 +508,33 @@ export default function VaccinationManagement({
         }
         return b.id - a.id;
     });
+
+    const isSelectedOral =
+        Boolean(selectedAdministration?.vaccine_name) &&
+        (
+            selectedAdministration!.vaccine_name.toLowerCase().includes('opv') ||
+            selectedAdministration!.vaccine_name.toLowerCase().includes('oral') ||
+            selectedAdministration!.vaccine_name.toLowerCase().includes('rotavirus')
+        );
+
+    const siteOptions = isSelectedOral
+        ? [
+              'Oral (Drops)',
+              'Anterolateral Right Thigh (IM)',
+              'Anterolateral Left Thigh (IM)',
+              'Right Deltoid (IM/SC)',
+              'Left Deltoid (IM/SC)',
+          ]
+        : [
+              'Anterolateral Right Thigh (IM)',
+              'Anterolateral Left Thigh (IM)',
+              'Right Deltoid (IM/SC)',
+              'Left Deltoid (IM/SC)',
+              'Right Deltoid (ID)',
+              'Subcutaneous Right Arm',
+              'Subcutaneous Left Arm',
+              'Oral (Drops)',
+          ];
 
     return (
         <Card>
@@ -928,7 +978,8 @@ export default function VaccinationManagement({
 
                 {/* INTERACTIVE CLINICAL ADMINISTRATION MODAL */}
                 {selectedAdministration && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+                    <>
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
                         <div className="w-full max-w-2xl max-h-[92vh] flex flex-col rounded-xl border bg-background shadow-2xl overflow-hidden">
                             {/* MODAL HEADER */}
                             <div className="flex items-start justify-between gap-4 border-b px-5 py-4 bg-muted/20">
@@ -1124,33 +1175,50 @@ export default function VaccinationManagement({
                                 {/* SECTION 3: ADMINISTRATION DETAILS & REMARKS */}
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <div className="space-y-1.5">
-                                        <Label htmlFor="injection-site-input" className="text-xs font-medium">
-                                            Injection Site & Route
-                                        </Label>
-                                        <Input
-                                            id="injection-site-input"
-                                            type="text"
-                                            list="injection-site-suggestions"
-                                            value={injectionSite}
-                                            onChange={(e) => setInjectionSite(e.target.value)}
-                                            placeholder="e.g. Anterolateral Right Thigh (IM), Left Deltoid, Oral"
-                                            className="h-9 text-xs bg-background"
+                                        <div className="flex items-center justify-between">
+                                            <Label htmlFor="injection-site-select" className="text-xs font-medium">
+                                                Injection Site & Route
+                                            </Label>
+                                            <span className="text-[10px] text-muted-foreground">Optional</span>
+                                        </div>
+
+                                        <select
+                                            id="injection-site-select"
+                                            value={isCustomSite ? '__custom__' : injectionSite}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === '__custom__') {
+                                                    setIsCustomSite(true);
+                                                    setInjectionSite('');
+                                                } else {
+                                                    setIsCustomSite(false);
+                                                    setInjectionSite(val);
+                                                }
+                                            }}
+                                            className="h-9 w-full rounded-md border border-input bg-background px-3 text-xs text-foreground shadow-xs outline-none focus:border-primary focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                             disabled={Boolean(administeringKey)}
-                                        />
-                                        <datalist id="injection-site-suggestions">
-                                            <option value="Anterolateral Right Thigh (IM)" />
-                                            <option value="Anterolateral Left Thigh (IM)" />
-                                            <option value="Right Deltoid (IM/SC)" />
-                                            <option value="Left Deltoid (IM/SC)" />
-                                            <option value="Oral (Drops)" />
-                                            <option value="Subcutaneous Right Arm" />
-                                            <option value="Subcutaneous Left Arm" />
-                                            <option value="Left Thigh" />
-                                            <option value="Right Thigh" />
-                                            <option value="Intramuscular (IM)" />
-                                            <option value="Subcutaneous (SC)" />
-                                            <option value="Intradermal (ID)" />
-                                        </datalist>
+                                        >
+                                            <option value="">Select site &amp; route...</option>
+                                            {siteOptions.map((opt) => (
+                                                <option key={opt} value={opt}>
+                                                    {opt}
+                                                </option>
+                                            ))}
+                                            <option value="__custom__">Other / Custom Site...</option>
+                                        </select>
+
+                                        {isCustomSite && (
+                                            <Input
+                                                id="custom-injection-site-input"
+                                                type="text"
+                                                placeholder="Type custom administration site / route..."
+                                                value={injectionSite}
+                                                onChange={(e) => setInjectionSite(e.target.value)}
+                                                className="h-8 text-xs bg-background mt-1.5"
+                                                disabled={Boolean(administeringKey)}
+                                                autoFocus
+                                            />
+                                        )}
                                     </div>
 
                                     <div className="space-y-1.5">
@@ -1203,9 +1271,9 @@ export default function VaccinationManagement({
                                     <Button
                                         type="button"
                                         size="sm"
-                                        className="h-9 sm:h-8 text-xs w-full sm:w-auto"
+                                        className="h-9 sm:h-8 text-xs w-full sm:w-auto font-medium"
                                         disabled={!isAdministrationReady || Boolean(administeringKey)}
-                                        onClick={handleSubmitAdministration}
+                                        onClick={() => setShowProceedModal(true)}
                                     >
                                         <Syringe className="mr-1.5 h-4 w-4" />
                                         {administeringKey ? 'Recording...' : 'Confirm & Administer Dose'}
@@ -1214,7 +1282,160 @@ export default function VaccinationManagement({
                             </div>
                         </div>
                     </div>
-                )}
+
+                    {/* CONFIRMATION POPUP MODAL: "Proceed administering?" */}
+                    {showProceedModal && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-150">
+                            <div className="w-full max-w-md rounded-xl border bg-background shadow-2xl overflow-hidden flex flex-col">
+                                {/* Header */}
+                                <div className="flex items-start justify-between gap-3 border-b px-5 py-4 bg-muted/20">
+                                    <div className="flex items-center gap-2.5 text-primary">
+                                        <div className="rounded-full bg-primary/10 p-2 text-primary shrink-0">
+                                            <Syringe className="h-5 w-5 text-primary" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-base sm:text-lg font-bold text-foreground">
+                                                Proceed administering?
+                                            </h3>
+                                            <p className="text-xs text-muted-foreground mt-0.5">
+                                                Please review the summary details below before finalizing.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        disabled={Boolean(administeringKey)}
+                                        onClick={() => setShowProceedModal(false)}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+
+                                {/* Body: 5 bits of details */}
+                                <div className="p-5 space-y-3.5 text-xs sm:text-sm">
+                                    <div className="rounded-lg border bg-card divide-y divide-border/60 overflow-hidden shadow-sm">
+                                        {/* 1. Administered by */}
+                                        <div className="p-3 flex items-start gap-3 bg-muted/10">
+                                            <UserCheck className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <div className="min-w-0 flex-1">
+                                                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
+                                                    Administered by:
+                                                </span>
+                                                <span className="font-semibold text-foreground text-sm">
+                                                    {auth?.user?.name || 'Clinic Staff'}
+                                                </span>
+                                                {auth?.user?.role && (
+                                                    <span className="text-muted-foreground text-xs ml-1.5">
+                                                        ({auth.user.role})
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* 2. Vaccine batch deducted from */}
+                                        <div className="p-3 flex items-start gap-3 bg-primary/5">
+                                            <Package className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                                            <div className="min-w-0 flex-1">
+                                                <span className="text-[11px] font-semibold uppercase tracking-wider text-primary block">
+                                                    Vaccine batch deducted from:
+                                                </span>
+                                                <span className="font-mono font-bold text-foreground text-sm">
+                                                    {selectedAdministration.reserved_batch_number || 'Next FEFO Batch'}
+                                                </span>
+                                                {selectedAdministration.reserved_batch_expiration_date && (
+                                                    <div className="text-xs text-muted-foreground mt-0.5">
+                                                        Exp: {formatDate(selectedAdministration.reserved_batch_expiration_date)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* 3. Date */}
+                                        <div className="p-3 flex items-start gap-3 bg-muted/10">
+                                            <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <div className="min-w-0 flex-1">
+                                                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
+                                                    Date:
+                                                </span>
+                                                <span className="font-semibold text-foreground text-sm">
+                                                    {new Date().toLocaleDateString('en-US', {
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        year: 'numeric',
+                                                    })}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* 4. Vaccine type */}
+                                        <div className="p-3 flex items-start gap-3">
+                                            <Syringe className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <div className="min-w-0 flex-1">
+                                                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
+                                                    Vaccine type:
+                                                </span>
+                                                <span className="font-semibold text-foreground text-sm">
+                                                    {selectedAdministration.vaccine_name}
+                                                </span>
+                                                <span className="text-muted-foreground text-xs block mt-0.5">
+                                                    Dose {selectedAdministration.dose_number} of {selectedAdministration.required_doses} ({selectedAdministration.category})
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* 5. Area of vaccination */}
+                                        <div className="p-3 flex items-start gap-3 bg-blue-500/5">
+                                            <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                                            <div className="min-w-0 flex-1">
+                                                <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300 block">
+                                                    Area of vaccination:
+                                                </span>
+                                                <span className="font-semibold text-foreground text-sm">
+                                                    {injectionSite.trim() || 'Not specified (Optional)'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+                                        <span>Patient: <strong className="text-foreground">{patientName}</strong></span>
+                                        <span>Consent: <strong className="text-foreground">{consentGivenBy}</strong></span>
+                                    </div>
+                                </div>
+
+                                {/* Footer */}
+                                <div className="flex items-center justify-end gap-2 border-t px-5 py-3.5 bg-muted/20">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-9 text-xs"
+                                        disabled={Boolean(administeringKey)}
+                                        onClick={() => setShowProceedModal(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        className="h-9 text-xs font-semibold"
+                                        disabled={Boolean(administeringKey)}
+                                        onClick={handleSubmitAdministration}
+                                    >
+                                        <Syringe className="mr-1.5 h-4 w-4" />
+                                        {administeringKey ? 'Administering...' : 'Proceed'}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
             </CardContent>
         </Card>
     );

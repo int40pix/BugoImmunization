@@ -526,8 +526,9 @@ class GuardianPortalController extends Controller
         $patient->load([
             'immunizationRecords.vaccine',
             'immunizationRecords.administeredBy',
-            'immunizationRecords.inventoryBatch',
+            'immunizationRecords.inventoryTransaction',
             'vaccineSchedules.vaccine',
+            'vaccineSchedules.inventoryBatch',
         ]);
 
         $today = Carbon::today();
@@ -615,7 +616,7 @@ class GuardianPortalController extends Controller
                         'dose_number' => (int) $record->dose_number,
                         'date_administered' => $record->date_administered ? Carbon::parse($record->date_administered)->format('Y-m-d') : null,
                         'source' => $record->source,
-                        'batch_number' => $record->inventoryBatch?->batch_number,
+                        'batch_number' => $record->batch_number ?: $record->inventoryTransaction?->batch_number,
                         'remarks' => $record->remarks,
                         'administered_by' => $record->administeredBy ? [
                             'id' => $record->administeredBy->id,
@@ -659,7 +660,7 @@ class GuardianPortalController extends Controller
                         'dose_number' => (int) $record->dose_number,
                         'date_administered' => $record->date_administered ? Carbon::parse($record->date_administered)->format('Y-m-d') : null,
                         'source' => $record->source,
-                        'batch_number' => $record->inventoryBatch?->batch_number,
+                        'batch_number' => $record->batch_number ?: $record->inventoryTransaction?->batch_number,
                         'remarks' => $record->remarks,
                         'administered_by' => $record->administeredBy ? [
                             'id' => $record->administeredBy->id,

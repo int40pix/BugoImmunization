@@ -662,6 +662,9 @@ class PatientController extends Controller
 
                     'allocation_rank' =>
                         $option['allocation_rank'] ?? null,
+
+                    'available_batches' =>
+                        $option['available_batches'] ?? [],
                 ];
             })
             ->values();
@@ -853,11 +856,35 @@ class PatientController extends Controller
             })
             ->values();
 
+        $staffUsers = \App\Models\User::query()
+            ->whereDoesntHave('guardian')
+            ->where(function ($q) {
+                $q->whereNull('role')
+                  ->orWhereNotIn('role', ['guardian', 'patient']);
+            })
+            ->where(function ($q) {
+                $q->whereNull('account_status')
+                  ->orWhere('account_status', 'Active');
+            })
+            ->select(['id', 'name', 'email', 'role', 'role_id'])
+            ->with('accountRole:id,name')
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'role' => $u->accountRole?->name ?? $u->role ?? 'Clinic Staff',
+            ])
+            ->values();
+
         return Inertia::render('patient/show', [
             'patient' => $patient,
 
             'vaccinationOptions' =>
                 $vaccinationOptions,
+
+            'staffUsers' =>
+                $staffUsers,
 
             'immunizationCard' =>
                 $immunizationCard,

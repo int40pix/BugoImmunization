@@ -46,3 +46,4 @@ Thumbs.db
 *.sw?
 .fleet/
 .zed/
+scratch/

@@ -11,6 +11,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import AppearanceToggleDropdown from '@/components/appearance-dropdown';
+import { NotificationsDropdown } from '@/components/notifications-dropdown';
 import { Link, router, usePage } from '@inertiajs/react';
 import { KeyRound, LogOut, QrCode, Settings, ShieldCheck, UserRound } from 'lucide-react';
 import React from 'react';
@@ -147,6 +148,9 @@ export default function GuardianHeader({
 
                     {/* Appearance Theme Switcher */}
                     <AppearanceToggleDropdown />
+
+                    {/* Notifications Dropdown */}
+                    <NotificationsDropdown />
 
                     {/* Guardian User Menu */}
                     <DropdownMenu>

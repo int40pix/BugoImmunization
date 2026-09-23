@@ -304,9 +304,9 @@ export default function Dashboard({
                 {/* ========================================================= */}
                 {/* ROW 2: VACCINE STOCK HEALTH & STOCK VS DEMAND */}
                 {/* ========================================================= */}
-                <div className="row g-3 items-stretch mx-0 w-full">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-stretch w-full min-w-0">
                     {/* Left: Stock Health Donut (4 cols) */}
-                    <div className="col-12 col-lg-4 lg:h-full min-w-0 max-w-full px-0 sm:px-2">
+                    <div className="lg:col-span-4 min-w-0 w-full flex flex-col">
                         <InventoryHealthCard
                             inventoryHealth={inventoryHealth}
                             total={totalInventoryVaccines}
@@ -314,9 +314,9 @@ export default function Dashboard({
                     </div>
 
                     {/* Right: Stock vs Demand Table (8 cols) */}
-                    <div className="col-12 col-lg-8 lg:h-full min-w-0 max-w-full w-full px-0 sm:px-2">
-                        <div className="flex lg:h-full flex-col justify-between rounded-xl border border-border/60 bg-card shadow-2xs overflow-hidden w-full max-w-full">
-                            <div className="flex items-center justify-between border-b border-border/40 px-4 py-3 sm:px-5">
+                    <div className="lg:col-span-8 min-w-0 w-full flex flex-col">
+                        <div className="flex h-full flex-col justify-between rounded-xl border border-border/60 bg-card shadow-2xs overflow-hidden w-full">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 border-b border-border/40 px-4 py-3 sm:px-5">
                                 <div>
                                     <h2 className="text-sm font-semibold text-foreground">
                                         Vaccine Stock vs Demand
@@ -326,176 +326,116 @@ export default function Dashboard({
                                     </p>
                                 </div>
 
-                                <Button
-                                    asChild
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground"
-                                >
-                                    <Link href={route('vaccine-inventory.index')}>
-                                        View Full Inventory
-                                        <ArrowRight className="h-3 w-3 ml-0.5" />
-                                    </Link>
-                                </Button>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <div className="flex items-center gap-3 text-[11px]">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                                            <span className="font-medium text-foreground/80">
+                                                Free Stock
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="h-2 w-2 rounded-full bg-blue-500" />
+                                            <span className="font-medium text-foreground/80">
+                                                Active Demand
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <Button
+                                        asChild
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground"
+                                    >
+                                        <Link href={route('vaccine-inventory.index')}>
+                                            View Full Inventory
+                                            <ArrowRight className="h-3 w-3 ml-0.5" />
+                                        </Link>
+                                    </Button>
+                                </div>
                             </div>
 
-                            <div className="flex flex-1 flex-col justify-between p-3.5 sm:p-5 w-full min-w-0">
-                                {/* Mobile View (< sm): Fully responsive compact list (ZERO horizontal scrolling) */}
-                                <div className="d-block d-sm-none space-y-2 w-full">
-                                    {vaccineStockDemand.map((vaccine) => {
-                                        const stockWidth = Math.min(
-                                            100,
-                                            Math.max(
-                                                vaccine.freeStock > 0 ? 5 : 0,
-                                                (vaccine.freeStock / maxInventoryValue) * 100,
-                                            ),
-                                        );
-                                        const demandWidth = Math.min(
-                                            100,
-                                            Math.max(
-                                                vaccine.remainingDemand > 0 ? 5 : 0,
-                                                (vaccine.remainingDemand / maxInventoryValue) * 100,
-                                            ),
-                                        );
+                            <div className="flex flex-1 flex-col justify-around p-3 sm:p-4.5 space-y-2 w-full min-w-0">
+                                {vaccineStockDemand.map((vaccine) => {
+                                    const stockWidth = Math.min(
+                                        100,
+                                        Math.max(
+                                            vaccine.freeStock > 0 ? 6 : 0,
+                                            (vaccine.freeStock / maxInventoryValue) * 100,
+                                        ),
+                                    );
+                                    const demandWidth = Math.min(
+                                        100,
+                                        Math.max(
+                                            vaccine.remainingDemand > 0 ? 6 : 0,
+                                            (vaccine.remainingDemand / maxInventoryValue) * 100,
+                                        ),
+                                    );
 
-                                        return (
-                                            <div
-                                                key={vaccine.id}
-                                                className="rounded-lg border border-border/40 bg-muted/15 p-2.5 space-y-1.5 transition-colors"
-                                            >
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-xs font-semibold text-foreground truncate">
-                                                        {vaccine.name}
-                                                    </span>
-                                                    <span
-                                                        className={`text-[10px] font-medium px-2 py-0.5 rounded-full border shrink-0 ${getStockBadge(
-                                                            vaccine.stockHealth,
-                                                        )}`}
-                                                    >
-                                                        {vaccine.stockHealth}
-                                                    </span>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/70">
-                                                        <div
-                                                            className="h-full rounded-full bg-emerald-500 transition-all"
-                                                            style={{ width: `${stockWidth}%` }}
-                                                        />
-                                                    </div>
-                                                    {vaccine.remainingDemand > 0 && (
-                                                        <div className="h-1 w-full overflow-hidden rounded-full bg-muted/50">
-                                                            <div
-                                                                className="h-full rounded-full bg-blue-500 transition-all"
-                                                                style={{ width: `${demandWidth}%` }}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="flex items-center justify-between text-[11px]">
-                                                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                                                        Free: <strong className="font-bold">{vaccine.freeStock}</strong>
-                                                    </span>
-                                                    <span className="text-blue-600 dark:text-blue-400 font-medium">
-                                                        Need: <strong className="font-bold">{vaccine.remainingDemand}</strong>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-
-                                {/* Desktop View (sm+): Full Tabular View without static min-w-[440px] */}
-                                <div className="d-none d-sm-block w-full">
-                                    <div className="mb-2.5 flex items-center gap-3 px-3 pb-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/30">
-                                        <span className="w-28 sm:w-32 shrink-0">Vaccine</span>
-                                        <span className="w-24 shrink-0 text-center">Status</span>
-                                        <div className="flex-1 flex items-center gap-4 min-w-0">
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                                                <span className="normal-case font-medium text-[11px] text-foreground/80">
-                                                    Free Stock
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="h-2 w-2 rounded-full bg-blue-500" />
-                                                <span className="normal-case font-medium text-[11px] text-foreground/80">
-                                                    Active Demand
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <span className="w-14 shrink-0 text-right">Free</span>
-                                        <span className="w-14 shrink-0 text-right">Need</span>
-                                    </div>
-
-                                    <div className="space-y-2 flex-1 flex flex-col justify-around">
-                                        {vaccineStockDemand.map((vaccine) => {
-                                            const stockWidth = Math.min(
-                                                100,
-                                                Math.max(
-                                                    vaccine.freeStock > 0 ? 5 : 0,
-                                                    (vaccine.freeStock / maxInventoryValue) * 100,
-                                                ),
-                                            );
-                                            const demandWidth = Math.min(
-                                                100,
-                                                Math.max(
-                                                    vaccine.remainingDemand > 0 ? 5 : 0,
-                                                    (vaccine.remainingDemand / maxInventoryValue) * 100,
-                                                ),
-                                            );
-
-                                            return (
-                                                <div
-                                                    key={vaccine.id}
-                                                    className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/15 px-3 py-1.5 transition-colors hover:bg-muted/30"
+                                    return (
+                                        <div
+                                            key={vaccine.id}
+                                            className="flex items-center gap-2.5 sm:gap-3 rounded-lg border border-border/40 bg-muted/15 px-3 py-1.5 sm:py-2 transition-colors hover:bg-muted/30"
+                                        >
+                                            {/* Vaccine Name & Status Badge */}
+                                            <div className="w-24 sm:w-28 shrink-0 min-w-0">
+                                                <span
+                                                    className="block text-xs font-semibold text-foreground truncate"
+                                                    title={vaccine.name}
                                                 >
-                                                    <span
-                                                        className="w-28 sm:w-32 shrink-0 text-xs font-semibold text-foreground truncate"
-                                                        title={vaccine.name}
-                                                    >
-                                                        {vaccine.name}
-                                                    </span>
+                                                    {vaccine.name}
+                                                </span>
+                                                <span
+                                                    className={`inline-block text-[10px] font-medium px-1.5 py-0.2 rounded-full border mt-0.5 ${getStockBadge(
+                                                        vaccine.stockHealth,
+                                                    )}`}
+                                                >
+                                                    {vaccine.stockHealth}
+                                                </span>
+                                            </div>
 
-                                                    <div className="w-24 shrink-0 flex justify-center">
-                                                        <span
-                                                            className={`inline-block w-full text-center text-[10px] font-medium px-2 py-0.5 rounded-full border ${getStockBadge(
-                                                                vaccine.stockHealth,
-                                                            )}`}
-                                                        >
-                                                            {vaccine.stockHealth}
-                                                        </span>
-                                                    </div>
+                                            {/* Dual Comparison Bars */}
+                                            <div className="flex-1 space-y-1.5 min-w-0">
+                                                <div className="h-2 w-full overflow-hidden rounded-full bg-muted/70">
+                                                    <div
+                                                        className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                                                        style={{ width: `${stockWidth}%` }}
+                                                        title={`Free Stock: ${vaccine.freeStock}`}
+                                                    />
+                                                </div>
+                                                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/50">
+                                                    <div
+                                                        className="h-full rounded-full bg-blue-500 transition-all duration-300"
+                                                        style={{ width: `${demandWidth}%` }}
+                                                        title={`Active Demand: ${vaccine.remainingDemand}`}
+                                                    />
+                                                </div>
+                                            </div>
 
-                                                    <div className="flex-1 space-y-1 min-w-0">
-                                                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/70">
-                                                            <div
-                                                                className="h-full rounded-full bg-emerald-500 transition-all"
-                                                                style={{ width: `${stockWidth}%` }}
-                                                            />
-                                                        </div>
-                                                        {vaccine.remainingDemand > 0 ? (
-                                                            <div className="h-1 w-full overflow-hidden rounded-full bg-muted/50">
-                                                                <div
-                                                                    className="h-full rounded-full bg-blue-500 transition-all"
-                                                                    style={{ width: `${demandWidth}%` }}
-                                                                />
-                                                            </div>
-                                                        ) : (
-                                                            <div className="h-1 w-full" />
-                                                        )}
-                                                    </div>
-
-                                                    <span className="w-14 shrink-0 text-right font-semibold text-xs text-emerald-600 dark:text-emerald-400">
+                                            {/* Counts: Free & Need */}
+                                            <div className="flex items-center gap-2 sm:gap-3 shrink-0 text-right">
+                                                <div className="w-11 sm:w-13 text-right">
+                                                    <span className="block text-xs font-bold text-emerald-600 dark:text-emerald-400">
                                                         {vaccine.freeStock}
                                                     </span>
-                                                    <span className="w-14 shrink-0 text-right font-medium text-xs text-blue-600 dark:text-blue-400">
-                                                        {vaccine.remainingDemand}
+                                                    <span className="block text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
+                                                        Free
                                                     </span>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
+
+                                                <div className="w-11 sm:w-13 text-right">
+                                                    <span className="block text-xs font-bold text-blue-600 dark:text-blue-400">
+                                                        {vaccine.remainingDemand}
+                                                    </span>
+                                                    <span className="block text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
+                                                        Need
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
@@ -647,7 +587,7 @@ function InventoryHealthCard({
     inventoryHealth: InventoryHealth;
     total: number;
 }) {
-    const radius = 38;
+    const radius = 46;
     const circumference = 2 * Math.PI * radius;
 
     const availableLength =
@@ -662,8 +602,8 @@ function InventoryHealthCard({
     const outOfStockOffset = -(availableLength + lowStockLength);
 
     return (
-        <div className="flex flex-col justify-between rounded-xl border border-border/60 bg-card p-3.5 sm:p-5 shadow-2xs lg:h-full">
-            <div>
+        <div className="flex flex-col justify-between rounded-xl border border-border/60 bg-card p-4 sm:p-5 shadow-2xs h-full">
+            <div className="border-b border-border/40 pb-3">
                 <h2 className="text-sm font-semibold text-foreground">
                     Vaccine Stock Health
                 </h2>
@@ -672,29 +612,29 @@ function InventoryHealthCard({
                 </p>
             </div>
 
-            {/* Responsive Chart & Metrics Container */}
-            <div className="mt-3 flex flex-row items-center justify-around gap-3 lg:my-auto lg:flex-col lg:py-4">
-                {/* Donut Chart */}
-                <div className="relative h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32 shrink-0">
-                    <svg viewBox="0 0 100 100" className="-rotate-90 h-full w-full">
+            {/* Centered Body: Big Donut Chart + Status Details Grouped Together */}
+            <div className="flex-1 flex flex-col items-center justify-center py-4 my-auto gap-5 sm:gap-6 w-full">
+                {/* Big Donut Chart */}
+                <div className="relative h-44 w-44 sm:h-48 sm:w-48 lg:h-52 lg:w-52 shrink-0">
+                    <svg viewBox="0 0 120 120" className="-rotate-90 h-full w-full">
                         <circle
-                            cx="50"
-                            cy="50"
+                            cx="60"
+                            cy="60"
                             r={radius}
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="10"
+                            strokeWidth="12"
                             className="text-muted/40"
                         />
 
                         {availableLength > 0 && (
                             <circle
-                                cx="50"
-                                cy="50"
+                                cx="60"
+                                cy="60"
                                 r={radius}
                                 fill="none"
                                 stroke="currentColor"
-                                strokeWidth="10"
+                                strokeWidth="12"
                                 strokeLinecap="round"
                                 strokeDasharray={`${availableLength} ${circumference}`}
                                 strokeDashoffset={availableOffset}
@@ -704,12 +644,12 @@ function InventoryHealthCard({
 
                         {lowStockLength > 0 && (
                             <circle
-                                cx="50"
-                                cy="50"
+                                cx="60"
+                                cy="60"
                                 r={radius}
                                 fill="none"
                                 stroke="currentColor"
-                                strokeWidth="10"
+                                strokeWidth="12"
                                 strokeLinecap="round"
                                 strokeDasharray={`${lowStockLength} ${circumference}`}
                                 strokeDashoffset={lowStockOffset}
@@ -719,12 +659,12 @@ function InventoryHealthCard({
 
                         {outOfStockLength > 0 && (
                             <circle
-                                cx="50"
-                                cy="50"
+                                cx="60"
+                                cy="60"
                                 r={radius}
                                 fill="none"
                                 stroke="currentColor"
-                                strokeWidth="10"
+                                strokeWidth="12"
                                 strokeLinecap="round"
                                 strokeDasharray={`${outOfStockLength} ${circumference}`}
                                 strokeDashoffset={outOfStockOffset}
@@ -734,40 +674,40 @@ function InventoryHealthCard({
                     </svg>
 
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-foreground">
+                        <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
                             {total}
                         </span>
-                        <span className="text-[8px] sm:text-[9px] font-medium text-muted-foreground uppercase tracking-wider">
+                        <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-widest mt-0.5">
                             Formulary
                         </span>
                     </div>
                 </div>
 
-                {/* 3 Metric Status Badges: Column stack on mobile, 3-col grid across bottom on desktop */}
-                <div className="flex flex-col gap-1.5 flex-1 min-w-0 max-w-[190px] lg:max-w-none lg:w-full lg:grid lg:grid-cols-3 lg:gap-2 lg:pt-2.5 lg:border-t lg:border-border/40">
-                    <div className="flex items-center justify-between lg:flex-col lg:justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1 sm:p-1.5 text-center">
-                        <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                {/* 3 Metric Status Badges - Positioned right below the chart */}
+                <div className="grid grid-cols-3 gap-2 sm:gap-2.5 w-full">
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2 sm:p-2.5 text-center">
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                             Available
                         </span>
-                        <span className="text-sm sm:text-base font-bold text-foreground">
+                        <span className="text-base sm:text-lg font-bold text-foreground mt-0.5">
                             {inventoryHealth.available}
                         </span>
                     </div>
 
-                    <div className="flex items-center justify-between lg:flex-col lg:justify-center rounded-lg border border-amber-500/20 bg-amber-500/5 px-2.5 py-1 sm:p-1.5 text-center">
-                        <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-amber-500/20 bg-amber-500/10 p-2 sm:p-2.5 text-center">
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                             Low Stock
                         </span>
-                        <span className="text-sm sm:text-base font-bold text-foreground">
+                        <span className="text-base sm:text-lg font-bold text-foreground mt-0.5">
                             {inventoryHealth.lowStock}
                         </span>
                     </div>
 
-                    <div className="flex items-center justify-between lg:flex-col lg:justify-center rounded-lg border border-red-500/20 bg-red-500/5 px-2.5 py-1 sm:p-1.5 text-center">
-                        <span className="text-[10px] font-medium text-red-600 dark:text-red-400">
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 p-2 sm:p-2.5 text-center">
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-red-600 dark:text-red-400">
                             Out of Stock
                         </span>
-                        <span className="text-sm sm:text-base font-bold text-foreground">
+                        <span className="text-base sm:text-lg font-bold text-foreground mt-0.5">
                             {inventoryHealth.outOfStock}
                         </span>
                     </div>

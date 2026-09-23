@@ -296,8 +296,10 @@ export default function PatientIndex() {
         const fractionCharacter = getFractionCharacter(fraction);
 
         if (years === 0) {
-            if (months === 0 && fraction === 0) {
-                return '0 mos';
+            if (totalMonths === 0) {
+                const diffTime = today.getTime() - birthDate.getTime();
+                const totalDays = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+                return `${totalDays} ${totalDays === 1 ? 'day' : 'days'}`;
             }
 
             return `${months}${fractionCharacter} mos`;

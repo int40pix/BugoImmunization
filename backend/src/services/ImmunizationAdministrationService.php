@@ -7,9 +7,11 @@ use App\Models\Patient;
 use App\Models\PatientVaccineSchedule;
 use App\Models\VaccineInventory;
 use App\Models\VaccineInventoryTransaction;
+use App\Notifications\VaccineAdministeredNotification;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 
 class ImmunizationAdministrationService
 {
@@ -24,7 +26,9 @@ class ImmunizationAdministrationService
         ?int $administeredBy = null,
         ?string $remarks = null,
         ?string $consentGivenBy = null,
-        ?string $injectionSite = null
+        ?string $injectionSite = null,
+        ?string $dateAdministered = null,
+        ?int $vaccineInventoryId = null
     ): ImmunizationRecord {
         return DB::transaction(function () use (
             $patient,
@@ -32,7 +36,9 @@ class ImmunizationAdministrationService
             $administeredBy,
             $remarks,
             $consentGivenBy,
-            $injectionSite
+            $injectionSite,
+            $dateAdministered,
+            $vaccineInventoryId
         ) {
             /*
              * Lock the patient so two requests cannot
@@ -139,13 +145,51 @@ class ImmunizationAdministrationService
 
             /*
              * ============================================================
-             * SCHEDULED ADMINISTRATION
+             * 1. EXPLICIT BATCH SELECTION (CONFIRMED BY CLINICIAN)
+             * ============================================================
+             * If staff explicitly confirmed or selected a specific batch vial,
+             * validate that batch directly.
+             */
+            if ($vaccineInventoryId) {
+                $inventory = VaccineInventory::query()
+                    ->whereKey($vaccineInventoryId)
+                    ->where('vaccine_id', $vaccineId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $inventory) {
+                    throw new DomainException(
+                        'The selected vaccine batch could not be found.'
+                    );
+                }
+
+                if ($inventory->is_archived) {
+                    throw new DomainException(
+                        'The selected vaccine batch is archived and cannot be administered.'
+                    );
+                }
+
+                if ($inventory->expiration_date->lt(Carbon::today())) {
+                    throw new DomainException(
+                        'The selected vaccine batch has expired and cannot be administered.'
+                    );
+                }
+
+                if ((int) $inventory->quantity <= 0) {
+                    throw new DomainException(
+                        'The selected vaccine batch is out of stock.'
+                    );
+                }
+            }
+            /*
+             * ============================================================
+             * 2. SCHEDULED ADMINISTRATION
              * ============================================================
              *
              * A scheduled patient must consume the exact
              * batch reserved for their appointment.
              */
-            if ($matchingScheduledDose) {
+            elseif ($matchingScheduledDose) {
                 $reservedBatchId =
                     $matchingScheduledDose
                         ->vaccine_inventory_id;
@@ -199,14 +243,14 @@ class ImmunizationAdministrationService
 
             /*
              * ============================================================
-             * UNSCHEDULED / WALK-IN ADMINISTRATION
+             * 3. UNSCHEDULED / WALK-IN ADMINISTRATION (FEFO)
              * ============================================================
              *
              * Walk-ins may only consume genuinely unreserved
              * stock. They cannot take doses reserved for
              * scheduled appointments.
              */
-            if (! $matchingScheduledDose) {
+            if (! $inventory && ! $matchingScheduledDose) {
                 $usableInventory =
                     VaccineInventory::query()
                         ->where(
@@ -299,6 +343,10 @@ class ImmunizationAdministrationService
             /*
              * Create the official immunization record.
              */
+            $recordDate = $dateAdministered
+                ? Carbon::parse($dateAdministered)->startOfDay()
+                : Carbon::today();
+
             $record =
                 ImmunizationRecord::query()
                     ->create([
@@ -315,7 +363,7 @@ class ImmunizationAdministrationService
                             $inventory->batch_number,
 
                         'date_administered' =>
-                            Carbon::today(),
+                            $recordDate,
 
                         'administered_by' =>
                             $administeredBy,
@@ -352,6 +400,8 @@ class ImmunizationAdministrationService
                 'balance_after' => (int) $inventory->fresh()->quantity,
                 'batch_number' => $inventory->batch_number,
                 'remarks' => "Dose {$doseNumber} administered to {$lockedPatient->first_name} {$lockedPatient->last_name}",
+                'created_at' => $recordDate,
+                'updated_at' => $recordDate,
             ]);
 
             /*
@@ -370,11 +420,29 @@ class ImmunizationAdministrationService
                 app(VaccineInventoryService::class)->autoArchiveExpiredAndDepletedBatches();
             }
 
-            return $record->fresh([
-                'patient',
+            $freshRecord = $record->fresh([
+                'patient.guardian.user',
                 'vaccine',
                 'administeredBy',
             ]);
+
+            // Dispatch notification to guardian user if linked
+            $guardianUser = $freshRecord->patient?->guardian?->user;
+            if ($guardianUser) {
+                Notification::send(
+                    $guardianUser,
+                    new VaccineAdministeredNotification(
+                        patient: $freshRecord->patient,
+                        record: $freshRecord,
+                        vaccine: $freshRecord->vaccine,
+                        doseNumber: $doseNumber,
+                        dateAdministered: $recordDate,
+                        administeredByName: $freshRecord->administeredBy?->name ?? 'Health Center Staff'
+                    )
+                );
+            }
+
+            return $freshRecord;
         });
     }
 }
