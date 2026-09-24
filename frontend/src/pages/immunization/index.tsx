@@ -1,5 +1,7 @@
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -21,6 +23,7 @@ import {
     Search,
     SearchX,
     ShieldCheck,
+    X,
 } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 
@@ -126,6 +129,45 @@ export default function ImmunizationIndex({
     >(new Set());
 
     const [isSendingReminder, setIsSendingReminder] = useState<string | null>(null);
+
+    const [rescheduleTarget, setRescheduleTarget] = useState<{
+        patientId: number;
+        patientName: string;
+        currentDate: string;
+    } | null>(null);
+    const [rescheduleDate, setRescheduleDate] = useState('');
+    const [rescheduleReason, setRescheduleReason] = useState('');
+    const [isRescheduling, setIsRescheduling] = useState(false);
+
+    const handleOpenRescheduleModal = (patientId: number, patientName: string, currentDate?: string | null) => {
+        const initialDate = currentDate || new Date().toISOString().split('T')[0];
+        setRescheduleTarget({ patientId, patientName, currentDate: initialDate });
+        setRescheduleDate(initialDate);
+        setRescheduleReason('');
+    };
+
+    const handleSaveReschedule = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!rescheduleTarget || !rescheduleDate || isRescheduling) return;
+
+        setIsRescheduling(true);
+        router.post(
+            route('immunization.patients.reschedule', rescheduleTarget.patientId),
+            {
+                scheduled_date: rescheduleDate,
+                adjustment_reason: rescheduleReason.trim() || 'Adjusted by clinic staff',
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setRescheduleTarget(null);
+                },
+                onFinish: () => {
+                    setIsRescheduling(false);
+                },
+            }
+        );
+    };
 
     const handleSendPatientReminder = (patientId: number, key: string) => {
         setIsSendingReminder(key);
@@ -481,6 +523,10 @@ export default function ImmunizationIndex({
 
         if (label === 'Current Age') {
             return `${base} border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-300`;
+        }
+
+        if (label === 'Upcoming') {
+            return `${base} border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900 dark:bg-sky-950/50 dark:text-sky-300`;
         }
 
         return `${base} border-border bg-muted text-muted-foreground`;
@@ -1595,18 +1641,28 @@ export default function ImmunizationIndex({
                                                                     <Eye className="h-3 w-3" />
                                                                     View
                                                                 </button>
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={isSendingReminder === group.key}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        handleSendPatientReminder(group.patient_id, group.key);
-                                                                    }}
-                                                                    className="inline-flex items-center gap-1 text-[11px] font-medium bg-primary/10 text-primary px-2.5 py-1 rounded hover:bg-primary/20 disabled:opacity-50 transition-colors"
-                                                                >
-                                                                    <Bell className="h-3 w-3" />
-                                                                    {isSendingReminder === group.key ? 'Sending...' : 'Send Reminder'}
-                                                                </button>
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleOpenRescheduleModal(group.patient_id, group.patient_name, group.scheduled_date)}
+                                                                        className="inline-flex items-center gap-1 text-[11px] font-medium border bg-background px-2 py-1 rounded hover:bg-muted transition-colors"
+                                                                    >
+                                                                        <CalendarDays className="h-3 w-3 text-primary" />
+                                                                        Adjust
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        disabled={isSendingReminder === group.key}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleSendPatientReminder(group.patient_id, group.key);
+                                                                        }}
+                                                                        className="inline-flex items-center gap-1 text-[11px] font-medium bg-primary/10 text-primary px-2.5 py-1 rounded hover:bg-primary/20 disabled:opacity-50 transition-colors"
+                                                                    >
+                                                                        <Bell className="h-3 w-3" />
+                                                                        {isSendingReminder === group.key ? 'Sending...' : 'Send Reminder'}
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     )}
@@ -1842,23 +1898,34 @@ export default function ImmunizationIndex({
                                                                                     View patient record
                                                                                 </button>
 
-                                                                                <button
-                                                                                    type="button"
-                                                                                    disabled={isSendingReminder === group.key}
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        handleSendPatientReminder(
-                                                                                            group.patient_id,
-                                                                                            group.key,
-                                                                                        );
-                                                                                    }}
-                                                                                    className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-2xs transition-colors hover:bg-primary/90 disabled:opacity-50 cursor-pointer"
-                                                                                >
-                                                                                    <Bell className="h-3.5 w-3.5" />
-                                                                                    {isSendingReminder === group.key
-                                                                                        ? 'Sending reminder...'
-                                                                                        : 'Send Visit Reminder to Guardian'}
-                                                                                </button>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={() => handleOpenRescheduleModal(group.patient_id, group.patient_name, group.scheduled_date)}
+                                                                                        className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
+                                                                                    >
+                                                                                        <CalendarDays className="h-3.5 w-3.5 text-primary" />
+                                                                                        Adjust Date
+                                                                                    </button>
+
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        disabled={isSendingReminder === group.key}
+                                                                                        onClick={(e) => {
+                                                                                            e.stopPropagation();
+                                                                                            handleSendPatientReminder(
+                                                                                                group.patient_id,
+                                                                                                group.key,
+                                                                                            );
+                                                                                        }}
+                                                                                        className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-2xs transition-colors hover:bg-primary/90 disabled:opacity-50 cursor-pointer"
+                                                                                    >
+                                                                                        <Bell className="h-3.5 w-3.5" />
+                                                                                        {isSendingReminder === group.key
+                                                                                            ? 'Sending reminder...'
+                                                                                            : 'Send Visit Reminder to Guardian'}
+                                                                                    </button>
+                                                                                </div>
                                                                             </div>
                                                                         </td>
                                                                     </tr>
@@ -2058,6 +2125,97 @@ export default function ImmunizationIndex({
                     </CardContent>
                 </Card>
             </div>
+
+            {/* RESCHEDULE / ADJUST SCHEDULED VISIT DATE MODAL */}
+            {rescheduleTarget && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-150">
+                    <div className="w-full max-w-md rounded-xl border bg-background shadow-2xl overflow-hidden flex flex-col">
+                        <div className="flex items-start justify-between gap-3 border-b px-5 py-4 bg-muted/20">
+                            <div className="flex items-center gap-2.5 text-primary">
+                                <div className="rounded-full bg-primary/10 p-2 text-primary shrink-0">
+                                    <CalendarDays className="h-5 w-5 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="text-base sm:text-lg font-bold text-foreground">
+                                        Adjust Scheduled Visit Date
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        Adjust the appointment date for {rescheduleTarget.patientName}.
+                                    </p>
+                                </div>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                disabled={isRescheduling}
+                                onClick={() => setRescheduleTarget(null)}
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <form onSubmit={handleSaveReschedule} className="p-5 space-y-4">
+                            <div className="rounded-lg border bg-muted/20 p-3 text-xs space-y-1">
+                                <p className="font-semibold text-foreground">Suggested Date Policy:</p>
+                                <p className="text-muted-foreground">
+                                    Vaccination dates are recommendations. Staff can adjust visits according to clinic schedule or guardian request.
+                                </p>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="sched-reschedule-date" className="text-xs font-semibold">
+                                    New Scheduled Date <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                    id="sched-reschedule-date"
+                                    type="date"
+                                    min={new Date().toISOString().split('T')[0]}
+                                    value={rescheduleDate}
+                                    onChange={(e) => setRescheduleDate(e.target.value)}
+                                    required
+                                    className="text-xs sm:text-sm"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="sched-reschedule-reason" className="text-xs font-semibold">
+                                    Reason for Adjustment (Optional)
+                                </Label>
+                                <Input
+                                    id="sched-reschedule-reason"
+                                    type="text"
+                                    placeholder="e.g., Parent requested different clinic Wednesday"
+                                    value={rescheduleReason}
+                                    onChange={(e) => setRescheduleReason(e.target.value)}
+                                    maxLength={255}
+                                    className="text-xs sm:text-sm"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-2 border-t">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={isRescheduling}
+                                    onClick={() => setRescheduleTarget(null)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    size="sm"
+                                    disabled={isRescheduling || !rescheduleDate}
+                                >
+                                    {isRescheduling ? 'Saving...' : 'Save Scheduled Date'}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

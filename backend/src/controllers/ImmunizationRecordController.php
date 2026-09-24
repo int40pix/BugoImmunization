@@ -213,6 +213,8 @@ class ImmunizationRecordController extends Controller
                 $validated['remarks'] ?? null,
         ]);
 
+        app(\App\Services\VaccineSchedulingPriorityService::class)->generateSchedules();
+
         return back()->with(
             'success',
             'Immunization record documented successfully.'

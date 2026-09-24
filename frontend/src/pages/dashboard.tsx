@@ -184,7 +184,7 @@ export default function Dashboard({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Staff Dashboard" />
 
-            <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 sm:gap-5 p-3 sm:p-6 lg:p-7 min-w-0 max-w-full overflow-x-hidden">
+            <div className="mx-auto flex h-full w-full max-w-7xl min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-7 overflow-x-hidden">
                 {/* ========================================================= */}
                 {/* HEADER & QUICK ACTIONS */}
                 {/* ========================================================= */}

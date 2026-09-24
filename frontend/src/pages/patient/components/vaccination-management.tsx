@@ -60,6 +60,8 @@ export type VaccinationOption = {
     priority_reason: string | null;
     is_series_completion_candidate: boolean;
     allocation_rank: number | null;
+    is_manually_adjusted?: boolean;
+    adjustment_reason?: string | null;
 };
 
 export type OptionalVaccineSchedule = {
@@ -103,6 +105,8 @@ type VaccinationManagementProps = {
     patient: {
         id: number;
         status: string;
+        first_name?: string;
+        last_name?: string;
         patient_id?: string;
         date_of_birth?: string;
         sex?: string;
@@ -153,6 +157,10 @@ export default function VaccinationManagement({
         useState<VaccinationOption | null>(null);
 
     const [showProceedModal, setShowProceedModal] = useState(false);
+    const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+    const [rescheduleDate, setRescheduleDate] = useState('');
+    const [rescheduleReason, setRescheduleReason] = useState('');
+    const [isRescheduling, setIsRescheduling] = useState(false);
 
     const [administrationRemarks, setAdministrationRemarks] =
         useState('');
@@ -278,6 +286,10 @@ export default function VaccinationManagement({
             return 'text-blue-600 dark:text-blue-400';
         }
 
+        if (label === 'Upcoming') {
+            return 'text-sky-600 dark:text-sky-400';
+        }
+
         return 'text-muted-foreground';
     };
 
@@ -349,6 +361,35 @@ export default function VaccinationManagement({
         setFiveRightsVerified(true);
         setInjectionSite('');
         setIsCustomSite(false);
+    };
+
+    const handleOpenRescheduleModal = (initialDate?: string | null) => {
+        setRescheduleDate(initialDate || new Date().toISOString().split('T')[0]);
+        setRescheduleReason('');
+        setShowRescheduleModal(true);
+    };
+
+    const handleSaveReschedule = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!rescheduleDate || isRescheduling) return;
+
+        setIsRescheduling(true);
+        router.post(
+            `/immunization/patients/${patient.id}/reschedule`,
+            {
+                scheduled_date: rescheduleDate,
+                adjustment_reason: rescheduleReason.trim() || 'Adjusted by clinic staff',
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setShowRescheduleModal(false);
+                },
+                onFinish: () => {
+                    setIsRescheduling(false);
+                },
+            },
+        );
     };
 
     const isAdministrationReady =
@@ -587,94 +628,158 @@ export default function VaccinationManagement({
                 {/* TWO-COLUMN WORKSPACE: LEFT (ELIGIBLE FOR ADMINISTRATION) / RIGHT (ADMINISTRATION HISTORY) */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start">
                     {/* LEFT COLUMN: VACCINES DUE / ELIGIBLE FOR ADMINISTRATION */}
-                    <div className="rounded-xl border bg-card overflow-hidden shadow-sm flex flex-col">
-                        <div className="flex items-center justify-between border-b bg-muted/20 px-3.5 sm:px-5 py-3 sm:py-3.5">
-                            <div className="flex items-center gap-2">
-                                <Syringe className="h-4 w-4 text-primary" />
-                                <h3 className="font-semibold text-xs sm:text-sm text-foreground">
-                                    Eligible for Administration
-                                </h3>
-                            </div>
-                            <Badge
-                                variant="outline"
-                                className={`text-[11px] sm:text-xs ${
-                                    vaccinationOptions.length > 0
-                                        ? 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400 font-medium'
-                                        : 'border-border text-muted-foreground'
-                                }`}
-                            >
-                                {vaccinationOptions.length}{' '}
-                                {vaccinationOptions.length === 1 ? 'Dose Due' : 'Doses Due'}
-                            </Badge>
-                        </div>
+                    {(() => {
+                        const isAllUpcoming = vaccinationOptions.length > 0 && vaccinationOptions.every((opt) => opt.schedule_label === 'Upcoming');
+                        const nextSuggestedDate = vaccinationOptions.find((opt) => opt.scheduled_date)?.scheduled_date;
 
-                        {vaccinationOptions.length === 0 ? (
-                            <div className="p-8 text-center flex flex-col items-center justify-center my-auto">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 mb-3">
-                                    <CheckCircle2 className="h-6 w-6" />
-                                </div>
-                                <p className="font-semibold text-sm text-foreground">
-                                    Up to Date
-                                </p>
-                                <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                                    No vaccines currently require administration. The patient is up to date for their current age schedule.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="divide-y">
-                                {vaccinationOptions.map((option) => {
-                                    const key = `${option.vaccine_id}-${option.dose_number}`;
-                                    const canAdminister = canShowAdministerButton(option);
-
-                                    return (
-                                        <div
-                                            key={key}
-                                            className="p-3 sm:p-4 transition-colors hover:bg-muted/10 flex flex-col gap-2.5 sm:gap-3"
+                        return (
+                            <div className="rounded-xl border bg-card overflow-hidden shadow-sm flex flex-col">
+                                <div className="flex items-center justify-between border-b bg-muted/20 px-3.5 sm:px-5 py-3 sm:py-3.5 flex-wrap gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <Syringe className="h-4 w-4 text-primary" />
+                                        <h3 className="font-semibold text-xs sm:text-sm text-foreground">
+                                            {isAllUpcoming ? 'Suggested Next Visit' : 'Eligible for Administration'}
+                                        </h3>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {vaccinationOptions.length > 0 && (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleOpenRescheduleModal(nextSuggestedDate)}
+                                                className="h-7 text-[11px] px-2.5 font-medium border-primary/30 text-primary hover:bg-primary/10"
+                                            >
+                                                <CalendarDays className="h-3.5 w-3.5 mr-1" />
+                                                Adjust Visit Date
+                                            </Button>
+                                        )}
+                                        <Badge
+                                            variant="outline"
+                                            className={`text-[11px] sm:text-xs ${
+                                                isAllUpcoming
+                                                    ? 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400 font-medium'
+                                                    : vaccinationOptions.length > 0
+                                                        ? 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400 font-medium'
+                                                        : 'border-border text-muted-foreground'
+                                            }`}
                                         >
-                                            <div className="flex items-start justify-between gap-2.5">
-                                                <div className="min-w-0">
-                                                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                                                        <span className="font-semibold text-xs sm:text-sm text-foreground">
-                                                            {option.vaccine_name}
-                                                        </span>
-                                                        <span className="inline-flex items-center rounded border border-primary/20 bg-primary/5 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium text-primary">
-                                                            Dose {option.dose_number} of {option.required_doses}
-                                                        </span>
-                                                        <div className="inline-flex items-center gap-1.5 flex-wrap">
-                                                            <span
-                                                                className={`text-[10px] sm:text-xs font-semibold ${getPriorityClass(
-                                                                    option.schedule_label,
-                                                                )}`}
-                                                            >
-                                                                {option.schedule_label}
-                                                            </span>
-                                                            {option.days_due && option.days_due > 0 && option.schedule_label !== 'Current Age' ? (
-                                                                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
-                                                                    ({option.days_due} days due)
+                                            {isAllUpcoming
+                                                ? 'Suggested Schedule'
+                                                : `${vaccinationOptions.length} ${
+                                                      vaccinationOptions.length === 1 ? 'Dose Due' : 'Doses Due'
+                                                  }`}
+                                        </Badge>
+                                    </div>
+                                </div>
+
+                                {vaccinationOptions.length === 0 ? (
+                                    <div className="p-8 text-center flex flex-col items-center justify-center my-auto">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 mb-3">
+                                            <CheckCircle2 className="h-6 w-6" />
+                                        </div>
+                                        <p className="font-semibold text-sm text-foreground">
+                                            Up to Date
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                                            No vaccines currently require administration. The patient is up to date for their current age schedule.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="divide-y">
+                                        {vaccinationOptions.map((option) => {
+                                            const key = `${option.vaccine_id}-${option.dose_number}`;
+                                            const canAdminister = canShowAdministerButton(option);
+
+                                            return (
+                                                <div
+                                                    key={key}
+                                                    className="p-3 sm:p-4 transition-colors hover:bg-muted/10 flex flex-col gap-2.5 sm:gap-3"
+                                                >
+                                                    <div className="flex items-start justify-between gap-2.5">
+                                                        <div className="min-w-0">
+                                                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                                                <span className="font-semibold text-xs sm:text-sm text-foreground">
+                                                                    {option.vaccine_name}
                                                                 </span>
-                                                            ) : null}
+                                                                <span className="inline-flex items-center rounded border border-primary/20 bg-primary/5 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium text-primary">
+                                                                    Dose {option.dose_number} of {option.required_doses}
+                                                                </span>
+                                                                <div className="inline-flex items-center gap-1.5 flex-wrap">
+                                                                    <span
+                                                                        className={`text-[10px] sm:text-xs font-semibold ${getPriorityClass(
+                                                                            option.schedule_label,
+                                                                        )}`}
+                                                                    >
+                                                                        {option.schedule_label}
+                                                                    </span>
+                                                                    {option.days_due && option.days_due > 0 && option.schedule_label !== 'Current Age' ? (
+                                                                        <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
+                                                                            ({option.days_due} days due)
+                                                                        </span>
+                                                                    ) : null}
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 capitalize">
+                                                                Category: {option.category}
+                                                                {option.scheduled_date && (
+                                                                    <>
+                                                                        {' • Suggested Date: '}
+                                                                        <span className="font-medium text-foreground">
+                                                                            {formatDate(option.scheduled_date)}
+                                                                        </span>
+                                                                    </>
+                                                                )}
+                                                                {option.is_manually_adjusted && (
+                                                                    <span className="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-medium">
+                                                                        Adjusted
+                                                                    </span>
+                                                                )}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-1.5 shrink-0">
+                                                            {canAdminister ? (
+                                                                <Button
+                                                                    type="button"
+                                                                    size="sm"
+                                                                    disabled={Boolean(administeringKey)}
+                                                                    onClick={() => handleOpenAdministration(option)}
+                                                                    className="shrink-0 h-8 text-xs px-2.5 sm:px-3"
+                                                                >
+                                                                    <Syringe className="mr-1.5 h-3.5 w-3.5" />
+                                                                    Administer
+                                                                </Button>
+                                                            ) : (
+                                                                <>
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        disabled
+                                                                        className="shrink-0 h-8 text-[11px] px-2.5 text-muted-foreground bg-muted/40 cursor-not-allowed"
+                                                                        title={`Infant must reach eligible age on ${
+                                                                            option.eligible_date ? formatDate(option.eligible_date) : 'due date'
+                                                                        }`}
+                                                                    >
+                                                                        <Syringe className="mr-1.5 h-3.5 w-3.5 opacity-50" />
+                                                                        Eligible {option.eligible_date ? formatDate(option.eligible_date) : 'Soon'}
+                                                                    </Button>
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        onClick={() => handleOpenRescheduleModal(option.scheduled_date)}
+                                                                        className="shrink-0 h-8 text-xs px-2 sm:px-2.5"
+                                                                        title="Adjust Suggested Visit Date"
+                                                                    >
+                                                                        <CalendarDays className="h-3.5 w-3.5 text-primary mr-1" />
+                                                                        Adjust
+                                                                    </Button>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                    <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 capitalize">
-                                                        Category: {option.category}
-                                                        {option.scheduled_date &&
-                                                            ` • Scheduled: ${formatDate(
-                                                                option.scheduled_date,
-                                                            )}`}
-                                                    </p>
-                                                </div>
-
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    disabled={!canAdminister || Boolean(administeringKey)}
-                                                    onClick={() => handleOpenAdministration(option)}
-                                                    className="shrink-0 h-8 text-xs px-2.5 sm:px-3"
-                                                >
-                                                    <Syringe className="mr-1.5 h-3.5 w-3.5" />
-                                                    Administer
-                                                </Button>
-                                            </div>
 
                                             {/* STOCK & BATCH STATUS */}
                                             <div className="flex items-center justify-between text-xs rounded-md bg-muted/40 px-3 py-2">
@@ -800,6 +905,8 @@ export default function VaccinationManagement({
                             </div>
                         )}
                     </div>
+                );
+            })()}
 
                     {/* RIGHT COLUMN: IMMUNIZATION & ADMINISTRATION HISTORY */}
                     <div className="rounded-xl border bg-card overflow-hidden shadow-sm flex flex-col">
@@ -1431,6 +1538,96 @@ export default function VaccinationManagement({
                                         {administeringKey ? 'Administering...' : 'Proceed'}
                                     </Button>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+                    {/* RESCHEDULE / ADJUST SUGGESTED VISIT DATE MODAL */}
+                    {showRescheduleModal && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-150">
+                            <div className="w-full max-w-md rounded-xl border bg-background shadow-2xl overflow-hidden flex flex-col">
+                                <div className="flex items-start justify-between gap-3 border-b px-5 py-4 bg-muted/20">
+                                    <div className="flex items-center gap-2.5 text-primary">
+                                        <div className="rounded-full bg-primary/10 p-2 text-primary shrink-0">
+                                            <CalendarDays className="h-5 w-5 text-primary" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-base sm:text-lg font-bold text-foreground">
+                                                Adjust Suggested Visit Date
+                                            </h3>
+                                            <p className="text-xs text-muted-foreground mt-0.5">
+                                                Customize the suggested appointment date for {patientName}.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        disabled={isRescheduling}
+                                        onClick={() => setShowRescheduleModal(false)}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+
+                                <form onSubmit={handleSaveReschedule} className="p-5 space-y-4">
+                                    <div className="rounded-lg border bg-muted/20 p-3 text-xs space-y-1">
+                                        <p className="font-semibold text-foreground">Suggested Date Policy:</p>
+                                        <p className="text-muted-foreground">
+                                            Vaccination dates are recommendations. Staff can adjust visits according to clinic schedule or guardian request.
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="reschedule-date" className="text-xs font-semibold">
+                                            Scheduled Visit Date <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="reschedule-date"
+                                            type="date"
+                                            min={new Date().toISOString().split('T')[0]}
+                                            value={rescheduleDate}
+                                            onChange={(e) => setRescheduleDate(e.target.value)}
+                                            required
+                                            className="text-xs sm:text-sm"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="reschedule-reason" className="text-xs font-semibold">
+                                            Reason for Adjustment (Optional)
+                                        </Label>
+                                        <Input
+                                            id="reschedule-reason"
+                                            type="text"
+                                            placeholder="e.g., Mother requested different Wednesday"
+                                            value={rescheduleReason}
+                                            onChange={(e) => setRescheduleReason(e.target.value)}
+                                            maxLength={255}
+                                            className="text-xs sm:text-sm"
+                                        />
+                                    </div>
+
+                                    <div className="flex items-center justify-end gap-2 pt-2 border-t">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            disabled={isRescheduling}
+                                            onClick={() => setShowRescheduleModal(false)}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            size="sm"
+                                            disabled={isRescheduling || !rescheduleDate}
+                                        >
+                                            {isRescheduling ? 'Saving...' : 'Save Suggested Date'}
+                                        </Button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     )}

@@ -398,7 +398,10 @@ class PatientImmunizationScheduleService
             $daysOverdue = 0;
 
             if ($eligibleWednesday) {
-                if ($today->lessThanOrEqualTo($eligibleWednesday)) {
+                if ($eligibleDate && $today->lessThan($eligibleDate)) {
+                    $scheduleLabel = 'Upcoming';
+                    $daysOverdue = 0;
+                } elseif ($today->lessThanOrEqualTo($eligibleWednesday)) {
                     $scheduleLabel = 'Current Age';
                     $daysOverdue = 0;
                 } else {
@@ -427,7 +430,11 @@ class PatientImmunizationScheduleService
                         $scheduleLabel = 'Overdue';
                     }
                 } elseif ($scheduleLabel !== 'Overdue') {
-                    $scheduleLabel = 'Current Age';
+                    if ($eligibleDate && $today->lessThan($eligibleDate)) {
+                        $scheduleLabel = 'Upcoming';
+                    } else {
+                        $scheduleLabel = 'Current Age';
+                    }
                     $daysOverdue = 0;
                 }
             }
@@ -587,6 +594,18 @@ class PatientImmunizationScheduleService
                 'allocation_rank' =>
                     $scheduledDose
                         ?->allocation_rank,
+
+                'previous_dose_completed' =>
+                    $previousDoseCompleted,
+
+                'is_manually_adjusted' =>
+                    (bool) ($scheduledDose?->is_manually_adjusted ?? false),
+
+                'adjustment_reason' =>
+                    $scheduledDose?->adjustment_reason,
+
+                'adjusted_at' =>
+                    $scheduledDose?->adjusted_at?->toDateString(),
             ];
         }
 
@@ -617,20 +636,69 @@ class PatientImmunizationScheduleService
             return [];
         }
 
-        return collect(
-            $this->getSchedule(
-                $patient
-            )
-        )
-            ->filter(
-                fn ($item) =>
-                    ! $item['completed']
-                    &&
-                    $item['eligible']
-            )
-            ->sortBy(
-                'recommended_date'
-            )
+        $schedule = collect(
+            $this->getSchedule($patient)
+        );
+
+        /*
+         * Only uncompleted doses whose immediately previous dose
+         * has already been completed are eligible to be scheduled.
+         */
+        $candidates = $schedule->filter(
+            fn ($item) => ! $item['completed'] && ($item['previous_dose_completed'] ?? false)
+        );
+
+        if ($candidates->isEmpty()) {
+            return [];
+        }
+
+        /*
+         * 1. If any candidate doses are already eligible (due today or overdue),
+         * return ONLY the currently eligible doses for this immediate visit.
+         */
+        $eligible = $candidates->filter(fn ($item) => $item['eligible']);
+        if ($eligible->isNotEmpty()) {
+            return $eligible
+                ->sortBy('recommended_date')
+                ->values()
+                ->all();
+        }
+
+        /*
+         * 2. Otherwise, no doses are due today. Suggest the NEXT VISIT ONLY.
+         * Find the earliest upcoming clinic target date (Wednesday or eligible date)
+         * and return ONLY the doses matching that earliest upcoming visit date.
+         */
+        $earliestTargetWednesday = $candidates
+            ->pluck('target_wednesday')
+            ->filter()
+            ->sort()
+            ->first();
+
+        if ($earliestTargetWednesday) {
+            return $candidates
+                ->filter(fn ($item) => ($item['target_wednesday'] ?? null) === $earliestTargetWednesday)
+                ->sortBy('recommended_date')
+                ->values()
+                ->all();
+        }
+
+        $earliestEligibleDate = $candidates
+            ->pluck('eligible_date')
+            ->filter()
+            ->sort()
+            ->first();
+
+        if ($earliestEligibleDate) {
+            return $candidates
+                ->filter(fn ($item) => ($item['eligible_date'] ?? null) === $earliestEligibleDate)
+                ->sortBy('recommended_date')
+                ->values()
+                ->all();
+        }
+
+        return $candidates
+            ->sortBy('recommended_date')
             ->values()
             ->all();
     }
@@ -737,14 +805,15 @@ class PatientImmunizationScheduleService
             return null;
         }
 
+        $normalized = trim(strtolower($recommendedAge));
+        if (in_array($normalized, ['birth', 'at birth', 'at-birth'], true)) {
+            return $birthDate->copy();
+        }
+
         $parts =
             preg_split(
                 '/\s+/',
-                trim(
-                    strtolower(
-                        $recommendedAge
-                    )
-                )
+                $normalized
             );
 
         if (

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Baby, HeartPulse, Pencil, UserRound, UsersRound } from 'lucide-react';
+import { calculateAge } from '@/utils/patient-age';
 import { useState } from 'react';
 
 type ImmunizationRecord = {
@@ -128,35 +129,6 @@ export default function PatientShow() {
                   year: 'numeric',
               })
             : '—';
-    };
-
-    const calculateAge = (dob: string) => {
-        const birth = parseDate(dob);
-        if (!birth) return '—';
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        birth.setHours(0, 0, 0, 0);
-
-        if (birth > today) return '—';
-
-        let months =
-            (today.getFullYear() - birth.getFullYear()) * 12 +
-            (today.getMonth() - birth.getMonth());
-        if (today.getDate() < birth.getDate()) months -= 1;
-        months = Math.max(0, months);
-
-        if (months === 0) {
-            const diffTime = today.getTime() - birth.getTime();
-            const days = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
-            return `${days} ${days === 1 ? 'day' : 'days'}`;
-        }
-
-        if (months < 12) return `${months} ${months === 1 ? 'month' : 'months'}`;
-        const years = Math.floor(months / 12);
-        const rem = months % 12;
-        return rem === 0
-            ? `${years} ${years === 1 ? 'year' : 'years'}`
-            : `${years} ${years === 1 ? 'year' : 'years'} ${rem} months`;
     };
 
     const guardianName =

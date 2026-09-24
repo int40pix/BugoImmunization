@@ -261,6 +261,9 @@ class ImmunizationController extends Controller
                     ? (int) $validated['vaccine_inventory_id']
                     : null,
             );
+
+            // Automatically schedule the patient's next visit after administration
+            app(VaccineSchedulingPriorityService::class)->generateSchedules();
         } catch (DomainException $exception) {
             return back()->withErrors([
                 'administration' => $exception->getMessage(),
@@ -270,6 +273,49 @@ class ImmunizationController extends Controller
         return back()->with(
             'success',
             'Vaccination recorded successfully.'
+        );
+    }
+
+    /**
+     * Reschedule or adjust the planned visit date for a patient.
+     */
+    public function reschedule(
+        Request $request,
+        Patient $patient,
+        VaccineSchedulingPriorityService $schedulingPriorityService
+    ): RedirectResponse {
+        $validated = $request->validate([
+            'scheduled_date' => [
+                'required',
+                'date',
+                'after_or_equal:today',
+            ],
+            'adjustment_reason' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'schedule_ids' => [
+                'nullable',
+                'array',
+            ],
+            'schedule_ids.*' => [
+                'integer',
+                'exists:patient_vaccine_schedules,id',
+            ],
+        ]);
+
+        $count = $schedulingPriorityService->reschedulePatientVisit(
+            patient: $patient,
+            newDate: $validated['scheduled_date'],
+            reason: $validated['adjustment_reason'] ?? null,
+            scheduleIds: $validated['schedule_ids'] ?? null,
+            userId: $request->user()?->id,
+        );
+
+        return back()->with(
+            'success',
+            "Visit date updated successfully ({$count} " . ($count === 1 ? 'dose' : 'doses') . ' scheduled).'
         );
     }
 }

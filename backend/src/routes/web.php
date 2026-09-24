@@ -833,6 +833,17 @@ Route::middleware([
 
 
     Route::post(
+        'immunization/patients/{patient}/reschedule',
+        [
+            ImmunizationController::class,
+            'reschedule',
+        ]
+    )->name(
+        'immunization.patients.reschedule'
+    );
+
+
+    Route::post(
         'immunization/schedules/{schedule}/send-reminder',
         [
             ImmunizationReminderController::class,

@@ -176,9 +176,9 @@ class VaccineSchedulingPriorityService
             $candidatePool
                 ->filter(
                     fn (array $item) =>
-                        $item['can_administer'] === true
-                        &&
                         $item['is_already_scheduled'] === false
+                        &&
+                        $item['inventory_available'] === true
                 )
                 ->groupBy('vaccine_id');
 
@@ -716,7 +716,7 @@ class VaccineSchedulingPriorityService
      * Find the next batch with free reservation
      * capacity using FEFO.
      */
-    private function findAvailableBatchForVaccine(
+    public function findAvailableBatchForVaccine(
         int $vaccineId
     ): ?VaccineInventory {
         $batches =
@@ -908,6 +908,9 @@ class VaccineSchedulingPriorityService
 
             'Current Age' =>
                 'Current Age',
+
+            'Upcoming' =>
+                'Upcoming Visit',
 
             default =>
                 'Priority Candidate',
@@ -1245,8 +1248,11 @@ class VaccineSchedulingPriorityService
             'Current Age' =>
                 3,
 
-            default =>
+            'Upcoming' =>
                 4,
+
+            default =>
+                5,
         };
     }
 
@@ -1265,5 +1271,72 @@ class VaccineSchedulingPriorityService
                 ->filter()
                 ->implode(' ')
         );
+    }
+
+    /**
+     * Reschedule the planned visit date for a patient's scheduled doses.
+     *
+     * Enables clinic staff to adjust the suggested visit date (e.g., choosing
+     * a specific Wednesday or guardian-requested appointment date).
+     */
+    public function reschedulePatientVisit(
+        Patient $patient,
+        string $newDate,
+        ?string $reason = null,
+        ?array $scheduleIds = null,
+        ?int $userId = null
+    ): int {
+        return DB::transaction(function () use ($patient, $newDate, $reason, $scheduleIds, $userId) {
+            $query = PatientVaccineSchedule::query()
+                ->where('patient_id', $patient->id)
+                ->where('status', 'scheduled');
+
+            if (! empty($scheduleIds)) {
+                $query->whereIn('id', $scheduleIds);
+            }
+
+            $schedules = $query->lockForUpdate()->get();
+
+            if ($schedules->isEmpty()) {
+                $this->generateSchedules();
+                $schedules = $query->lockForUpdate()->get();
+            }
+
+            if ($schedules->isEmpty()) {
+                $options = $this->scheduleService->getSchedulingOptions($patient);
+                foreach ($options as $option) {
+                    $batch = $this->findAvailableBatchForVaccine((int) $option['vaccine_id']);
+                    PatientVaccineSchedule::create([
+                        'patient_id' => $patient->id,
+                        'vaccine_id' => $option['vaccine_id'],
+                        'vaccine_inventory_id' => $batch?->id,
+                        'dose_number' => $option['next_dose'],
+                        'scheduled_date' => $newDate,
+                        'status' => 'scheduled',
+                        'is_manually_adjusted' => true,
+                        'adjusted_by' => $userId,
+                        'adjusted_at' => Carbon::now(),
+                        'adjustment_reason' => $reason ?? 'Manually scheduled by clinic staff',
+                        'priority_reason' => 'Upcoming Visit',
+                    ]);
+                }
+
+                $this->clearCandidatePoolCache();
+                return count($options);
+            }
+
+            foreach ($schedules as $schedule) {
+                $schedule->update([
+                    'scheduled_date' => $newDate,
+                    'is_manually_adjusted' => true,
+                    'adjusted_by' => $userId,
+                    'adjusted_at' => Carbon::now(),
+                    'adjustment_reason' => $reason ?? 'Manually adjusted by clinic staff',
+                ]);
+            }
+
+            $this->clearCandidatePoolCache();
+            return $schedules->count();
+        });
     }
 }
