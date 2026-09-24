@@ -518,26 +518,27 @@ export default function ScheduleStatusReportView({
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs border-collapse">
+                        <table className="w-full text-left text-[11px] sm:text-xs border-collapse">
                             <thead>
-                                <tr className="border-b bg-muted/40 font-semibold text-muted-foreground">
-                                    <th className="p-3 sm:px-4">Patient ID</th>
-                                    <th className="p-3">Child Full Name</th>
-                                    <th className="p-3 text-center">Sex</th>
-                                    <th className="p-3">Current Age</th>
-                                    <th className="p-3">Parent / Guardian</th>
-                                    <th className="p-3">Vaccine & Dose</th>
-                                    <th className="p-3">Target Date</th>
-                                    <th className="p-3 text-center">Status</th>
-                                    <th className="p-3">Timeline / Due Info</th>
-                                    <th className="p-3 text-center">Update Status</th>
+                                <tr className="border-b bg-muted/40 font-semibold text-muted-foreground text-[11px]">
+                                    <th className="py-2.5 px-2 text-center">Patient ID</th>
+                                    <th className="py-2.5 px-2.5">Child Full Name</th>
+                                    <th className="py-2.5 px-1.5 text-center">Sex</th>
+                                    <th className="py-2.5 px-2">Current Age</th>
+                                    <th className="py-2.5 px-2.5">Parent / Guardian</th>
+                                    <th className="py-2.5 px-2.5">Vaccine</th>
+                                    <th className="py-2.5 px-2 text-center">Dose</th>
+                                    <th className="py-2.5 px-2.5">Target Date</th>
+                                    <th className="py-2.5 px-2 text-center">Status</th>
+                                    <th className="py-2.5 px-2">Timeline / Due Info</th>
+                                    <th className="py-2.5 px-2 text-center">Update Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
                                 {filteredRows.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan={10}
+                                            colSpan={11}
                                             className="text-center p-8 text-muted-foreground"
                                         >
                                             No child schedules match the selected filters.
@@ -549,24 +550,24 @@ export default function ScheduleStatusReportView({
                                             key={row.schedule_id}
                                             className="hover:bg-muted/20 transition-colors"
                                         >
-                                            <td className="p-3 sm:px-4 whitespace-nowrap">
+                                            <td className="py-2 px-2 text-center whitespace-nowrap">
                                                 <Badge
                                                     variant="secondary"
-                                                    className="font-mono text-[11px]"
+                                                    className="font-mono text-[10px] px-1.5 py-0"
                                                 >
                                                     {row.patient_id}
                                                 </Badge>
                                             </td>
-                                            <td className="p-3 font-semibold text-foreground whitespace-nowrap">
+                                            <td className="py-2 px-2.5 font-semibold text-foreground whitespace-nowrap">
                                                 {row.patient_name}
                                             </td>
-                                            <td className="p-3 text-center text-muted-foreground">
+                                            <td className="py-2 px-1.5 text-center text-muted-foreground">
                                                 {row.sex}
                                             </td>
-                                            <td className="p-3 text-muted-foreground whitespace-nowrap">
+                                            <td className="py-2 px-2 text-muted-foreground whitespace-nowrap">
                                                 {row.current_age}
                                             </td>
-                                            <td className="p-3 whitespace-nowrap">
+                                            <td className="py-2 px-2.5 whitespace-nowrap">
                                                 <div className="font-medium text-foreground">
                                                     {row.guardian_name}
                                                 </div>
@@ -574,18 +575,18 @@ export default function ScheduleStatusReportView({
                                                     {row.guardian_contact} &bull; {row.address}
                                                 </div>
                                             </td>
-                                            <td className="p-3 whitespace-nowrap">
-                                                <span className="font-semibold text-foreground">
-                                                    {row.vaccine_name}
-                                                </span>{' '}
+                                            <td className="py-2 px-2.5 font-semibold text-foreground whitespace-nowrap">
+                                                {row.vaccine_name}
+                                            </td>
+                                            <td className="py-2 px-2 text-center whitespace-nowrap">
                                                 <Badge
                                                     variant="outline"
-                                                    className="text-[10px] ml-1 bg-sky-50 text-sky-800 dark:bg-sky-950 dark:text-sky-300"
+                                                    className="text-[10px] px-2 py-0.5 font-semibold bg-sky-50 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border-sky-200 dark:border-sky-800"
                                                 >
                                                     {row.dose_label}
                                                 </Badge>
                                             </td>
-                                            <td className="p-3 whitespace-nowrap">
+                                            <td className="py-2 px-2.5 whitespace-nowrap">
                                                 <div className="font-semibold text-foreground">
                                                     {row.scheduled_date_formatted}
                                                 </div>
@@ -593,20 +594,20 @@ export default function ScheduleStatusReportView({
                                                     {row.scheduled_day}
                                                 </div>
                                             </td>
-                                            <td className="p-3 text-center whitespace-nowrap">
+                                            <td className="py-2 px-2 text-center whitespace-nowrap">
                                                 {row.status === 'overdue' ? (
-                                                    <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300">
+                                                    <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300">
                                                         <AlertTriangle className="h-3 w-3" />
                                                         Overdue
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
+                                                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
                                                         <CheckCircle2 className="h-3 w-3" />
                                                         Upcoming
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="p-3 whitespace-nowrap">
+                                            <td className="py-2 px-2 whitespace-nowrap">
                                                 <span
                                                     className={`font-semibold ${
                                                         row.status === 'overdue'
@@ -616,11 +617,11 @@ export default function ScheduleStatusReportView({
                                                 >
                                                     {row.days_label}
                                                 </span>
-                                                <div className="text-[10px] text-muted-foreground max-w-xs truncate">
+                                                <div className="text-[10px] text-muted-foreground max-w-[140px] truncate" title={row.remarks}>
                                                     {row.remarks}
                                                 </div>
                                             </td>
-                                            <td className="p-3 text-center whitespace-nowrap">
+                                            <td className="py-2 px-2 text-center whitespace-nowrap">
                                                 <Select
                                                     value={row.stored_status}
                                                     disabled={
@@ -634,7 +635,7 @@ export default function ScheduleStatusReportView({
                                                         )
                                                     }
                                                 >
-                                                    <SelectTrigger className="h-7 text-xs w-28 mx-auto bg-background">
+                                                    <SelectTrigger className="h-7 text-xs w-26 mx-auto bg-background">
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -656,6 +657,7 @@ export default function ScheduleStatusReportView({
                             </tbody>
                         </table>
                     </div>
+
                     <div className="p-3 border-t bg-muted/10 text-xs text-muted-foreground flex items-center justify-between">
                         <span>
                             Showing <strong>{filteredRows.length}</strong> child

@@ -497,17 +497,17 @@ export default function VaccineCoverageReportView({
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr className="border-b bg-muted/40 font-semibold text-muted-foreground">
-                                    <th className="p-3 sm:px-4">Vaccine Antigen</th>
-                                    <th className="p-3">Category</th>
-                                    <th className="p-3 text-center">Required Doses</th>
-                                    <th className="p-3 text-center">Target Cohort</th>
-                                    <th className="p-3 text-center">Dose 1</th>
-                                    <th className="p-3 text-center">Dose 2</th>
-                                    <th className="p-3 text-center">Dose 3</th>
-                                    <th className="p-3 text-center">Booster</th>
-                                    <th className="p-3 text-center font-bold">Total Doses</th>
-                                    <th className="p-3 text-center">Coverage Rate</th>
+                                <tr className="border-b bg-muted/40 font-semibold text-muted-foreground text-[11px]">
+                                    <th className="py-2.5 px-3">Vaccine Antigen</th>
+                                    <th className="py-2.5 px-2">Category</th>
+                                    <th className="py-2.5 px-2 text-center">Required Doses</th>
+                                    <th className="py-2.5 px-2 text-center">Target Cohort</th>
+                                    <th className="py-2.5 px-2 text-center">Dose 1</th>
+                                    <th className="py-2.5 px-2 text-center">Dose 2</th>
+                                    <th className="py-2.5 px-2 text-center">Dose 3</th>
+                                    <th className="py-2.5 px-2 text-center">Booster</th>
+                                    <th className="py-2.5 px-2 text-center font-bold">Total Doses</th>
+                                    <th className="py-2.5 px-2 text-center">Coverage Rate</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
@@ -516,34 +516,34 @@ export default function VaccineCoverageReportView({
                                         key={summary.vaccine_id}
                                         className="hover:bg-muted/20 transition-colors"
                                     >
-                                        <td className="p-3 sm:px-4 font-semibold text-foreground">
+                                        <td className="py-2 px-3 font-semibold text-foreground">
                                             {summary.name}
                                         </td>
-                                        <td className="p-3 text-muted-foreground">
+                                        <td className="py-2 px-2 text-muted-foreground">
                                             {summary.category}
                                         </td>
-                                        <td className="p-3 text-center font-mono">
+                                        <td className="py-2 px-2 text-center font-mono">
                                             {summary.required_doses}
                                         </td>
-                                        <td className="p-3 text-center font-mono text-muted-foreground">
+                                        <td className="py-2 px-2 text-center font-mono text-muted-foreground">
                                             {summary.target_population}
                                         </td>
-                                        <td className="p-3 text-center font-mono">
+                                        <td className="py-2 px-2 text-center font-mono">
                                             {summary.dose_1}
                                         </td>
-                                        <td className="p-3 text-center font-mono">
+                                        <td className="py-2 px-2 text-center font-mono">
                                             {summary.dose_2}
                                         </td>
-                                        <td className="p-3 text-center font-mono">
+                                        <td className="py-2 px-2 text-center font-mono">
                                             {summary.dose_3}
                                         </td>
-                                        <td className="p-3 text-center font-mono">
+                                        <td className="py-2 px-2 text-center font-mono">
                                             {summary.booster}
                                         </td>
-                                        <td className="p-3 text-center font-bold text-foreground">
+                                        <td className="py-2 px-2 text-center font-bold text-foreground">
                                             {summary.total_administered}
                                         </td>
-                                        <td className="p-3 text-center">
+                                        <td className="py-2 px-2 text-center">
                                             <div className="flex items-center justify-center gap-2">
                                                 <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
                                                     <div
@@ -597,26 +597,27 @@ export default function VaccineCoverageReportView({
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs border-collapse">
+                        <table className="w-full text-left text-[11px] sm:text-xs border-collapse">
                             <thead>
-                                <tr className="border-b bg-muted/40 font-semibold text-muted-foreground">
-                                    <th className="p-3 sm:px-4">Date</th>
-                                    <th className="p-3">Patient ID</th>
-                                    <th className="p-3">Child Full Name</th>
-                                    <th className="p-3 text-center">Sex</th>
-                                    <th className="p-3">Age Admin</th>
-                                    <th className="p-3">Parent / Guardian</th>
-                                    <th className="p-3">Vaccine & Dose</th>
-                                    <th className="p-3">Batch Number</th>
-                                    <th className="p-3">Administered By</th>
-                                    <th className="p-3">Remarks</th>
+                                <tr className="border-b bg-muted/40 font-semibold text-muted-foreground text-[11px]">
+                                    <th className="py-2.5 px-2.5">Date</th>
+                                    <th className="py-2.5 px-2 text-center">Patient ID</th>
+                                    <th className="py-2.5 px-2.5">Child Full Name</th>
+                                    <th className="py-2.5 px-1.5 text-center">Sex</th>
+                                    <th className="py-2.5 px-2">Age Admin</th>
+                                    <th className="py-2.5 px-2.5">Parent / Guardian</th>
+                                    <th className="py-2.5 px-2.5">Vaccine</th>
+                                    <th className="py-2.5 px-2 text-center">Dose</th>
+                                    <th className="py-2.5 px-2">Batch Number</th>
+                                    <th className="py-2.5 px-2">Administered By</th>
+                                    <th className="py-2.5 px-2">Remarks</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
                                 {filteredChildren.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan={10}
+                                            colSpan={11}
                                             className="text-center p-8 text-muted-foreground"
                                         >
                                             No vaccinated children match the selected filters.
@@ -628,27 +629,27 @@ export default function VaccineCoverageReportView({
                                             key={child.id}
                                             className="hover:bg-muted/20 transition-colors"
                                         >
-                                            <td className="p-3 sm:px-4 font-mono whitespace-nowrap">
+                                            <td className="py-2 px-2.5 font-mono whitespace-nowrap text-[11px]">
                                                 {child.date_administered_formatted}
                                             </td>
-                                            <td className="p-3 whitespace-nowrap">
+                                            <td className="py-2 px-2 text-center whitespace-nowrap">
                                                 <Badge
                                                     variant="secondary"
-                                                    className="font-mono text-[11px]"
+                                                    className="font-mono text-[10px] px-1.5 py-0"
                                                 >
                                                     {child.patient_id}
                                                 </Badge>
                                             </td>
-                                            <td className="p-3 font-semibold text-foreground whitespace-nowrap">
+                                            <td className="py-2 px-2.5 font-semibold text-foreground whitespace-nowrap">
                                                 {child.patient_name}
                                             </td>
-                                            <td className="p-3 text-center text-muted-foreground">
+                                            <td className="py-2 px-1.5 text-center text-muted-foreground">
                                                 {child.sex}
                                             </td>
-                                            <td className="p-3 text-muted-foreground whitespace-nowrap">
+                                            <td className="py-2 px-2 text-muted-foreground whitespace-nowrap">
                                                 {child.age_at_admin}
                                             </td>
-                                            <td className="p-3 whitespace-nowrap">
+                                            <td className="py-2 px-2.5 whitespace-nowrap">
                                                 <div className="font-medium text-foreground">
                                                     {child.guardian_name}
                                                 </div>
@@ -656,24 +657,24 @@ export default function VaccineCoverageReportView({
                                                     {child.guardian_contact} &bull; {child.address}
                                                 </div>
                                             </td>
-                                            <td className="p-3 whitespace-nowrap">
-                                                <span className="font-semibold text-foreground">
-                                                    {child.vaccine_name}
-                                                </span>{' '}
+                                            <td className="py-2 px-2.5 font-semibold text-foreground whitespace-nowrap">
+                                                {child.vaccine_name}
+                                            </td>
+                                            <td className="py-2 px-2 text-center whitespace-nowrap">
                                                 <Badge
                                                     variant="outline"
-                                                    className="text-[10px] ml-1 bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-300"
+                                                    className="text-[10px] px-2 py-0.5 font-semibold bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border-teal-200 dark:border-teal-800"
                                                 >
                                                     {child.dose_label}
                                                 </Badge>
                                             </td>
-                                            <td className="p-3 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+                                            <td className="py-2 px-2 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
                                                 {child.batch_number}
                                             </td>
-                                            <td className="p-3 text-muted-foreground whitespace-nowrap">
+                                            <td className="py-2 px-2 text-muted-foreground whitespace-nowrap">
                                                 {child.administered_by}
                                             </td>
-                                            <td className="p-3 text-muted-foreground max-w-xs truncate">
+                                            <td className="py-2 px-2 text-muted-foreground max-w-[140px] truncate text-[10px]" title={child.remarks}>
                                                 {child.remarks}
                                             </td>
                                         </tr>
