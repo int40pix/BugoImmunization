@@ -43,7 +43,7 @@ class VaccineSchedulingPriorityService
             ->where('status', 'Active')
             ->with([
                 'vaccineSchedules' => function ($query) {
-                    $query->where('status', 'scheduled');
+                    $query->whereIn('status', ['scheduled', 'upcoming', 'overdue']);
                 },
                 'immunizationRecords',
                 'optionalVaccines',
@@ -1289,7 +1289,7 @@ class VaccineSchedulingPriorityService
         return DB::transaction(function () use ($patient, $newDate, $reason, $scheduleIds, $userId) {
             $query = PatientVaccineSchedule::query()
                 ->where('patient_id', $patient->id)
-                ->where('status', 'scheduled');
+                ->whereIn('status', ['scheduled', 'upcoming', 'overdue']);
 
             if (! empty($scheduleIds)) {
                 $query->whereIn('id', $scheduleIds);

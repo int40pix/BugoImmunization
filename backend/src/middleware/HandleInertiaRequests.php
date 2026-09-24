@@ -49,11 +49,21 @@ class HandleInertiaRequests extends Middleware
                     trim($author),
             ],
 
+            'status' => fn () =>
+                $request
+                    ->session()
+                    ->get('status'),
+
             'flash' => [
+                'status' => fn () =>
+                    $request
+                        ->session()
+                        ->get('status'),
+
                 'success' => fn () =>
                     $request
                         ->session()
-                        ->get('success'),
+                        ->get('success') ?: $request->session()->get('status'),
 
                 'error' => fn () =>
                     $request

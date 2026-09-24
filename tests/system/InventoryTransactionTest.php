@@ -171,5 +171,74 @@ class InventoryTransactionTest extends TestCase
         $response->assertSessionHas('error');
         $this->assertEquals(10, $batch->fresh()->quantity);
     }
+
+    public function test_cannot_permanently_delete_archived_batch(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'admin',
+            'must_change_password' => false,
+        ]);
+        $this->actingAs($user);
+
+        $vaccine = Vaccine::create([
+            'name' => 'Archived Test Vaccine',
+            'category' => 'infant',
+            'doses_required' => 1,
+        ]);
+
+        $batch = VaccineInventory::create([
+            'vaccine_id' => $vaccine->id,
+            'batch_number' => 'LOT-ARCH-001',
+            'quantity' => 0,
+            'date_received' => now()->toDateString(),
+            'expiration_date' => now()->subDay()->toDateString(),
+            'is_archived' => true,
+            'archive_reason' => 'expired',
+            'archived_at' => now(),
+        ]);
+
+        $response = $this->delete(route('vaccine-inventory.destroy', $batch->id));
+        $response->assertSessionHas('error');
+        $this->assertDatabaseHas('vaccine_inventories', ['id' => $batch->id]);
+    }
+
+    public function test_cannot_permanently_delete_batch_with_transactions(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'admin',
+            'must_change_password' => false,
+        ]);
+        $this->actingAs($user);
+
+        $vaccine = Vaccine::create([
+            'name' => 'Active Test Vaccine',
+            'category' => 'infant',
+            'doses_required' => 1,
+        ]);
+
+        $batch = VaccineInventory::create([
+            'vaccine_id' => $vaccine->id,
+            'batch_number' => 'LOT-TX-001',
+            'quantity' => 20,
+            'date_received' => now()->toDateString(),
+            'expiration_date' => now()->addMonths(6)->toDateString(),
+            'is_archived' => false,
+        ]);
+
+        VaccineInventoryTransaction::create([
+            'vaccine_id' => $vaccine->id,
+            'vaccine_inventory_id' => $batch->id,
+            'user_id' => $user->id,
+            'transaction_type' => 'received',
+            'quantity_change' => 20,
+            'balance_after' => 20,
+            'batch_number' => 'LOT-TX-001',
+            'remarks' => 'Initial stock intake',
+        ]);
+
+        $response = $this->delete(route('vaccine-inventory.destroy', $batch->id));
+        $response->assertSessionHas('error');
+        $this->assertDatabaseHas('vaccine_inventories', ['id' => $batch->id]);
+    }
 }
 

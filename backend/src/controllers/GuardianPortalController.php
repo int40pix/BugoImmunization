@@ -127,9 +127,9 @@ class GuardianPortalController extends Controller
                     $scheduled =
                         $patient
                             ->vaccineSchedules
-                            ->where(
+                            ->whereIn(
                                 'status',
-                                'scheduled'
+                                ['scheduled', 'upcoming', 'overdue']
                             )
                             ->sortBy(
                                 'scheduled_date'
@@ -355,9 +355,9 @@ class GuardianPortalController extends Controller
                     ) use ($today, $usableStockByVaccine) {
                         return $patient
                             ->vaccineSchedules
-                            ->where(
+                            ->whereIn(
                                 'status',
-                                'scheduled'
+                                ['scheduled', 'upcoming', 'overdue']
                             )
                             ->filter(
                                 function (
@@ -685,7 +685,7 @@ class GuardianPortalController extends Controller
         $schedules =
             $patient
                 ->vaccineSchedules
-                ->where('status', 'scheduled')
+                ->whereIn('status', ['scheduled', 'upcoming', 'overdue'])
                 ->sortBy('scheduled_date')
                 ->map(function ($schedule) {
                     return [

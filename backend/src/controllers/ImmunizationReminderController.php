@@ -32,24 +32,23 @@ class ImmunizationReminderController extends Controller
             return back()->with('warning', "Guardian of {$patient->first_name} does not have an active portal account.");
         }
 
-        // Anti-duplicate check: don't spam if sent today
-        $alreadySentToday = DatabaseNotification::query()
+        // Anti-bloat / Overwrite: Remove previous visit reminders for this child to keep inbox clean
+        DatabaseNotification::query()
             ->where('notifiable_type', $guardianUser::class)
             ->where('notifiable_id', $guardianUser->id)
             ->where('type', UpcomingVisitReminderNotification::class)
-            ->whereJsonContains('data->schedule_id', $schedule->id)
-            ->whereDate('created_at', Carbon::today())
-            ->exists();
+            ->whereJsonContains('data->patient_id', $patient->id)
+            ->delete();
 
-        if ($alreadySentToday) {
-            return back()->with('info', "A visit reminder for {$patient->first_name} ({$schedule->vaccine?->name}) was already sent today.");
-        }
+        $vaccineLabel = $schedule->vaccine
+            ? "{$schedule->vaccine->name} (Dose {$schedule->dose_number})"
+            : 'Vaccination Visit';
 
         Notification::send(
             $guardianUser,
             new UpcomingVisitReminderNotification(
                 patient: $patient,
-                vaccine: $schedule->vaccine ?? 'Vaccination',
+                vaccine: $vaccineLabel,
                 doseNumber: (int) $schedule->dose_number,
                 scheduledDate: $schedule->scheduled_date,
                 scheduleId: $schedule->id,
@@ -59,21 +58,24 @@ class ImmunizationReminderController extends Controller
 
         return back()->with(
             'success',
-            "Visit reminder sent to guardian of {$patient->first_name}."
+            "Reminders sent: Visit reminder sent to guardian of {$patient->first_name}."
         );
     }
 
     /**
-     * Send reminder to a guardian for all active scheduled vaccinations of a patient.
+     * Send reminder to a guardian for the next scheduled visit of a patient.
+     * Consolidates all vaccines for that visit into a single reminder and overwrites previous notifications.
      */
     public function sendPatientReminder(
         Request $request,
         Patient $patient
     ): RedirectResponse {
+        $today = Carbon::today();
+
         $patient->loadMissing([
             'guardian.user',
             'vaccineSchedules' => function ($query) {
-                $query->where('status', 'scheduled')
+                $query->whereIn('status', ['scheduled', 'upcoming', 'overdue'])
                     ->whereNotNull('scheduled_date')
                     ->with('vaccine')
                     ->orderBy('scheduled_date');
@@ -90,42 +92,57 @@ class ImmunizationReminderController extends Controller
             return back()->with('info', "No active upcoming scheduled visits found for {$patient->first_name}.");
         }
 
-        $sentCount = 0;
-        foreach ($schedules as $schedule) {
-            // Anti-duplicate check per schedule
-            $alreadySentToday = DatabaseNotification::query()
-                ->where('notifiable_type', $guardianUser::class)
-                ->where('notifiable_id', $guardianUser->id)
-                ->where('type', UpcomingVisitReminderNotification::class)
-                ->whereJsonContains('data->schedule_id', $schedule->id)
-                ->whereDate('created_at', Carbon::today())
-                ->exists();
+        // Find upcoming visits (>= today), or fall back to earliest scheduled
+        $upcomingSchedules = $schedules->filter(function ($s) use ($today) {
+            return Carbon::parse($s->scheduled_date)->startOfDay()->gte($today);
+        });
 
-            if (! $alreadySentToday) {
-                Notification::send(
-                    $guardianUser,
-                    new UpcomingVisitReminderNotification(
-                        patient: $patient,
-                        vaccine: $schedule->vaccine ?? 'Vaccination',
-                        doseNumber: (int) $schedule->dose_number,
-                        scheduledDate: $schedule->scheduled_date,
-                        scheduleId: $schedule->id,
-                        remarks: $schedule->remarks
-                    )
-                );
-                $sentCount++;
-            }
-        }
+        $targetSchedules = $upcomingSchedules->isNotEmpty() ? $upcomingSchedules : $schedules;
+        $nextVisitDate = Carbon::parse($targetSchedules->first()->scheduled_date)->startOfDay();
 
-        if ($sentCount === 0) {
-            return back()->with('info', "Visit reminders were already sent to {$patient->first_name}'s guardian today.");
-        }
+        // Consolidate all vaccines scheduled on this exact visit date
+        $visitSchedules = $targetSchedules->filter(function ($s) use ($nextVisitDate) {
+            return Carbon::parse($s->scheduled_date)->startOfDay()->equalTo($nextVisitDate);
+        });
 
-        return back()->with('success', "Sent {$sentCount} visit reminder(s) to {$patient->first_name}'s guardian.");
+        $vaccineDescriptions = $visitSchedules->map(function ($s) {
+            $name = $s->vaccine?->name ?? 'Vaccine';
+            return "{$name} (Dose {$s->dose_number})";
+        })->unique()->values()->all();
+
+        $vaccinesSummary = implode(', ', $vaccineDescriptions);
+
+        // Anti-bloat / Overwrite: Delete previous visit reminder notifications for this child
+        DatabaseNotification::query()
+            ->where('notifiable_type', $guardianUser::class)
+            ->where('notifiable_id', $guardianUser->id)
+            ->where('type', UpcomingVisitReminderNotification::class)
+            ->whereJsonContains('data->patient_id', $patient->id)
+            ->delete();
+
+        // Dispatch exactly ONE reminder for this patient's next visit
+        Notification::send(
+            $guardianUser,
+            new UpcomingVisitReminderNotification(
+                patient: $patient,
+                vaccine: $vaccinesSummary,
+                doseNumber: 1,
+                scheduledDate: $nextVisitDate->toDateString(),
+                scheduleId: $visitSchedules->first()?->id,
+                remarks: $visitSchedules->first()?->remarks
+            )
+        );
+
+        $dateFormatted = $nextVisitDate->format('M d, Y');
+        return back()->with(
+            'success',
+            "Reminders sent: Next visit reminder for {$patient->first_name} ({$dateFormatted} for {$vaccinesSummary}) sent to guardian."
+        );
     }
 
     /**
-     * Bulk send reminders to all guardians whose children are scheduled for a specific date or period.
+     * Bulk send reminders to all guardians whose children are scheduled.
+     * Consolidates each child's upcoming visit into a single reminder and overwrites previous notifications.
      */
     public function sendBulkReminders(Request $request): RedirectResponse
     {
@@ -134,60 +151,108 @@ class ImmunizationReminderController extends Controller
             ? Carbon::parse($request->input('date'))->startOfDay()
             : null;
 
-        $query = PatientVaccineSchedule::query()
-            ->where('status', 'scheduled')
-            ->whereNotNull('scheduled_date')
-            ->with(['patient.guardian.user', 'vaccine']);
+        // Query all patients who have scheduled vaccinations
+        $patientsQuery = Patient::query()
+            ->whereHas('vaccineSchedules', function ($query) use ($today, $targetDate) {
+                $query->whereIn('status', ['scheduled', 'upcoming', 'overdue'])
+                    ->whereNotNull('scheduled_date');
+                if ($targetDate) {
+                    $query->whereDate('scheduled_date', $targetDate);
+                } else {
+                    $query->whereDate('scheduled_date', '>=', $today);
+                }
+            })
+            ->with([
+                'guardian.user',
+                'vaccineSchedules' => function ($query) use ($today, $targetDate) {
+                    $query->whereIn('status', ['scheduled', 'upcoming', 'overdue'])
+                        ->whereNotNull('scheduled_date');
+                    if ($targetDate) {
+                        $query->whereDate('scheduled_date', $targetDate);
+                    } else {
+                        $query->whereDate('scheduled_date', '>=', $today);
+                    }
+                    $query->with('vaccine')->orderBy('scheduled_date');
+                },
+            ]);
 
-        if ($targetDate) {
-            $query->whereDate('scheduled_date', $targetDate);
-        } else {
-            // Default: today through next 3 days
-            $query->whereDate('scheduled_date', '>=', $today)
-                ->whereDate('scheduled_date', '<=', $today->copy()->addDays(3));
+        $patients = $patientsQuery->get();
+
+        // If no future-dated appointments found, include all active scheduled appointments
+        if ($patients->isEmpty() && ! $targetDate) {
+            $patients = Patient::query()
+                ->whereHas('vaccineSchedules', function ($query) {
+                    $query->whereIn('status', ['scheduled', 'upcoming', 'overdue'])
+                        ->whereNotNull('scheduled_date');
+                })
+                ->with([
+                    'guardian.user',
+                    'vaccineSchedules' => function ($query) {
+                        $query->whereIn('status', ['scheduled', 'upcoming', 'overdue'])
+                            ->whereNotNull('scheduled_date')
+                            ->with('vaccine')
+                            ->orderBy('scheduled_date');
+                    },
+                ])
+                ->get();
         }
 
-        $schedules = $query->get();
-
-        if ($schedules->isEmpty()) {
-            return back()->with('info', 'No scheduled appointments found in the selected timeframe.');
+        if ($patients->isEmpty()) {
+            return back()->with('info', 'No scheduled appointments found to remind.');
         }
 
         $sentCount = 0;
         $skippedCount = 0;
 
-        foreach ($schedules as $schedule) {
-            $guardianUser = $schedule->patient?->guardian?->user;
+        foreach ($patients as $patient) {
+            $guardianUser = $patient->guardian?->user;
             if (! $guardianUser) {
                 $skippedCount++;
                 continue;
             }
 
-            $alreadySentToday = DatabaseNotification::query()
+            $schedules = $patient->vaccineSchedules;
+            if ($schedules->isEmpty()) {
+                continue;
+            }
+
+            // Next upcoming visit date for this patient
+            $firstScheduleDate = Carbon::parse($schedules->first()->scheduled_date)->startOfDay();
+            $visitSchedules = $schedules->filter(function ($s) use ($firstScheduleDate) {
+                return Carbon::parse($s->scheduled_date)->startOfDay()->equalTo($firstScheduleDate);
+            });
+
+            $vaccineDescriptions = $visitSchedules->map(function ($s) {
+                $name = $s->vaccine?->name ?? 'Vaccine';
+                return "{$name} (Dose {$s->dose_number})";
+            })->unique()->values()->all();
+
+            $vaccinesSummary = implode(', ', $vaccineDescriptions);
+
+            // Anti-bloat / Overwrite: Delete previous visit reminder notifications for this child
+            DatabaseNotification::query()
                 ->where('notifiable_type', $guardianUser::class)
                 ->where('notifiable_id', $guardianUser->id)
                 ->where('type', UpcomingVisitReminderNotification::class)
-                ->whereJsonContains('data->schedule_id', $schedule->id)
-                ->whereDate('created_at', Carbon::today())
-                ->exists();
+                ->whereJsonContains('data->patient_id', $patient->id)
+                ->delete();
 
-            if (! $alreadySentToday) {
-                Notification::send(
-                    $guardianUser,
-                    new UpcomingVisitReminderNotification(
-                        patient: $schedule->patient,
-                        vaccine: $schedule->vaccine ?? 'Vaccination',
-                        doseNumber: (int) $schedule->dose_number,
-                        scheduledDate: $schedule->scheduled_date,
-                        scheduleId: $schedule->id,
-                        remarks: $schedule->remarks
-                    )
-                );
-                $sentCount++;
-            }
+            Notification::send(
+                $guardianUser,
+                new UpcomingVisitReminderNotification(
+                    patient: $patient,
+                    vaccine: $vaccinesSummary,
+                    doseNumber: 1,
+                    scheduledDate: $firstScheduleDate->toDateString(),
+                    scheduleId: $visitSchedules->first()?->id,
+                    remarks: $visitSchedules->first()?->remarks
+                )
+            );
+
+            $sentCount++;
         }
 
-        $msg = "Bulk reminders processed: {$sentCount} sent.";
+        $msg = "Reminders sent: Dispatched next-visit reminder(s) for {$sentCount} child(ren).";
         if ($skippedCount > 0) {
             $msg .= " ({$skippedCount} skipped due to missing portal accounts).";
         }
@@ -195,4 +260,3 @@ class ImmunizationReminderController extends Controller
         return back()->with('success', $msg);
     }
 }
-

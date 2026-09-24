@@ -48,7 +48,7 @@ class DashboardController extends Controller
             ->count();
 
         $upcomingSchedules = PatientVaccineSchedule::query()
-            ->where('status', 'scheduled')
+            ->pending()
             ->whereDate(
                 'scheduled_date',
                 '>=',
@@ -146,7 +146,7 @@ class DashboardController extends Controller
         */
 
         $reservedByVaccine = PatientVaccineSchedule::query()
-            ->where('status', 'scheduled')
+            ->pending()
             ->whereNotNull(
                 'vaccine_inventory_id'
             )

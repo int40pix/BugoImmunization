@@ -56,16 +56,23 @@ class PasswordResetRequestController extends Controller
             $user->status !== 'inactive' &&
             filled($user->password)
         ) {
-            $resetRequest = PasswordResetRequest::query()
-                ->firstOrCreate(
-                    [
-                        'user_id' => $user->id,
-                        'status' => 'pending',
-                    ],
-                    [
-                        'requested_at' => now(),
-                    ]
+            $existingPending = PasswordResetRequest::query()
+                ->where('user_id', $user->id)
+                ->where('status', 'pending')
+                ->first();
+
+            if ($existingPending) {
+                return back()->with(
+                    'status',
+                    'A password recovery request has already been submitted for this account and is currently pending review by an administrator.'
                 );
+            }
+
+            $resetRequest = PasswordResetRequest::query()->create([
+                'user_id' => $user->id,
+                'status' => 'pending',
+                'requested_at' => now(),
+            ]);
 
             /*
              * Send notification exclusively to administrators.

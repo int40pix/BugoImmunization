@@ -9,6 +9,7 @@ use App\Http\Controllers\GuardianPortalController;
 use App\Http\Controllers\ImmunizationController;
 use App\Http\Controllers\ImmunizationRecordController;
 use App\Http\Controllers\ImmunizationReminderController;
+use App\Http\Controllers\ImmunizationReportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientImmunizationCardRowController;
@@ -886,6 +887,60 @@ Route::middleware([
     )->name(
         'immunization.modules'
     );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Immunization Reports & Status Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        'immunization/reports/coverage/pdf',
+        [
+            ImmunizationReportController::class,
+            'exportCoveragePdf',
+        ]
+    )->name('immunization.reports.coverage.pdf');
+
+    Route::get(
+        'immunization/reports/coverage/csv',
+        [
+            ImmunizationReportController::class,
+            'exportCoverageCsv',
+        ]
+    )->name('immunization.reports.coverage.csv');
+
+    Route::get(
+        'immunization/reports/schedule-status/pdf',
+        [
+            ImmunizationReportController::class,
+            'exportScheduleStatusPdf',
+        ]
+    )->name('immunization.reports.schedule-status.pdf');
+
+    Route::get(
+        'immunization/reports/schedule-status/csv',
+        [
+            ImmunizationReportController::class,
+            'exportScheduleStatusCsv',
+        ]
+    )->name('immunization.reports.schedule-status.csv');
+
+    Route::post(
+        'immunization/reports/schedule-status/sync',
+        [
+            ImmunizationReportController::class,
+            'syncScheduleStatuses',
+        ]
+    )->name('immunization.reports.schedule-status.sync');
+
+    Route::post(
+        'immunization/reports/schedule-status/{schedule}/update',
+        [
+            ImmunizationReportController::class,
+            'updateScheduleStatus',
+        ]
+    )->name('immunization.reports.schedule-status.update');
 
 });
 

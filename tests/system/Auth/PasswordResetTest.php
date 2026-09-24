@@ -64,6 +64,41 @@ class PasswordResetTest extends TestCase
         Notification::assertSentTo($admin, AccountRecoveryRequestedNotification::class);
     }
 
+    public function test_cannot_request_password_reset_multiple_times_while_pending()
+    {
+        Notification::fake();
+
+        $admin = User::factory()->create([
+            'role_id' => 1,
+            'role' => 'admin',
+            'status' => 'active',
+        ]);
+
+        $guardian = User::factory()->create([
+            'role_id' => 5,
+            'role' => 'guardian',
+            'account_status' => 'active',
+            'password' => bcrypt('ValidPassword123!'),
+        ]);
+
+        // First submission creates request and notifies admin
+        $firstResponse = $this->from('/forgot-password')->post('/forgot-password', [
+            'email' => $guardian->email,
+        ]);
+        $firstResponse->assertRedirect('/forgot-password');
+        $this->assertDatabaseCount('password_reset_requests', 1);
+        Notification::assertSentTimes(AccountRecoveryRequestedNotification::class, 1);
+
+        // Second submission while pending should NOT create another request or spam admin
+        $secondResponse = $this->from('/forgot-password')->post('/forgot-password', [
+            'email' => $guardian->email,
+        ]);
+        $secondResponse->assertRedirect('/forgot-password');
+        $secondResponse->assertSessionHas('status', 'A password recovery request has already been submitted for this account and is currently pending review by an administrator.');
+        $this->assertDatabaseCount('password_reset_requests', 1);
+        Notification::assertSentTimes(AccountRecoveryRequestedNotification::class, 1);
+    }
+
     public function test_staff_can_submit_password_reset_request_and_admin_is_notified()
     {
         Notification::fake();

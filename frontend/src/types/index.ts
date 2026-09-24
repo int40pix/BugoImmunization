@@ -60,7 +60,9 @@ export interface SharedData {
         notifications?: AppNotification[];
         unread_notifications_count?: number;
     };
+    status?: string | null;
     flash?: {
+        status?: string | null;
         success?: string | null;
         error?: string | null;
         warning?: string | null;

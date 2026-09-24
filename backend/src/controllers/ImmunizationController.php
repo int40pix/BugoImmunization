@@ -8,6 +8,7 @@ use App\Models\PatientVaccineSchedule;
 use App\Models\Vaccine;
 use App\Services\ImmunizationAdministrationService;
 use App\Services\VaccineSchedulingPriorityService;
+use App\Http\Controllers\ImmunizationReportController;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
@@ -27,7 +28,7 @@ class ImmunizationController extends Controller
                 'patient',
                 'vaccine',
             ])
-            ->where('status', 'scheduled')
+            ->pending()
             ->orderBy('scheduled_date')
             ->orderBy('patient_id')
             ->get()
@@ -179,16 +180,21 @@ class ImmunizationController extends Controller
                 'id',
                 'name',
                 'category',
+                'required_doses',
             ]);
+
+        $reportController = app(ImmunizationReportController::class);
+        $coverageReport = $reportController->getCoverageReportData(request());
+        $scheduleStatusReport = $reportController->getScheduleStatusReportData(request());
 
         return Inertia::render('immunization/index', [
             'tclRows' => $tclRows,
-
             'scheduledRows' => $scheduledRows,
-
             'completedRows' => $completedRows,
-
             'vaccines' => $vaccines,
+            'coverageReport' => $coverageReport,
+            'scheduleStatusReport' => $scheduleStatusReport,
+            'initialView' => request()->query('view', 'tcl'),
         ]);
     }
 

@@ -26,7 +26,8 @@ import {
     ShieldCheck,
     X,
 } from 'lucide-react';
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
+import ReportsHub from './components/reports-hub';
 
 type TclRow = {
     patient_id: number;
@@ -108,6 +109,9 @@ type Props = {
     scheduledRows: ScheduledRow[];
     completedRows: CompletedRow[];
     vaccines: Vaccine[];
+    coverageReport?: any;
+    scheduleStatusReport?: any;
+    initialView?: 'tcl' | 'scheduled' | 'history' | 'reports';
 };
 
 export default function ImmunizationIndex({
@@ -115,11 +119,16 @@ export default function ImmunizationIndex({
     scheduledRows,
     completedRows,
     vaccines,
+    coverageReport,
+    scheduleStatusReport,
+    initialView,
 }: Props) {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [vaccineFilter, setVaccineFilter] = useState('all');
-    const [viewMode, setViewMode] = useState<'tcl' | 'scheduled' | 'history'>('tcl');
+    const [viewMode, setViewMode] = useState<
+        'tcl' | 'scheduled' | 'history' | 'reports'
+    >(initialView ?? 'tcl');
 
     const [expandedPatients, setExpandedPatients] = useState<Set<number>>(
         new Set(),
@@ -130,6 +139,19 @@ export default function ImmunizationIndex({
     >(new Set());
 
     const [isSendingReminder, setIsSendingReminder] = useState<string | null>(null);
+    const [sentReminderKeys, setSentReminderKeys] = useState<Set<string>>(new Set());
+    const [reminderNotice, setReminderNotice] = useState<{
+        message: string;
+        type: 'success' | 'info' | 'error';
+    } | null>(null);
+
+    useEffect(() => {
+        if (!reminderNotice) return;
+        const timer = setTimeout(() => {
+            setReminderNotice(null);
+        }, 7000);
+        return () => clearTimeout(timer);
+    }, [reminderNotice]);
 
     const [rescheduleTarget, setRescheduleTarget] = useState<{
         patientId: number;
@@ -203,6 +225,28 @@ export default function ImmunizationIndex({
             {
                 preserveScroll: true,
                 preserveState: true,
+                onSuccess: (page) => {
+                    const flash = (page.props as any)?.flash;
+                    const message = flash?.success || flash?.info || 'Reminders sent';
+                    setReminderNotice({
+                        message,
+                        type: flash?.info ? 'info' : 'success',
+                    });
+                    setSentReminderKeys((prev) => new Set(prev).add(key));
+                    setTimeout(() => {
+                        setSentReminderKeys((prev) => {
+                            const next = new Set(prev);
+                            next.delete(key);
+                            return next;
+                        });
+                    }, 6000);
+                },
+                onError: () => {
+                    setReminderNotice({
+                        message: 'Failed to send visit reminder. Please check guardian account.',
+                        type: 'error',
+                    });
+                },
                 onFinish: () => setIsSendingReminder(null),
             }
         );
@@ -216,6 +260,28 @@ export default function ImmunizationIndex({
             {
                 preserveScroll: true,
                 preserveState: true,
+                onSuccess: (page) => {
+                    const flash = (page.props as any)?.flash;
+                    const message = flash?.success || flash?.info || 'Reminders sent to all due';
+                    setReminderNotice({
+                        message,
+                        type: flash?.info ? 'info' : 'success',
+                    });
+                    setSentReminderKeys((prev) => new Set(prev).add('bulk'));
+                    setTimeout(() => {
+                        setSentReminderKeys((prev) => {
+                            const next = new Set(prev);
+                            next.delete('bulk');
+                            return next;
+                        });
+                    }, 6000);
+                },
+                onError: () => {
+                    setReminderNotice({
+                        message: 'Failed to dispatch bulk reminders. Please try again.',
+                        type: 'error',
+                    });
+                },
                 onFinish: () => setIsSendingReminder(null),
             }
         );
@@ -660,6 +726,10 @@ export default function ImmunizationIndex({
     };
 
     const getTrackingTitle = () => {
+        if (viewMode === 'reports') {
+            return 'Immunization Reports & Analytics';
+        }
+
         if (viewMode === 'history') {
             return 'Administration History';
         }
@@ -672,6 +742,10 @@ export default function ImmunizationIndex({
     };
 
     const getTrackingDescription = () => {
+        if (viewMode === 'reports') {
+            return 'Access the Vaccine Coverage Report and Immunization Schedule Status Report in PDF and CSV formats.';
+        }
+
         if (viewMode === 'history') {
             return 'Complete audit log of all administered pediatric vaccination doses with consent and clinical details.';
         }
@@ -897,52 +971,68 @@ export default function ImmunizationIndex({
                                 >
                                     Administration History
                                 </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setViewMode('reports')
+                                    }
+                                    className={`shrink-0 whitespace-nowrap border-l px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors ${
+                                        viewMode === 'reports'
+                                            ? 'bg-foreground text-background font-semibold'
+                                            : 'hover:bg-muted text-muted-foreground'
+                                    }`}
+                                >
+                                    Reports
+                                </button>
                             </div>
                         </div>
                     </CardHeader>
 
-                    {/* Integrated Filter Bar */}
-                    <div className="border-b bg-muted/20 px-3 sm:px-6 py-2.5 sm:py-3">
-                        <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2">
-                            <div className="relative">
-                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    {/* Integrated Filter Bar - Only for TCL, Scheduled, and History views */}
+                    {viewMode !== 'reports' && (
+                        <div className="border-b bg-muted/20 px-3 sm:px-6 py-2.5 sm:py-3">
+                            <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2">
+                                <div className="relative">
+                                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
-                                <Input
-                                    type="search"
-                                    value={search}
-                                    onChange={(event) =>
-                                        setSearch(event.target.value)
-                                    }
-                                    placeholder="Search patient or Patient ID..."
-                                    className="pl-10 h-8.5 sm:h-9 text-xs sm:text-sm bg-background"
-                                />
-                            </div>
+                                    <Input
+                                        type="search"
+                                        value={search}
+                                        onChange={(event) =>
+                                            setSearch(event.target.value)
+                                        }
+                                        placeholder="Search patient or Patient ID..."
+                                        className="pl-10 h-8.5 sm:h-9 text-xs sm:text-sm bg-background"
+                                    />
+                                </div>
 
-                            <Select
-                                value={vaccineFilter}
-                                onValueChange={setVaccineFilter}
-                            >
-                                <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
-                                    <SelectValue placeholder="All vaccines" />
-                                </SelectTrigger>
+                                <Select
+                                    value={vaccineFilter}
+                                    onValueChange={setVaccineFilter}
+                                >
+                                    <SelectTrigger className="h-8.5 sm:h-9 text-xs sm:text-sm bg-background">
+                                        <SelectValue placeholder="All vaccines" />
+                                    </SelectTrigger>
 
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        All vaccines
-                                    </SelectItem>
-
-                                    {vaccines.map((vaccine) => (
-                                        <SelectItem
-                                            key={vaccine.id}
-                                            value={String(vaccine.id)}
-                                        >
-                                            {vaccine.name}
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            All vaccines
                                         </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+
+                                        {vaccines.map((vaccine) => (
+                                            <SelectItem
+                                                key={vaccine.id}
+                                                value={String(vaccine.id)}
+                                            >
+                                                {vaccine.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <CardContent className="p-2 sm:p-6 sm:pt-0">
                         {viewMode === 'tcl' ? (
@@ -1579,18 +1669,56 @@ export default function ImmunizationIndex({
                                     {scheduledGroups.length > 0 && (
                                         <button
                                             type="button"
-                                            disabled={isSendingReminder === 'bulk'}
+                                            disabled={isSendingReminder === 'bulk' || sentReminderKeys.has('bulk')}
                                             onClick={handleSendBulkReminders}
-                                            className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 cursor-pointer shadow-2xs"
+                                            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer shadow-2xs ${
+                                                sentReminderKeys.has('bulk')
+                                                    ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                                    : 'border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50'
+                                            }`}
                                             title="Send reminder notifications to all guardians with upcoming scheduled visits"
                                         >
-                                            <Bell className="h-3.5 w-3.5" />
-                                            {isSendingReminder === 'bulk'
-                                                ? 'Sending reminders...'
-                                                : 'Send Reminders to All Due'}
+                                            {sentReminderKeys.has('bulk') ? (
+                                                <>
+                                                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                                    Reminders sent to all due
+                                                </>
+                                            ) : isSendingReminder === 'bulk' ? (
+                                                'Sending reminders...'
+                                            ) : (
+                                                <>
+                                                    <Bell className="h-3.5 w-3.5" />
+                                                    Send Reminders to All Due
+                                                </>
+                                            )}
                                         </button>
                                     )}
                                 </div>
+
+                                {/* Prominent System Message for Reminders */}
+                                {reminderNotice && (
+                                    <div
+                                        className={`flex items-center justify-between gap-3 border-b px-4 py-3 text-xs sm:px-5 transition-all ${
+                                            reminderNotice.type === 'error'
+                                                ? 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200'
+                                                : reminderNotice.type === 'info'
+                                                  ? 'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-200'
+                                                  : 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                            <span className="font-semibold">{reminderNotice.message}</span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setReminderNotice(null)}
+                                            className="rounded p-1 hover:opacity-75"
+                                        >
+                                            <X className="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
+                                )}
 
                                 {/* Mobile View (< md): Compact Scheduled Cards */}
                                 <div className="d-block d-md-none divide-y divide-border/60">
@@ -1678,15 +1806,30 @@ export default function ImmunizationIndex({
                                                                     </button>
                                                                     <button
                                                                         type="button"
-                                                                        disabled={isSendingReminder === group.key}
+                                                                        disabled={isSendingReminder === group.key || sentReminderKeys.has(group.key)}
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             handleSendPatientReminder(group.patient_id, group.key);
                                                                         }}
-                                                                        className="inline-flex items-center gap-1 text-[11px] font-medium bg-primary/10 text-primary px-2.5 py-1 rounded hover:bg-primary/20 disabled:opacity-50 transition-colors"
+                                                                        className={`inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded transition-colors ${
+                                                                            sentReminderKeys.has(group.key)
+                                                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
+                                                                                : 'bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50'
+                                                                        }`}
                                                                     >
-                                                                        <Bell className="h-3 w-3" />
-                                                                        {isSendingReminder === group.key ? 'Sending...' : 'Send Reminder'}
+                                                                        {sentReminderKeys.has(group.key) ? (
+                                                                            <>
+                                                                                <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                                                                                Reminders sent
+                                                                            </>
+                                                                        ) : isSendingReminder === group.key ? (
+                                                                            'Sending...'
+                                                                        ) : (
+                                                                            <>
+                                                                                <Bell className="h-3 w-3" />
+                                                                                Send Reminder
+                                                                            </>
+                                                                        )}
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -1936,7 +2079,7 @@ export default function ImmunizationIndex({
 
                                                                                     <button
                                                                                         type="button"
-                                                                                        disabled={isSendingReminder === group.key}
+                                                                                        disabled={isSendingReminder === group.key || sentReminderKeys.has(group.key)}
                                                                                         onClick={(e) => {
                                                                                             e.stopPropagation();
                                                                                             handleSendPatientReminder(
@@ -1944,12 +2087,25 @@ export default function ImmunizationIndex({
                                                                                                 group.key,
                                                                                             );
                                                                                         }}
-                                                                                        className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-2xs transition-colors hover:bg-primary/90 disabled:opacity-50 cursor-pointer"
+                                                                                        className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium shadow-2xs transition-colors cursor-pointer ${
+                                                                                            sentReminderKeys.has(group.key)
+                                                                                                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                                                                                : 'bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50'
+                                                                                        }`}
                                                                                     >
-                                                                                        <Bell className="h-3.5 w-3.5" />
-                                                                                        {isSendingReminder === group.key
-                                                                                            ? 'Sending reminder...'
-                                                                                            : 'Send Visit Reminder to Guardian'}
+                                                                                        {sentReminderKeys.has(group.key) ? (
+                                                                                            <>
+                                                                                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                                                                                Reminders sent
+                                                                                            </>
+                                                                                        ) : isSendingReminder === group.key ? (
+                                                                                            'Sending reminder...'
+                                                                                        ) : (
+                                                                                            <>
+                                                                                                <Bell className="h-3.5 w-3.5" />
+                                                                                                Send Visit Reminder to Guardian
+                                                                                            </>
+                                                                                        )}
                                                                                     </button>
                                                                                 </div>
                                                                             </div>
@@ -1965,7 +2121,7 @@ export default function ImmunizationIndex({
                                     </table>
                                 </div>
                             </div>
-                        ) : (
+                        ) : viewMode === 'history' ? (
                             <div className="w-full max-w-full overflow-hidden rounded-lg border">
                                 <div className="flex flex-wrap items-center justify-between gap-4 border-b bg-muted/20 px-5 py-4">
                                     <div className="flex items-center gap-2">
@@ -2146,6 +2302,14 @@ export default function ImmunizationIndex({
                                         </tbody>
                                     </table>
                                 </div>
+                            </div>
+                        ) : (
+                            <div className="p-1 sm:p-2">
+                                <ReportsHub
+                                    coverageReport={coverageReport}
+                                    scheduleStatusReport={scheduleStatusReport}
+                                    vaccines={vaccines}
+                                />
                             </div>
                         )}
                     </CardContent>

@@ -1580,8 +1580,11 @@ export default function VaccinationManagement({
                             </div>
                         </div>
                     )}
-                    {/* RESCHEDULE / ADJUST SUGGESTED VISIT DATE MODAL */}
-                    {showRescheduleModal && (
+                </>
+            )}
+
+            {/* RESCHEDULE / ADJUST SUGGESTED VISIT DATE MODAL */}
+            {showRescheduleModal && (
                         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-150">
                             <div className="w-full max-w-md rounded-xl border bg-background shadow-2xl overflow-hidden flex flex-col">
                                 <div className="flex items-start justify-between gap-3 border-b px-5 py-4 bg-muted/20">
@@ -1691,8 +1694,6 @@ export default function VaccinationManagement({
                             </div>
                         </div>
                     )}
-                </>
-            )}
             </CardContent>
         </Card>
     );

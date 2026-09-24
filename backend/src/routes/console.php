@@ -107,56 +107,80 @@ Schedule::command(
 |
 */
 
-Artisan::command('visits:send-reminders {--days=3 : Days window to look ahead}', function () {
+Artisan::command('visits:send-reminders', function () {
     $today = \Carbon\Carbon::today();
-    $days = (int) $this->option('days');
-    $endDate = $today->copy()->addDays($days);
 
-    $schedules = \App\Models\PatientVaccineSchedule::query()
-        ->where('status', 'scheduled')
-        ->whereNotNull('scheduled_date')
-        ->whereDate('scheduled_date', '>=', $today)
-        ->whereDate('scheduled_date', '<=', $endDate)
-        ->with(['patient.guardian.user', 'vaccine'])
+    $patients = \App\Models\Patient::query()
+        ->whereHas('vaccineSchedules', function ($query) use ($today) {
+            $query->whereIn('status', ['scheduled', 'upcoming', 'overdue'])
+                ->whereNotNull('scheduled_date')
+                ->whereDate('scheduled_date', '>=', $today);
+        })
+        ->with([
+            'guardian.user',
+            'vaccineSchedules' => function ($query) use ($today) {
+                $query->whereIn('status', ['scheduled', 'upcoming', 'overdue'])
+                    ->whereNotNull('scheduled_date')
+                    ->whereDate('scheduled_date', '>=', $today)
+                    ->with('vaccine')
+                    ->orderBy('scheduled_date');
+            },
+        ])
         ->get();
 
-    $this->info("Scanning scheduled appointments from {$today->toDateString()} to {$endDate->toDateString()}... Found {$schedules->count()}.");
+    $this->info("Scanning scheduled patients with upcoming visits from {$today->toDateString()}... Found {$patients->count()} patient(s).");
 
     $sent = 0;
-    foreach ($schedules as $schedule) {
-        $guardianUser = $schedule->patient?->guardian?->user;
+    foreach ($patients as $patient) {
+        $guardianUser = $patient->guardian?->user;
         if (! $guardianUser) {
             continue;
         }
 
-        $alreadySentToday = \Illuminate\Notifications\DatabaseNotification::query()
+        $schedules = $patient->vaccineSchedules;
+        if ($schedules->isEmpty()) {
+            continue;
+        }
+
+        // Determine next upcoming visit date
+        $nextVisitDate = \Carbon\Carbon::parse($schedules->first()->scheduled_date)->startOfDay();
+        $visitSchedules = $schedules->filter(function ($s) use ($nextVisitDate) {
+            return \Carbon\Carbon::parse($s->scheduled_date)->startOfDay()->equalTo($nextVisitDate);
+        });
+
+        $vaccineDescriptions = $visitSchedules->map(function ($s) {
+            $name = $s->vaccine?->name ?? 'Vaccine';
+            return "{$name} (Dose {$s->dose_number})";
+        })->unique()->values()->all();
+
+        $vaccinesSummary = implode(', ', $vaccineDescriptions);
+
+        // Anti-bloat / Overwrite: Delete previous visit reminder notifications for this child
+        \Illuminate\Notifications\DatabaseNotification::query()
             ->where('notifiable_type', $guardianUser::class)
             ->where('notifiable_id', $guardianUser->id)
             ->where('type', \App\Notifications\UpcomingVisitReminderNotification::class)
-            ->whereJsonContains('data->schedule_id', $schedule->id)
-            ->whereDate('created_at', $today)
-            ->exists();
+            ->whereJsonContains('data->patient_id', $patient->id)
+            ->delete();
 
-        if (! $alreadySentToday) {
-            \Illuminate\Support\Facades\Notification::send(
-                $guardianUser,
-                new \App\Notifications\UpcomingVisitReminderNotification(
-                    patient: $schedule->patient,
-                    vaccine: $schedule->vaccine ?? 'Vaccination',
-                    doseNumber: (int) $schedule->dose_number,
-                    scheduledDate: $schedule->scheduled_date,
-                    scheduleId: $schedule->id,
-                    remarks: $schedule->remarks
-                )
-            );
-            $sent++;
-        }
+        \Illuminate\Support\Facades\Notification::send(
+            $guardianUser,
+            new \App\Notifications\UpcomingVisitReminderNotification(
+                patient: $patient,
+                vaccine: $vaccinesSummary,
+                doseNumber: 1,
+                scheduledDate: $nextVisitDate->toDateString(),
+                scheduleId: $visitSchedules->first()?->id,
+                remarks: $visitSchedules->first()?->remarks
+            )
+        );
+        $sent++;
     }
 
-    $this->info("Completed. Sent {$sent} visit reminder notification(s) to guardians.");
-})->purpose('Send reminder notifications to guardians for upcoming child vaccination visits');
+    $this->info("Completed. Sent {$sent} visit reminder notification(s) to guardians (overwriting previous notifications).");
+})->purpose('Send next-visit reminder notifications to guardians for scheduled children');
 
 Schedule::command('visits:send-reminders')
-    ->dailyAt('07:00')
-    ->name('send-guardian-visit-reminders')
+    ->weeklyOn(1, '08:00') // Every Monday at 8:00 AM
+    ->name('send-guardian-visit-reminders-weekly')
     ->withoutOverlapping();

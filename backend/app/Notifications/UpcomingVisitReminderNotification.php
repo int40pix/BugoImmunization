@@ -15,7 +15,7 @@ class UpcomingVisitReminderNotification extends Notification
 
     public function __construct(
         public Patient $patient,
-        public Vaccine|string $vaccine,
+        public Vaccine|string|array $vaccine,
         public int $doseNumber = 1,
         public ?string $scheduledDate = null,
         public ?int $scheduleId = null,
@@ -35,7 +35,14 @@ class UpcomingVisitReminderNotification extends Notification
      */
     public function toArray(object $notifiable): array
     {
-        $vaccineName = $this->vaccine instanceof Vaccine ? $this->vaccine->name : $this->vaccine;
+        if (is_array($this->vaccine)) {
+            $vaccineName = implode(', ', $this->vaccine);
+        } elseif ($this->vaccine instanceof Vaccine) {
+            $vaccineName = "{$this->vaccine->name} (Dose {$this->doseNumber})";
+        } else {
+            $vaccineName = (string) $this->vaccine;
+        }
+
         $childName = trim($this->patient->first_name . ' ' . $this->patient->last_name);
         $firstName = $this->patient->first_name;
 
@@ -51,8 +58,8 @@ class UpcomingVisitReminderNotification extends Notification
 
         $priority = $targetDate->lte($today) ? 'warning' : 'info';
 
-        $title = "Upcoming Vaccination: {$firstName}";
-        $description = "Reminder: {$firstName} is scheduled for {$vaccineName} (Dose {$this->doseNumber}) {$relativeWhen} at Barangay Bugo Health Center. Please bring your child's immunization card.";
+        $title = "Upcoming Vaccination Visit: {$firstName}";
+        $description = "Reminder: {$firstName} is scheduled for a vaccination visit {$relativeWhen} at Barangay Bugo Health Center (Zone 2) for {$vaccineName}. Please bring your child's immunization card.";
 
         $url = '/guardian/visits';
 
@@ -80,4 +87,3 @@ class UpcomingVisitReminderNotification extends Notification
         return $this->toArray($notifiable);
     }
 }
-

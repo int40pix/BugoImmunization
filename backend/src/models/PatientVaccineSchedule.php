@@ -7,6 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PatientVaccineSchedule extends Model
 {
+    public const STATUS_SCHEDULED = 'scheduled';
+    public const STATUS_UPCOMING = 'upcoming';
+    public const STATUS_OVERDUE = 'overdue';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_CANCELLED = 'cancelled';
+
+    public const ACTIVE_SCHEDULE_STATUSES = ['scheduled', 'upcoming', 'overdue'];
+
     protected $fillable = [
         'patient_id',
         'vaccine_id',
@@ -24,6 +32,14 @@ class PatientVaccineSchedule extends Model
         'adjusted_at',
         'adjustment_reason',
     ];
+
+    /**
+     * Scope query to pending (unadministered) schedules: scheduled, upcoming, overdue.
+     */
+    public function scopePending($query)
+    {
+        return $query->whereIn('status', self::ACTIVE_SCHEDULE_STATUSES);
+    }
 
     protected $casts = [
         'scheduled_date' => 'date',

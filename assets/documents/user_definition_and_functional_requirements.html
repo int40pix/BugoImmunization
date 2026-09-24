@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>User Definition and Functional Requirements - Bugo Immunization System</title>
+<style>
+  @page {
+    size: letter portrait;
+    margin: 1in;
+  }
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000;
+    margin: 1in;
+    background: #fff;
+  }
+  h2 {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+    color: #000;
+  }
+  h3 {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-top: 18pt;
+    margin-bottom: 6pt;
+    color: #000;
+  }
+  p {
+    margin-top: 0;
+    margin-bottom: 12pt;
+    text-align: justify;
+  }
+  p.indent {
+    text-indent: 0.5in;
+  }
+  ul {
+    margin-top: 0;
+    margin-bottom: 12pt;
+    padding-left: 0.5in;
+  }
+  li {
+    margin-bottom: 8pt;
+    text-align: justify;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6pt;
+    margin-bottom: 18pt;
+    font-size: 11pt;
+    line-height: 1.35;
+  }
+  caption {
+    font-weight: bold;
+    font-size: 11pt;
+    margin-bottom: 6pt;
+    text-align: center;
+    caption-side: top;
+  }
+  th, td {
+    border: 1px solid #000;
+    padding: 8px 10px;
+    vertical-align: top;
+  }
+  th {
+    background-color: #d9e2f3;
+    font-weight: bold;
+    text-align: center;
+  }
+  td.req-name {
+    font-weight: bold;
+    width: 25%;
+  }
+  td.req-desc {
+    width: 75%;
+    text-align: justify;
+  }
+  .bullet-icon {
+    font-family: Arial, sans-serif;
+    margin-right: 4px;
+  }
+</style>
+</head>
+<body>
+
+  <h2>B. User Definition</h2>
+  <p class="indent">
+    There are five (5) users of the system, namely the <strong>System Administrator</strong>, <strong>Nurse</strong>, <strong>Midwife</strong>, <strong>Barangay Health Worker (BHW)</strong>, and <strong>Guardian</strong>.
+  </p>
+  <ul>
+    <li>
+      <strong>System Administrator</strong> – The System Administrator has full administrative access to all modules across the system. The administrator is solely authorized to handle and approve account recovery and password reset requests, create and manage healthcare staff accounts, configure role permissions, oversee system audit logs, and export operational and statistical reports.
+    </li>
+    <li>
+      <strong>Nurse</strong> – The Nurse has access to the Patient Management, Immunization Tracking, and Vaccine Inventory modules, but has no access to Staff Management or Account Recovery. The nurse records administered vaccine doses with one-click logging, monitors milestone schedules, updates patient records, and tracks vaccine stock levels and First-Expired, First-Out (FEFO) allocations.
+    </li>
+    <li>
+      <strong>Midwife</strong> – The Midwife has access to the Patient Management, Immunization Tracking, and Vaccine Inventory modules, but has no access to Staff Management or Account Recovery. The midwife registers new infant profiles, records vital anthropometric birth measurements, updates immunization cards, and assists in monitoring vaccine stock availability.
+    </li>
+    <li>
+      <strong>Barangay Health Worker (BHW)</strong> – The Barangay Health Worker has access restricted exclusively to the Patient Management module. The BHW can search patient records, scan QR codes via camera or handheld scanner for rapid identification, log clinic attendance, and review overdue patient lists for community follow-up. The BHW cannot access Vaccine Inventory, Staff Management, or Account Recovery.
+    </li>
+    <li>
+      <strong>Guardian</strong> – The Guardian has restricted, view-only access and cannot edit or modify any system records. The guardian can only view their registered children's details, monitor electronic immunization cards, view upcoming schedule dates, access their child's digital QR pass, receive automated reminder notifications, and submit password recovery requests.
+    </li>
+  </ul>
+
+  <h2>C. Functional Requirements</h2>
+  <p class="indent">
+    This section presents the functional requirements of each user of the system. The following tables describe the different functions available for the Administrator, Nurse, Midwife, Barangay Health Worker (BHW), and Guardian. Table 4.1 to Table 4.5 show the specific tasks each user can perform, with their corresponding descriptions. This clear role definition helps to ensure an organized, secure, and efficient monitoring and tracking process.
+  </p>
+
+  <!-- Table 4.1 -->
+  <table>
+    <caption>Table 4.1 Functionality Requirements of Administrator</caption>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Requirements Name</th>
+        <th style="width: 75%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="req-name">Dashboard</td>
+        <td class="req-desc">&#10070; The system allows the Administrator to view personalized greetings and real-time clinic statistics (Total Registered Patients, Completed Immunizations, Low-Stock Vaccines, and Today&rsquo;s Scheduled Appointments) through Stat Cards, with quick navigation links to all system modules.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Staff Management</td>
+        <td class="req-desc">&#10070; <em>(Admin Only)</em> The system allows the Administrator to manage healthcare personnel accounts (Nurses, Midwives, and BHWs). The Administrator can create new accounts, assign user roles, issue initial temporary passwords, update profiles, and activate or deactivate staff accounts.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Account Recovery Management</td>
+        <td class="req-desc">&#10070; <em>(Admin Only)</em> The system exclusively authorizes the Administrator to manage and resolve password reset and account recovery requests submitted by Guardians and staff. The Administrator can review pending requests, approve and generate temporary credentials, or dismiss invalid requests.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Patient Management</td>
+        <td class="req-desc">&#10070; The system allows the Administrator to view, register, update, and manage pediatric patient records and guardian profiles, generate unique Patient IDs (<code>PT-XXXXXX</code>), issue and scan QR codes, and print official digital immunization cards.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Immunization Tracking</td>
+        <td class="req-desc">&#10070; The system allows the Administrator to track child immunization milestones, record vaccine administrations with one-click logging, view completed and overdue doses, and monitor prioritized patient lists for vaccine allocation.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Vaccine Inventory Management</td>
+        <td class="req-desc">&#10070; The system allows the Administrator to oversee vaccine stocks, record incoming deliveries (Stock-In), perform stock adjustments, track lot numbers and expiration dates, monitor First-Expired, First-Out (FEFO) allocation, and archive depleted or expired vials.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Reminders &amp; Notifications</td>
+        <td class="req-desc">&#10070; The system allows the Administrator to broadcast automated or manual reminder notifications to guardians regarding upcoming schedules, overdue immunizations, and vaccine stock availability.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Reports &amp; Data Export</td>
+        <td class="req-desc">&#10070; The system allows the Administrator to generate and export operational, inventory, and immunization coverage reports in <code>.xlsx</code> format and printable formats for administrative and DOH reporting compliance.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 4.2 -->
+  <table>
+    <caption>Table 4.2 Functionality Requirements of Nurse</caption>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Requirements Name</th>
+        <th style="width: 75%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="req-name">Dashboard</td>
+        <td class="req-desc">&#10070; The system allows the Nurse to view daily clinical summaries, including today's scheduled vaccination visits, patients flagged for priority series completion, and urgent low-stock or near-expiry inventory alerts.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Patient Management</td>
+        <td class="req-desc">&#10070; The system allows the Nurse to search patient records, register new pediatric patients, update medical histories and allergy records, link children to guardian profiles, scan QR codes, and generate digital immunization cards.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Immunization Tracking</td>
+        <td class="req-desc">&#10070; The system allows the Nurse to record administered vaccine doses with a single click, log administering health worker notes, automatically calculate next milestone due dates, and update child vaccination histories.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Vaccine Inventory Management</td>
+        <td class="req-desc">&#10070; The system allows the Nurse to manage vaccine inventory by recording new stock batches, monitoring batch/lot numbers, reviewing FEFO allocation recommendations, inspecting threshold warning badges, and archiving damaged or expired vials.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Reminders &amp; Notifications</td>
+        <td class="req-desc">&#10070; The system allows the Nurse to trigger automated individual or bulk reminder notifications to parents for upcoming and overdue vaccination schedules, as well as receive real-time vaccine threshold alerts.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Access Restrictions</td>
+        <td class="req-desc">&#10070; The Nurse is strictly restricted from accessing Staff Management and Account Recovery settings.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 4.3 -->
+  <table>
+    <caption>Table 4.3 Functionality Requirements of Midwife</caption>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Requirements Name</th>
+        <th style="width: 75%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="req-name">Dashboard</td>
+        <td class="req-desc">&#10070; The system allows the Midwife to monitor daily maternal and child health clinic metrics, upcoming infant immunization visits, newly enrolled infant records, and stock status alerts.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Patient Management</td>
+        <td class="req-desc">&#10070; The system allows the Midwife to register newborn infants, record baseline anthropometric birth measurements (birth weight, length, head and chest circumferences, birth order), link infants to guardian accounts, and generate unique QR codes.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Immunization Tracking</td>
+        <td class="req-desc">&#10070; The system allows the Midwife to record administered birth and routine milestone vaccines (e.g., BCG, Hepatitis B, Pentavalent, OPV, IPV, PCV, MMR), track immunization intervals, and print updated child immunization cards.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Vaccine Inventory Monitoring</td>
+        <td class="req-desc">&#10070; The system allows the Midwife to inspect active vaccine supplies, verify batch availability before scheduled vaccination sessions, monitor expiration dates via FEFO, and submit stock movement updates.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Reminders &amp; Notifications</td>
+        <td class="req-desc">&#10070; The system allows the Midwife to view appointment schedules and send reminder alerts to guardians for scheduled infant vaccination sessions.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Access Restrictions</td>
+        <td class="req-desc">&#10070; The Midwife is strictly restricted from accessing Staff Management and Account Recovery settings.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 4.4 -->
+  <table>
+    <caption>Table 4.4 Functionality Requirements of Barangay Health Worker (BHW)</caption>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Requirements Name</th>
+        <th style="width: 75%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="req-name">Dashboard</td>
+        <td class="req-desc">&#10070; The system allows the BHW to view daily clinic appointment counts, scheduled patient lists, and direct access links for patient search and camera-based QR code scanning.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Patient Lookup &amp; Identification</td>
+        <td class="req-desc">&#10070; The system allows the BHW to quickly search pediatric records by name or Patient ID, or scan physical/digital patient QR codes using a smartphone or clinic webcam to immediately retrieve verified child profiles.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Attendance &amp; Triage Logging</td>
+        <td class="req-desc">&#10070; The system allows the BHW to verify scheduled appointments, log patient arrival and clinic attendance, and route patients to nurses or midwives for vaccination.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Community Overdue Follow-up</td>
+        <td class="req-desc">&#10070; The system allows the BHW to view lists of children flagged with missed or overdue immunization doses to facilitate targeted community visits and follow-ups within assigned barangay puroks.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Access Restrictions</td>
+        <td class="req-desc">&#10070; The BHW has access restricted exclusively to the Patient Management module and cannot access Vaccine Inventory, Staff Management, or Account Recovery.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 4.5 -->
+  <table>
+    <caption>Table 4.5 Functionality Requirements of Guardian</caption>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Requirements Name</th>
+        <th style="width: 75%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="req-name">Guardian Dashboard</td>
+        <td class="req-desc">&#10070; The system allows the Guardian to access a secure, mobile-friendly dashboard displaying summary profile cards for each of their registered children, showing overall immunization completion progress and upcoming visit dates.</td>
+      </tr>
+      <tr>
+        <td class="req-name">View Patient Details (Read-Only)</td>
+        <td class="req-desc">&#10070; The system allows the Guardian to view their children&rsquo;s personal information, birth measurements, and profile status in read-only format. Guardians are strictly restricted from editing or altering medical records.</td>
+      </tr>
+      <tr>
+        <td class="req-name">View Immunization Card (Read-Only)</td>
+        <td class="req-desc">&#10070; The system allows the Guardian to view their child&rsquo;s electronic immunization card, including completed vaccines, administration dates, lot numbers, administering health staff, and upcoming dose schedules.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Digital QR Pass</td>
+        <td class="req-desc">&#10070; The system allows the Guardian to access and display their child's unique digital QR code on their smartphone for instant, contactless scanning and verification at the health center.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Receive Notifications &amp; Reminders</td>
+        <td class="req-desc">&#10070; The system allows the Guardian to receive automated SMS and in-app notifications regarding upcoming appointments, overdue vaccination warnings, and vaccine availability updates.</td>
+      </tr>
+      <tr>
+        <td class="req-name">Submit Password Recovery Request</td>
+        <td class="req-desc">&#10070; The system allows the Guardian to submit an online password recovery request through the login screen if they forget their login credentials, which is forwarded to the Administrator for approval.</td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>

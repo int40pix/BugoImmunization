@@ -71,7 +71,7 @@ class VaccineInventoryController extends Controller
         */
 
         $reservedByBatch = PatientVaccineSchedule::query()
-            ->where('status', 'scheduled')
+            ->pending()
             ->whereNotNull('vaccine_inventory_id')
             ->selectRaw(
                 'vaccine_inventory_id, COUNT(*) as reserved_count'
@@ -1219,6 +1219,20 @@ class VaccineInventoryController extends Controller
     ) {
         /*
         |--------------------------------------------------------------------------
+        | BLOCK DELETE FOR ARCHIVED BATCHES
+        |--------------------------------------------------------------------------
+        */
+        if ($vaccineInventory->is_archived) {
+            return redirect()
+                ->route('vaccine-inventory.index')
+                ->with(
+                    'error',
+                    'Archived vaccine batches cannot be permanently deleted. They must be retained for auditing and historical traceability.'
+                );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
         | BLOCK DELETE WHEN REFERENCED BY A PATIENT SCHEDULE
         |--------------------------------------------------------------------------
         |
@@ -1236,7 +1250,6 @@ class VaccineInventoryController extends Controller
                 )
                 ->exists();
 
-
         if ($isReferencedBySchedule) {
             return redirect()
                 ->route(
@@ -1245,6 +1258,24 @@ class VaccineInventoryController extends Controller
                 ->with(
                     'error',
                     'This vaccine batch cannot be permanently deleted because it is already referenced by a patient vaccine schedule. Archive it instead when eligible.'
+                );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | BLOCK DELETE WHEN RECORDED IN INVENTORY TRANSACTIONS
+        |--------------------------------------------------------------------------
+        */
+        $hasTransactions = VaccineInventoryTransaction::query()
+            ->where('vaccine_inventory_id', $vaccineInventory->id)
+            ->exists();
+
+        if ($hasTransactions) {
+            return redirect()
+                ->route('vaccine-inventory.index')
+                ->with(
+                    'error',
+                    'This vaccine batch cannot be permanently deleted because it has recorded audit transaction events. Archive it instead when eligible.'
                 );
         }
 
