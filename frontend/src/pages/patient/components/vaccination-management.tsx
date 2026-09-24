@@ -20,6 +20,7 @@ import {
 import { router, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
+    Building2,
     CalendarDays,
     CheckCircle2,
     History,
@@ -363,8 +364,29 @@ export default function VaccinationManagement({
         setIsCustomSite(false);
     };
 
+    const isWednesday = (dateStr: string) => {
+        if (!dateStr) return false;
+        const [y, m, d] = dateStr.split('-').map(Number);
+        if (!y || !m || !d) return false;
+        const dateObj = new Date(y, m - 1, d);
+        return dateObj.getDay() === 3;
+    };
+
+    const getNearestWednesday = (dateStr?: string | null) => {
+        const base = dateStr ? new Date(dateStr + 'T00:00:00') : new Date();
+        const day = base.getDay();
+        const diff = (3 - day + 7) % 7 || 7;
+        const wed = new Date(base);
+        wed.setDate(base.getDate() + diff);
+        const y = wed.getFullYear();
+        const m = String(wed.getMonth() + 1).padStart(2, '0');
+        const d = String(wed.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    };
+
     const handleOpenRescheduleModal = (initialDate?: string | null) => {
-        setRescheduleDate(initialDate || new Date().toISOString().split('T')[0]);
+        const target = initialDate || getNearestWednesday();
+        setRescheduleDate(isWednesday(target) ? target : getNearestWednesday(target));
         setRescheduleReason('');
         setShowRescheduleModal(true);
     };
@@ -372,6 +394,10 @@ export default function VaccinationManagement({
     const handleSaveReschedule = (e: React.FormEvent) => {
         e.preventDefault();
         if (!rescheduleDate || isRescheduling) return;
+
+        if (!isWednesday(rescheduleDate)) {
+            return;
+        }
 
         setIsRescheduling(true);
         router.post(
@@ -740,16 +766,29 @@ export default function VaccinationManagement({
 
                                                         <div className="flex items-center gap-1.5 shrink-0">
                                                             {canAdminister ? (
-                                                                <Button
-                                                                    type="button"
-                                                                    size="sm"
-                                                                    disabled={Boolean(administeringKey)}
-                                                                    onClick={() => handleOpenAdministration(option)}
-                                                                    className="shrink-0 h-8 text-xs px-2.5 sm:px-3"
-                                                                >
-                                                                    <Syringe className="mr-1.5 h-3.5 w-3.5" />
-                                                                    Administer
-                                                                </Button>
+                                                                <>
+                                                                    <Button
+                                                                        type="button"
+                                                                        size="sm"
+                                                                        disabled={Boolean(administeringKey)}
+                                                                        onClick={() => handleOpenAdministration(option)}
+                                                                        className="shrink-0 h-8 text-xs px-2.5 sm:px-3"
+                                                                    >
+                                                                        <Syringe className="mr-1.5 h-3.5 w-3.5" />
+                                                                        Administer
+                                                                    </Button>
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        onClick={() => handleOpenRescheduleModal(option.scheduled_date)}
+                                                                        className="shrink-0 h-8 text-xs px-2 sm:px-2.5"
+                                                                        title="Adjust Visit Date"
+                                                                    >
+                                                                        <CalendarDays className="h-3.5 w-3.5 text-primary mr-1" />
+                                                                        Adjust
+                                                                    </Button>
+                                                                </>
                                                             ) : (
                                                                 <>
                                                                     <Button
@@ -1573,15 +1612,18 @@ export default function VaccinationManagement({
 
                                 <form onSubmit={handleSaveReschedule} className="p-5 space-y-4">
                                     <div className="rounded-lg border bg-muted/20 p-3 text-xs space-y-1">
-                                        <p className="font-semibold text-foreground">Suggested Date Policy:</p>
+                                        <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                                            <Building2 className="h-3.5 w-3.5 text-primary" />
+                                            <span>Barangay Bugo Health Center Clinic Policy:</span>
+                                        </div>
                                         <p className="text-muted-foreground">
-                                            Vaccination dates are recommendations. Staff can adjust visits according to clinic schedule or guardian request.
+                                            Routine pediatric immunization is conducted every <strong>Wednesday (8:00 AM – 11:30 AM)</strong> at Zone 2. Visit dates must be scheduled on a Wednesday.
                                         </p>
                                     </div>
 
                                     <div className="space-y-1.5">
                                         <Label htmlFor="reschedule-date" className="text-xs font-semibold">
-                                            Scheduled Visit Date <span className="text-destructive">*</span>
+                                            Scheduled Visit Date (Wednesday) <span className="text-destructive">*</span>
                                         </Label>
                                         <Input
                                             id="reschedule-date"
@@ -1590,8 +1632,26 @@ export default function VaccinationManagement({
                                             value={rescheduleDate}
                                             onChange={(e) => setRescheduleDate(e.target.value)}
                                             required
-                                            className="text-xs sm:text-sm"
+                                            className={`text-xs sm:text-sm ${
+                                                rescheduleDate && !isWednesday(rescheduleDate)
+                                                    ? 'border-amber-500 focus-visible:ring-amber-500'
+                                                    : ''
+                                            }`}
                                         />
+                                        {rescheduleDate && !isWednesday(rescheduleDate) && (
+                                            <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs">
+                                                <span>Selected date is not a Wednesday.</span>
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-6 text-[11px] px-2 border-amber-500/30 text-amber-800 dark:text-amber-300"
+                                                    onClick={() => setRescheduleDate(getNearestWednesday(rescheduleDate))}
+                                                >
+                                                    Snap to Wednesday
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="space-y-1.5">
@@ -1601,7 +1661,7 @@ export default function VaccinationManagement({
                                         <Input
                                             id="reschedule-reason"
                                             type="text"
-                                            placeholder="e.g., Mother requested different Wednesday"
+                                            placeholder="e.g., Parent requested different clinic Wednesday"
                                             value={rescheduleReason}
                                             onChange={(e) => setRescheduleReason(e.target.value)}
                                             maxLength={255}
@@ -1622,7 +1682,7 @@ export default function VaccinationManagement({
                                         <Button
                                             type="submit"
                                             size="sm"
-                                            disabled={isRescheduling || !rescheduleDate}
+                                            disabled={isRescheduling || !rescheduleDate || !isWednesday(rescheduleDate)}
                                         >
                                             {isRescheduling ? 'Saving...' : 'Save Suggested Date'}
                                         </Button>

@@ -550,8 +550,8 @@ export default function GuardianDashboard({
                                 <span>Barangay Bugo Health Center — Pediatric Services</span>
                             </div>
                             <p className="text-muted-foreground leading-relaxed">
-                                Pediatric Immunization Clinic: <strong>Wednesdays & Thursdays, 8:00 AM – 11:30 AM</strong>.
-                                <br className="hidden sm:inline" /> Located at Zone 1, Bugo, Cagayan de Oro City.
+                                Pediatric Immunization Clinic: <strong>Wednesdays, 8:00 AM – 11:30 AM</strong>.
+                                <br className="hidden sm:inline" /> Located at Zone 2, Bugo, Cagayan de Oro City.
                             </p>
                         </div>
 

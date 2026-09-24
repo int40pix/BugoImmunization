@@ -588,7 +588,11 @@ class GuardianPortalController extends Controller
          | Structured Digital Immunization Card (DOH EPI Standard)
          |--------------------------------------------------------------------------
          */
-        $allVaccines = Vaccine::query()->orderBy('name')->get();
+        $allVaccines = Vaccine::query()
+            ->with(['schedules' => fn ($query) => $query->orderBy('dose_number')])
+            ->orderByRaw("CASE WHEN category = 'routine' THEN 0 ELSE 1 END")
+            ->orderBy('id')
+            ->get();
         $immunizationCard = $allVaccines->map(function (Vaccine $vaccine) use ($patient, $usableStockByVaccine) {
             $requiredDoses = max(1, (int) $vaccine->required_doses);
             $recordsByDose = $patient->immunizationRecords
@@ -605,12 +609,15 @@ class GuardianPortalController extends Controller
                 default => 'In Stock',
             };
 
-            $doses = collect(range(1, $requiredDoses))->map(function (int $doseNumber) use ($recordsByDose, $schedulesByDose, $vials, $stockStatus) {
+            $doses = collect(range(1, $requiredDoses))->map(function (int $doseNumber) use ($vaccine, $recordsByDose, $schedulesByDose, $vials, $stockStatus) {
                 $record = $recordsByDose->get($doseNumber);
                 $schedule = $schedulesByDose->get($doseNumber);
+                $scheduleDef = $vaccine->schedules->firstWhere('dose_number', $doseNumber);
 
                 return [
                     'dose_number' => $doseNumber,
+                    'recommended_age' => $scheduleDef?->recommended_age,
+                    'interval' => $scheduleDef?->interval,
                     'record' => $record ? [
                         'id' => $record->id,
                         'dose_number' => (int) $record->dose_number,
@@ -715,6 +722,10 @@ class GuardianPortalController extends Controller
                     'date_of_birth' => $patient->date_of_birth ? Carbon::parse($patient->date_of_birth)->format('Y-m-d') : null,
                     'age_display' => $ageDisplay,
                     'sex' => $patient->sex,
+                    'address' => $patient->address,
+                    'mother_name' => $patient->mother_name,
+                    'father_name' => $patient->father_name,
+                    'guardian_relationship' => $patient->guardian_relationship,
                     'status' => $patient->status,
                     'qr_code_value' => url("/patients/{$patient->id}"),
                     'records' => $records,

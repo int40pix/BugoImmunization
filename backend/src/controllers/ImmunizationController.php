@@ -8,6 +8,7 @@ use App\Models\PatientVaccineSchedule;
 use App\Models\Vaccine;
 use App\Services\ImmunizationAdministrationService;
 use App\Services\VaccineSchedulingPriorityService;
+use Carbon\Carbon;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -289,6 +290,11 @@ class ImmunizationController extends Controller
                 'required',
                 'date',
                 'after_or_equal:today',
+                function ($attribute, $value, $fail) {
+                    if (! Carbon::parse($value)->isWednesday()) {
+                        $fail('Routine pediatric immunization clinic at Barangay Bugo Health Center is held only on Wednesdays.');
+                    }
+                },
             ],
             'adjustment_reason' => [
                 'nullable',

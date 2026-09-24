@@ -304,13 +304,13 @@ export default function GuardianVisitsIndex({
                                         <Clock3 className="h-3.5 w-3.5 text-muted-foreground/80 mt-0.5 shrink-0" />
                                         <div>
                                             <strong className="text-foreground">Routine Pediatric Vaccination:</strong>
-                                            <p className="mt-0.5">Wednesdays & Thursdays, 8:00 AM – 11:30 AM</p>
+                                            <p className="mt-0.5">Wednesdays, 8:00 AM – 11:30 AM</p>
                                         </div>
                                     </div>
 
                                     <div className="flex items-start gap-2 pt-1">
                                         <MapPin className="h-3.5 w-3.5 text-muted-foreground/80 mt-0.5 shrink-0" />
-                                        <span>Zone 1, Bugo, Cagayan de Oro City</span>
+                                        <span>Zone 2, Bugo, Cagayan de Oro City</span>
                                     </div>
                                 </div>
                             </CardContent>

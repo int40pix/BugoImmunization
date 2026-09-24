@@ -255,7 +255,9 @@ class VaccineSchedulingNextVisitTest extends TestCase
         // Generate schedule
         app(VaccineSchedulingPriorityService::class)->generateSchedules();
 
-        $newSuggestedDate = Carbon::today()->addWeeks(5)->toDateString();
+        $newSuggestedDate = Carbon::today()->isWednesday()
+            ? Carbon::today()->addWeeks(4)->toDateString()
+            : Carbon::today()->next(Carbon::WEDNESDAY)->addWeeks(4)->toDateString();
 
         $this->actingAs($this->staff);
         $response = $this->post(route('immunization.patients.reschedule', $this->baby), [
@@ -275,5 +277,13 @@ class VaccineSchedulingNextVisitTest extends TestCase
         $this->assertTrue($schedule->is_manually_adjusted);
         $this->assertEquals('Guardian requested a different Wednesday', $schedule->adjustment_reason);
         $this->assertEquals($this->staff->id, $schedule->adjusted_by);
+
+        // Rescheduling to a non-Wednesday (e.g. Friday) must be rejected
+        $fridayDate = Carbon::today()->next(Carbon::FRIDAY)->toDateString();
+        $invalidResponse = $this->post(route('immunization.patients.reschedule', $this->baby), [
+            'scheduled_date' => $fridayDate,
+            'adjustment_reason' => 'Attempt Friday',
+        ]);
+        $invalidResponse->assertSessionHasErrors('scheduled_date');
     }
 }
