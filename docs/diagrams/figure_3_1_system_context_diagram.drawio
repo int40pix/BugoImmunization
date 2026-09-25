@@ -1,0 +1,81 @@
+<mxfile host="app.diagrams.net" modified="2026-09-25T02:00:00.000Z" agent="Antigravity" version="21.0.0" type="device">
+  <diagram id="context_diagram" name="Figure 3.1 System Context Diagram (DFD Level-0)">
+    <mxGraphModel dx="1200" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Figure 3.1 Context Diagram (Level-0 Data Flow Diagram)&#xa;Barangay Bugo Immunization Management System" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=15;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="250" y="15" width="600" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- CENTRAL PROCESS: 0.0 -->
+        <mxCell id="p0" value="0.0&#xa;&#xa;Barangay Bugo&#xa;Pediatric Immunization&#xa;Management System" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#dbeafe;strokeColor=#2563eb;strokeWidth=2.5;fontStyle=1;fontSize=13;fontColor=#1e3a8a;" vertex="1" parent="1">
+          <mxGeometry x="450" y="310" width="200" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- ENTITY 1: HEALTHCARE PERSONNEL (Left) -->
+        <mxCell id="e_staff" value="HEALTHCARE PERSONNEL&#xa;(Admin, Nurse, Midwife, BHW)&#xa;&#xa;Triage, Clinical Vaccination,&#xa;Inventory &amp; Account Admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;strokeWidth=2;fontStyle=1;fontSize=11;fontColor=#0f172a;" vertex="1" parent="1">
+          <mxGeometry x="50" y="270" width="220" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- ENTITY 2: PARENTS / GUARDIANS (Right) -->
+        <mxCell id="e_guardian" value="PARENTS / GUARDIANS&#xa;(Mothers, Fathers, Caregivers)&#xa;&#xa;Child Health Pass Access,&#xa;Appointments &amp; Password Reset" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;strokeWidth=2;fontStyle=1;fontSize=11;fontColor=#0f172a;" vertex="1" parent="1">
+          <mxGeometry x="830" y="270" width="220" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- ENTITY 3: AUTOMATED SYSTEM SCHEDULER (Top) -->
+        <mxCell id="e_cron" value="SYSTEM CRON SCHEDULER&#xa;(Automated Background Daemons)&#xa;&#xa;Auto-Archive, Daily Reconcile,&#xa;Monday 8:00 AM Visit Reminders" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef08a;strokeColor=#ca8a04;strokeWidth=2;fontStyle=1;fontSize=11;fontColor=#713f12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="80" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- ENTITY 4: DOH / HEALTH AUTHORITIES (Bottom) -->
+        <mxCell id="e_doh" value="HEALTH CENTER HEAD / DOH&#xa;(Monitoring &amp; Health Authority)&#xa;&#xa;Vaccine Coverage &amp; Schedule Status&#xa;Official Submission Verification" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16a34a;strokeWidth=2;fontStyle=1;fontSize=11;fontColor=#14532d;" vertex="1" parent="1">
+          <mxGeometry x="430" y="650" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- FLOWS: STAFF <-> SYSTEM -->
+        <mxCell id="f_staff_in" value="Patient intake, birth vitals, lot stock-in,&#xa;wastage/spoilage reasons, dose administration,&#xa;reschedule dates, report filters" style="endArrow=classic;html=1;strokeColor=#2563eb;strokeWidth=1.5;fontColor=#1e40af;fontSize=9;align=right;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;" edge="1" parent="1" source="e_staff" target="p0">
+          <mxGeometry x="0.1" y="-10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="f_staff_out" value="Digital Bakuna Cards, Patient QR codes,&#xa;low-stock &amp; expiry alerts, transaction ledger,&#xa;Vaccine Coverage &amp; Schedule Status Reports" style="endArrow=classic;html=1;strokeColor=#16a34a;strokeWidth=1.5;fontColor=#15803d;fontSize=9;align=left;exitX=0;exitY=0.7;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="p0" target="e_staff">
+          <mxGeometry x="0.1" y="10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- FLOWS: GUARDIAN <-> SYSTEM -->
+        <mxCell id="f_guard_in" value="Portal credentials,&#xa;password reset requests" style="endArrow=classic;html=1;strokeColor=#2563eb;strokeWidth=1.5;fontColor=#1e40af;fontSize=9;align=left;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=1;entryY=0.3;entryDx=0;entryDy=0;" edge="1" parent="1" source="e_guardian" target="p0">
+          <mxGeometry x="0.1" y="-10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="f_guard_out" value="Consolidated single next-visit reminder,&#xa;digital child Bakuna pass &amp; QR code,&#xa;real-time vaccine availability alert" style="endArrow=classic;html=1;strokeColor=#16a34a;strokeWidth=1.5;fontColor=#15803d;fontSize=9;align=right;exitX=1;exitY=0.7;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="p0" target="e_guardian">
+          <mxGeometry x="0.1" y="10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- FLOWS: CRON <-> SYSTEM -->
+        <mxCell id="f_cron_in" value="Daily (05:55 AM, 06:00 AM, 06:10 AM) &amp;&#xa;Weekly Monday (08:00 AM) command triggers" style="endArrow=classic;html=1;strokeColor=#ca8a04;strokeWidth=1.5;fontColor=#854d0e;fontSize=9;align=left;exitX=0.35;exitY=1;exitDx=0;exitDy=0;entryX=0.35;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="e_cron" target="p0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f_cron_out" value="Auto-archived lot audit records,&#xa;dispatched reminder logs" style="endArrow=classic;html=1;strokeColor=#ca8a04;strokeWidth=1.5;fontColor=#854d0e;fontSize=9;align=right;exitX=0.65;exitY=0;exitDx=0;exitDy=0;entryX=0.65;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p0" target="e_cron">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- FLOWS: SYSTEM -> DOH -->
+        <mxCell id="f_doh_out" value="Vaccine Coverage Report (Landscape A4 PDF &amp; UTF-8 BOM CSV)&#xa;Immunization Schedule Status Report (Overdue &amp; Upcoming PDF/CSV)" style="endArrow=classic;html=1;strokeColor=#16a34a;strokeWidth=1.5;fontColor=#15803d;fontSize=9;align=center;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p0" target="e_doh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

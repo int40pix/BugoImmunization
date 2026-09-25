@@ -1,0 +1,105 @@
+<mxfile host="app.diagrams.net" modified="2026-09-25T02:00:00.000Z" agent="Antigravity" version="21.0.0" type="device">
+  <diagram id="erd_diagram" name="Figure 3.3 Entity Relationship Diagram (ERD)">
+    <mxGraphModel dx="1500" dy="1500" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Figure 3.3 Entity Relationship Diagram (ERD) - Full Relational Database Schema&#xa;Barangay Bugo Immunization Management System (14 Tables)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=15;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="380" y="15" width="650" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: ROLES -->
+        <mxCell id="t_roles" value="ROLES&#xa;* id (PK, bigint)&#xa;  name (UK, varchar)&#xa;  display_name (varchar)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=1.5;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="160" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: USERS -->
+        <mxCell id="t_users" value="USERS&#xa;* id (PK, bigint)&#xa;  role_id (FK, bigint)&#xa;  name (varchar)&#xa;  email (UK, varchar)&#xa;  password (varchar)&#xa;  account_status (varchar)&#xa;  must_change_password (bool)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=1.5;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="250" y="80" width="190" height="135" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: PASSWORD_RESET_REQUESTS -->
+        <mxCell id="t_pwd" value="PASSWORD_RESET_REQUESTS&#xa;* id (PK, bigint)&#xa;  user_id (FK, bigint)&#xa;  status (enum)&#xa;  requested_at (timestamp)&#xa;  processed_at (timestamp)&#xa;  processed_by (FK, bigint)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=1.5;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="490" y="80" width="190" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: NOTIFICATIONS -->
+        <mxCell id="t_notif" value="NOTIFICATIONS&#xa;* id (PK, uuid)&#xa;  type (varchar)&#xa;  notifiable_type (varchar)&#xa;  notifiable_id (bigint)&#xa;  data (text)&#xa;  read_at (timestamp)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=1.5;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="720" y="80" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: GUARDIANS -->
+        <mxCell id="t_guard" value="GUARDIANS&#xa;* id (PK, bigint)&#xa;  user_id (FK,UK, bigint)&#xa;  guardian_no (UK, varchar)&#xa;  name (varchar)&#xa;  gender (varchar)&#xa;  contact_number (varchar)&#xa;  email (varchar)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=1.5;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="250" y="270" width="190" height="135" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: PATIENTS -->
+        <mxCell id="t_patient" value="PATIENTS&#xa;* id (PK, bigint)&#xa;  guardian_id (FK, bigint)&#xa;  patient_id (UK, varchar)&#xa;  first_name (varchar)&#xa;  last_name (varchar)&#xa;  date_of_birth (date)&#xa;  sex (enum)&#xa;  address (text)&#xa;  birth_weight (decimal)&#xa;  status (varchar)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#eff6ff;strokeColor=#2563eb;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="250" y="460" width="190" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: PATIENT_VACCINES -->
+        <mxCell id="t_pat_vacc" value="PATIENT_VACCINES&#xa;* id (PK, bigint)&#xa;  patient_id (FK, bigint)&#xa;  vaccine_id (FK, bigint)&#xa;  added_by (FK, bigint)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=1.5;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="460" width="160" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: PATIENT_IMMUNIZATION_CARD_ROWS -->
+        <mxCell id="t_card_row" value="PATIENT_CARD_ROWS&#xa;* id (PK, bigint)&#xa;  patient_id (FK, bigint)&#xa;  vaccine_name (varchar)&#xa;  dose_count (int)&#xa;  doses (json)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=1.5;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="580" width="160" height="105" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: VACCINES -->
+        <mxCell id="t_vacc" value="VACCINES&#xa;* id (PK, bigint)&#xa;  name (varchar)&#xa;  category (enum)&#xa;  required_doses (int)&#xa;  description (text)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#eff6ff;strokeColor=#2563eb;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="600" y="460" width="170" height="105" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: VACCINE_SCHEDULES -->
+        <mxCell id="t_sched_ref" value="VACCINE_SCHEDULES&#xa;* id (PK, bigint)&#xa;  vaccine_id (FK, bigint)&#xa;  dose_number (int)&#xa;  recommended_age (int)&#xa;  interval_from_prev (int)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=1.5;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="600" y="300" width="170" height="105" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: VACCINE_INVENTORIES -->
+        <mxCell id="t_inv" value="VACCINE_INVENTORIES&#xa;* id (PK, bigint)&#xa;  vaccine_id (FK, bigint)&#xa;  batch_number (UK, varchar)&#xa;  quantity (int)&#xa;  date_received (date)&#xa;  expiration_date (date)&#xa;  is_archived (bool)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#eff6ff;strokeColor=#2563eb;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="840" y="460" width="190" height="135" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: VACCINE_INVENTORY_TRANSACTIONS -->
+        <mxCell id="t_trans" value="VACCINE_INVENTORY_TRANS&#xa;* id (PK, bigint)&#xa;  vaccine_id (FK, bigint)&#xa;  vaccine_inventory_id (FK)&#xa;  user_id (FK, bigint)&#xa;  patient_id (FK, bigint)&#xa;  record_id (FK, bigint)&#xa;  transaction_type (varchar)&#xa;  quantity_change (int)&#xa;  balance_after (int)&#xa;  batch_number (varchar)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#fff7ed;strokeColor=#ea580c;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="460" width="220" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: PATIENT_VACCINE_SCHEDULES -->
+        <mxCell id="t_pat_sched" value="PATIENT_VACCINE_SCHEDULES&#xa;* id (PK, bigint)&#xa;  patient_id (FK, bigint)&#xa;  vaccine_id (FK, bigint)&#xa;  vaccine_inventory_id (FK)&#xa;  dose_number (tinyint)&#xa;  scheduled_date (date)&#xa;  status (varchar)&#xa;  is_completion_candidate (bool)&#xa;  priority_reason (varchar)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=1.5;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="490" y="690" width="210" height="165" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE: IMMUNIZATION_RECORDS -->
+        <mxCell id="t_record" value="IMMUNIZATION_RECORDS&#xa;* id (PK, bigint)&#xa;  patient_id (FK, bigint)&#xa;  vaccine_id (FK, bigint)&#xa;  vaccine_inventory_id (FK)&#xa;  dose_number (int)&#xa;  administered_date (date)&#xa;  administered_by (varchar)&#xa;  batch_number (varchar)" style="shape=table;startSize=24;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;fillColor=#f0fdf4;strokeColor=#16a34a;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="780" y="690" width="200" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- RELATIONSHIPS -->
+        <mxCell id="r_role_user" value="1 : M" style="endArrow=crow;html=1;strokeColor=#475569;" edge="1" parent="1" source="t_roles" target="t_users" />
+        <mxCell id="r_user_guard" value="1 : 1" style="endArrow=none;html=1;strokeColor=#475569;" edge="1" parent="1" source="t_users" target="t_guard" />
+        <mxCell id="r_user_pwd" value="1 : M" style="endArrow=crow;html=1;strokeColor=#475569;" edge="1" parent="1" source="t_users" target="t_pwd" />
+        <mxCell id="r_guard_pat" value="1 : M" style="endArrow=crow;html=1;strokeColor=#475569;" edge="1" parent="1" source="t_guard" target="t_patient" />
+
+        <mxCell id="r_pat_sched" value="1 : M" style="endArrow=crow;html=1;strokeColor=#2563eb;" edge="1" parent="1" source="t_patient" target="t_pat_sched" />
+        <mxCell id="r_pat_rec" value="1 : M" style="endArrow=crow;html=1;strokeColor=#2563eb;" edge="1" parent="1" source="t_patient" target="t_record" />
+        <mxCell id="r_pat_vacc" value="1 : M" style="endArrow=crow;html=1;strokeColor=#475569;" edge="1" parent="1" source="t_patient" target="t_pat_vacc" />
+        <mxCell id="r_pat_card" value="1 : M" style="endArrow=crow;html=1;strokeColor=#475569;" edge="1" parent="1" source="t_patient" target="t_card_row" />
+
+        <mxCell id="r_vacc_sched" value="1 : M" style="endArrow=crow;html=1;strokeColor=#475569;" edge="1" parent="1" source="t_vacc" target="t_sched_ref" />
+        <mxCell id="r_vacc_inv" value="1 : M" style="endArrow=crow;html=1;strokeColor=#2563eb;" edge="1" parent="1" source="t_vacc" target="t_inv" />
+        <mxCell id="r_vacc_psched" value="1 : M" style="endArrow=crow;html=1;strokeColor=#475569;" edge="1" parent="1" source="t_vacc" target="t_pat_sched" />
+        <mxCell id="r_vacc_rec" value="1 : M" style="endArrow=crow;html=1;strokeColor=#475569;" edge="1" parent="1" source="t_vacc" target="t_record" />
+
+        <mxCell id="r_inv_trans" value="1 : M" style="endArrow=crow;html=1;strokeColor=#ea580c;" edge="1" parent="1" source="t_inv" target="t_trans" />
+        <mxCell id="r_inv_rec" value="1 : M" style="endArrow=crow;html=1;strokeColor=#16a34a;" edge="1" parent="1" source="t_inv" target="t_record" />
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
