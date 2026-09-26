@@ -1302,10 +1302,189 @@ export default function ImmunizationIndex({
                     <CardContent className="p-2 sm:p-6 sm:pt-0">
                         {viewMode === 'tcl' ? (
                             <div className="w-full max-w-full overflow-hidden rounded-lg border">
+                                {/* Mobile View (< md): Accordion / Compact Cards matching mockup */}
+                                <div
+                                    onScroll={handleMasterlistScroll}
+                                    className="custom-scrollbar d-block d-md-none p-3 space-y-3 overflow-y-auto"
+                                    style={{
+                                        maxHeight: 'calc(100vh - 290px)',
+                                        minHeight: '400px',
+                                    }}
+                                >
+                                    {visibleMasterlistPatients.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center p-8 text-center space-y-2.5">
+                                            <div className="rounded-full bg-muted/60 p-3 text-muted-foreground">
+                                                <Baby className="h-6 w-6" />
+                                            </div>
+                                            <p className="font-medium text-foreground text-sm">
+                                                No patient records found
+                                            </p>
+                                            <p className="text-xs text-muted-foreground max-w-xs">
+                                                Try clearing your search query or adjusting your filters.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        visibleMasterlistPatients.map((patient) => {
+                                            const fullName = `${patient.first_name}${patient.middle_name ? ` ${patient.middle_name}` : ''} ${patient.last_name}`;
+                                            const motherOrGuardian = patient.mother_name
+                                                ? `Mother: ${patient.mother_name}`
+                                                : patient.guardian_name
+                                                  ? `Guardian: ${patient.guardian_name}`
+                                                  : 'Mother: —';
+                                            const isExpanded = expandedTclPatients.has(patient.id);
+
+                                            return (
+                                                <div
+                                                    key={patient.id}
+                                                    className="rounded-xl border border-border/70 bg-card/60 p-3.5 space-y-3 transition-colors hover:border-border"
+                                                >
+                                                    {/* Header Row: Patient ID, Child Name, Chevron */}
+                                                    <div
+                                                        onClick={() => toggleTclPatient(patient.id)}
+                                                        className="flex items-center justify-between gap-2 cursor-pointer select-none"
+                                                    >
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <span className="font-mono text-xs text-muted-foreground shrink-0">
+                                                                {patient.patient_id}
+                                                            </span>
+                                                            <span className="font-bold text-xs sm:text-sm text-foreground truncate" title={fullName}>
+                                                                {fullName}
+                                                            </span>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            className="text-muted-foreground hover:text-foreground shrink-0 p-0.5"
+                                                            aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                                                        >
+                                                            {isExpanded ? (
+                                                                <ChevronDown className="h-4 w-4" />
+                                                            ) : (
+                                                                <ChevronRight className="h-4 w-4" />
+                                                            )}
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Metadata Section: 2 Columns */}
+                                                    <div
+                                                        onClick={() => toggleTclPatient(patient.id)}
+                                                        className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-[11px] text-muted-foreground cursor-pointer select-none"
+                                                    >
+                                                        {/* Col 1, Row 1: Age | Birth Date */}
+                                                        <div className="flex items-center gap-1.5 truncate">
+                                                            <CalendarDays className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                                            <span className="truncate">
+                                                                {formatPatientAge(patient.date_of_birth)}
+                                                            </span>
+                                                            <span className="text-muted-foreground/40 shrink-0">|</span>
+                                                            <span className="truncate">
+                                                                {formatBirthDate(patient.date_of_birth)}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Col 2, Row 1: Mother / Guardian */}
+                                                        <div className="flex items-center gap-1.5 truncate">
+                                                            <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                                            <span className="truncate" title={motherOrGuardian}>
+                                                                {motherOrGuardian}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Col 1, Row 2: Phone */}
+                                                        <div className="flex items-center gap-1.5 truncate font-mono">
+                                                            <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                                            <span className="truncate">
+                                                                {patient.guardian_contact || '—'}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Col 2, Row 2: Purok / Address */}
+                                                        <div className="flex items-center gap-1.5 truncate">
+                                                            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                                            <span className="truncate" title={patient.address || undefined}>
+                                                                {patient.address || '—'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Expanded Vaccine Grid and Actions */}
+                                                    {isExpanded && (
+                                                        <div className="pt-2 border-t border-border/40 space-y-3 animate-in fade-in duration-150">
+                                                            {/* 2-Column Vaccine Grid */}
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                {([
+                                                                    { key: 'BCG', label: 'BCG' },
+                                                                    { key: 'Hep B', label: 'Hep B' },
+                                                                    { key: 'Pentavalent', label: 'Pentavalent' },
+                                                                    { key: 'PCV', label: 'PCV' },
+                                                                    { key: 'OPV', label: 'OPV' },
+                                                                    { key: 'IPV', label: 'IPV' },
+                                                                    { key: 'MCV', label: 'MCV' },
+                                                                ] as const).map((v) => {
+                                                                    const doses = getDosesForVaccine(patient, v.key);
+                                                                    return (
+                                                                        <div
+                                                                            key={v.key}
+                                                                            className="rounded-lg border border-border/60 bg-muted/20 p-2.5 flex items-start gap-2 min-h-[58px]"
+                                                                        >
+                                                                            <div className="w-0.5 self-stretch rounded-full bg-primary shrink-0 my-0.5" />
+                                                                            <div className="flex-1 min-w-0">
+                                                                                <div className="font-bold text-xs text-foreground leading-tight">
+                                                                                    {v.label}
+                                                                                </div>
+                                                                                <div className="mt-1 space-y-0.5 font-mono text-[11px] leading-tight text-foreground/90">
+                                                                                    {doses.length === 0 ? (
+                                                                                        <span className="text-muted-foreground/60">—</span>
+                                                                                    ) : (
+                                                                                        doses.map((dose) => (
+                                                                                            <div
+                                                                                                key={`${patient.id}-${v.key}-${dose.id || dose.dose_number}`}
+                                                                                                className="truncate whitespace-nowrap"
+                                                                                            >
+                                                                                                {dose.display_text}
+                                                                                            </div>
+                                                                                        ))
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+
+                                                            {/* Action Buttons: View and Edit */}
+                                                            <div className="grid grid-cols-2 gap-2.5 pt-1">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    type="button"
+                                                                    onClick={() => router.visit(route('patients.show', patient.id))}
+                                                                    className="h-9 w-full flex items-center justify-center gap-1.5 rounded-lg border border-border/70 bg-card/60 hover:bg-muted text-xs font-medium text-foreground transition-colors cursor-pointer"
+                                                                >
+                                                                    <Eye className="h-3.5 w-3.5" />
+                                                                    <span>View</span>
+                                                                </Button>
+
+                                                                <Button
+                                                                    type="button"
+                                                                    onClick={() => router.visit(route('patients.edit', patient.id))}
+                                                                    className="h-9 w-full flex items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium transition-colors shadow-xs cursor-pointer"
+                                                                >
+                                                                    <Pencil className="h-3.5 w-3.5" />
+                                                                    <span>Edit</span>
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
+                                {/* Desktop View (md+): 15-Column Registry Table */}
                                 <div
                                     ref={masterlistScrollRef}
                                     onScroll={handleMasterlistScroll}
-                                    className="custom-scrollbar w-full overflow-x-auto overflow-y-auto"
+                                    className="custom-scrollbar d-none d-md-block w-full overflow-x-auto overflow-y-auto"
                                     style={{
                                         maxHeight: 'calc(100vh - 290px)',
                                         minHeight: '400px',
