@@ -1288,6 +1288,8 @@ export default function ImmunizationIndex({
                                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
                                     <Input
+                                        id="immunization-search"
+                                        name="search"
                                         type="search"
                                         value={search}
                                         onChange={(event) =>
@@ -2643,6 +2645,7 @@ export default function ImmunizationIndex({
                                 </Label>
                                 <Input
                                     id="sched-reschedule-date"
+                                    name="scheduled_date"
                                     type="date"
                                     min={new Date().toISOString().split('T')[0]}
                                     value={rescheduleDate}
@@ -2676,6 +2679,7 @@ export default function ImmunizationIndex({
                                 </Label>
                                 <Input
                                     id="sched-reschedule-reason"
+                                    name="reschedule_reason"
                                     type="text"
                                     placeholder="e.g., Parent requested different clinic Wednesday"
                                     value={rescheduleReason}

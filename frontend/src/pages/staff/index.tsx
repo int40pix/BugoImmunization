@@ -254,6 +254,8 @@ export default function StaffIndex({
                                 <div className="relative">
                                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
+                                        id="staff-search"
+                                        name="search"
                                         type="search"
                                         placeholder="Search staff by name or email..."
                                         className="pl-10 h-8.5 sm:h-9 text-xs sm:text-sm bg-background"
