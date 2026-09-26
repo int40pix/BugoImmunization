@@ -183,6 +183,10 @@ export default function ImmunizationIndex({
     const [expandedScheduledGroups, setExpandedScheduledGroups] = useState<
         Set<string>
     >(new Set());
+    const [expandedTclPatients, setExpandedTclPatients] = useState<Set<number>>(
+        new Set()
+    );
+    const [hasInitializedMobileExpansion, setHasInitializedMobileExpansion] = useState(false);
 
     const [isSendingReminder, setIsSendingReminder] = useState<string | null>(null);
     const [sentReminderKeys, setSentReminderKeys] = useState<Set<string>>(new Set());
@@ -417,6 +421,25 @@ export default function ImmunizationIndex({
     const visibleMasterlistPatients = useMemo(() => {
         return sortedMasterlistPatients.slice(0, masterlistVisibleCount);
     }, [sortedMasterlistPatients, masterlistVisibleCount]);
+
+    useEffect(() => {
+        if (!hasInitializedMobileExpansion && visibleMasterlistPatients.length > 0) {
+            setExpandedTclPatients(new Set([visibleMasterlistPatients[0].id]));
+            setHasInitializedMobileExpansion(true);
+        }
+    }, [visibleMasterlistPatients, hasInitializedMobileExpansion]);
+
+    const toggleTclPatient = (patientId: number) => {
+        setExpandedTclPatients((prev) => {
+            const next = new Set(prev);
+            if (next.has(patientId)) {
+                next.delete(patientId);
+            } else {
+                next.add(patientId);
+            }
+            return next;
+        });
+    };
 
     useEffect(() => {
         setMasterlistVisibleCount(40);
@@ -1456,7 +1479,7 @@ export default function ImmunizationIndex({
                                                                 <Button
                                                                     variant="outline"
                                                                     type="button"
-                                                                    onClick={() => router.visit(route('patients.show', patient.id))}
+                                                                    onClick={() => router.visit(`/patients/${patient.id}`)}
                                                                     className="h-9 w-full flex items-center justify-center gap-1.5 rounded-lg border border-border/70 bg-card/60 hover:bg-muted text-xs font-medium text-foreground transition-colors cursor-pointer"
                                                                 >
                                                                     <Eye className="h-3.5 w-3.5" />
@@ -1465,7 +1488,7 @@ export default function ImmunizationIndex({
 
                                                                 <Button
                                                                     type="button"
-                                                                    onClick={() => router.visit(route('patients.edit', patient.id))}
+                                                                    onClick={() => router.visit(`/patients/${patient.id}/edit`)}
                                                                     className="h-9 w-full flex items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium transition-colors shadow-xs cursor-pointer"
                                                                 >
                                                                     <Pencil className="h-3.5 w-3.5" />
