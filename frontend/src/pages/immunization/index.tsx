@@ -2217,24 +2217,75 @@ export default function ImmunizationIndex({
                                     )}
                                 </div>
 
-                                {/* Desktop View (md+): Fluid Table */}
-                                <div className="d-none d-md-block w-full max-w-full overflow-x-auto">
-                                    <table className="w-full text-sm">
-                                        <thead className="border-b bg-muted/40 text-xs uppercase font-medium text-muted-foreground">
-                                            <tr>
-                                                <th className="px-4 py-3.5 text-left font-semibold">Date Administered</th>
-                                                <th className="px-4 py-3.5 text-left font-semibold">Patient</th>
-                                                <th className="px-4 py-3.5 text-left font-semibold">Vaccine & Dose</th>
-                                                <th className="px-4 py-3.5 text-left font-semibold">Batch No.</th>
-                                                <th className="px-4 py-3.5 text-left font-semibold">Injection Site</th>
-                                                <th className="px-4 py-3.5 text-left font-semibold">Administered By</th>
-                                                <th className="px-4 py-3.5 text-left font-semibold">Consent Given By</th>
-                                                <th className="px-4 py-3.5 text-left font-semibold">Remarks</th>
-                                                <th className="px-4 py-3.5 text-right font-semibold">Action</th>
+{/* Desktop View (md+): Scrollable Table */}
+                                <div
+                                    className="custom-scrollbar d-none d-md-block w-full overflow-x-auto overflow-y-auto"
+                                    style={{
+                                        maxHeight: 'calc(100vh - 290px)',
+                                        minHeight: '400px',
+                                    }}
+                                >
+                                    <table className="w-full border-separate border-spacing-0 text-left text-xs min-w-[1280px]">
+                                        <thead className="sticky top-0 z-20 bg-muted/95 backdrop-blur-md">
+                                            <tr className="border-b border-border/60">
+                                                <th
+                                                    scope="col"
+                                                    className="sticky left-0 top-0 z-30 min-w-[140px] w-[140px] bg-muted/95 px-4 py-3.5 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Date Administered
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="sticky left-[140px] top-0 z-30 min-w-[180px] w-[180px] bg-muted/95 px-4 py-3.5 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Patient
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[150px] w-[150px] bg-muted/95 px-4 py-3.5 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Vaccine & Dose
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[120px] w-[120px] bg-muted/95 px-4 py-3.5 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Batch No.
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[140px] w-[140px] bg-muted/95 px-4 py-3.5 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Injection Site
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[150px] w-[150px] bg-muted/95 px-4 py-3.5 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Administered By
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[150px] w-[150px] bg-muted/95 px-4 py-3.5 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Consent Given By
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[160px] w-[160px] bg-muted/95 px-4 py-3.5 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Remarks
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[90px] w-[90px] bg-muted/95 px-4 py-3.5 text-right font-semibold text-foreground border-b border-border/60 whitespace-nowrap"
+                                                >
+                                                    Action
+                                                </th>
                                             </tr>
                                         </thead>
 
-                                        <tbody className="divide-y">
+                                        <tbody className="divide-y divide-border/40">
                                             {filteredCompletedRows.length === 0 ? (
                                                 <tr>
                                                     <td colSpan={9} className="px-6 py-14">
@@ -2253,16 +2304,16 @@ export default function ImmunizationIndex({
                                                 </tr>
                                             ) : (
                                                 filteredCompletedRows.map((row) => (
-                                                    <tr key={row.id} className="hover:bg-muted/30 transition-colors">
-                                                        <td className="px-4 py-3.5 whitespace-nowrap text-xs font-medium">
+                                                    <tr key={row.id} className="group border-b border-border/40 hover:bg-muted/20 transition-colors">
+                                                        <td className="sticky left-0 z-10 min-w-[140px] w-[140px] bg-card group-hover:bg-muted/30 px-4 py-3.5 whitespace-nowrap text-xs font-medium border-b border-r border-border/40 transition-colors">
                                                             <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                                                                 <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
                                                                 {formatDate(row.date_administered)}
                                                             </span>
                                                         </td>
 
-                                                        <td className="px-4 py-3.5">
-                                                            <div className="font-medium leading-snug">
+                                                        <td className="sticky left-[140px] z-10 min-w-[180px] w-[180px] bg-card group-hover:bg-muted/30 px-4 py-3.5 border-b border-r border-border/40 transition-colors">
+                                                            <div className="font-medium leading-snug truncate max-w-[170px]" title={row.patient_name}>
                                                                 {row.patient_name}
                                                             </div>
                                                             <div className="text-xs text-muted-foreground font-mono">
@@ -2270,7 +2321,7 @@ export default function ImmunizationIndex({
                                                             </div>
                                                         </td>
 
-                                                        <td className="px-4 py-3.5 whitespace-nowrap">
+                                                        <td className="min-w-[150px] w-[150px] px-4 py-3.5 whitespace-nowrap border-b border-r border-border/40">
                                                             <div className="font-medium text-foreground">
                                                                 {row.vaccine_name ?? 'Unknown vaccine'}
                                                             </div>
@@ -2279,23 +2330,23 @@ export default function ImmunizationIndex({
                                                             </div>
                                                         </td>
 
-                                                        <td className="px-4 py-3.5 whitespace-nowrap">
+                                                        <td className="min-w-[120px] w-[120px] px-4 py-3.5 whitespace-nowrap border-b border-r border-border/40">
                                                             <span className="rounded bg-muted px-2 py-1 font-mono text-xs font-medium">
                                                                 {row.batch_number || '—'}
                                                             </span>
                                                         </td>
 
-                                                        <td className="px-4 py-3.5 text-xs text-muted-foreground max-w-[160px] truncate" title={row.injection_site || undefined}>
+                                                        <td className="min-w-[140px] w-[140px] px-4 py-3.5 text-xs text-muted-foreground max-w-[160px] truncate border-b border-r border-border/40" title={row.injection_site || undefined}>
                                                             {row.injection_site || '—'}
                                                         </td>
 
-                                                        <td className="px-4 py-3.5 whitespace-nowrap text-xs">
+                                                        <td className="min-w-[150px] w-[150px] px-4 py-3.5 whitespace-nowrap text-xs border-b border-r border-border/40">
                                                             <span className="font-medium text-foreground">
                                                                 {row.administered_by_name}
                                                             </span>
                                                         </td>
 
-                                                        <td className="px-4 py-3.5 whitespace-nowrap text-xs">
+                                                        <td className="min-w-[150px] w-[150px] px-4 py-3.5 whitespace-nowrap text-xs border-b border-r border-border/40">
                                                             {row.consent_given_by ? (
                                                                 <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300 font-medium">
                                                                     <CheckCircle2 className="h-3 w-3" />
@@ -2306,11 +2357,11 @@ export default function ImmunizationIndex({
                                                             )}
                                                         </td>
 
-                                                        <td className="px-4 py-3.5 text-xs text-muted-foreground max-w-[180px] truncate" title={row.remarks || undefined}>
+                                                        <td className="min-w-[160px] w-[160px] px-4 py-3.5 text-xs text-muted-foreground max-w-[180px] truncate border-b border-r border-border/40" title={row.remarks || undefined}>
                                                             {row.remarks || '—'}
                                                         </td>
 
-                                                        <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                                                        <td className="min-w-[90px] w-[90px] px-4 py-3.5 text-right whitespace-nowrap border-b border-border/40">
                                                             <button
                                                                 type="button"
                                                                 onClick={() => router.visit(route('patients.show', row.patient_id))}
