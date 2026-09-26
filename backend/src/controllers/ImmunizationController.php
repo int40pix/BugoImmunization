@@ -187,6 +187,56 @@ class ImmunizationController extends Controller
         $coverageReport = $reportController->getCoverageReportData(request());
         $scheduleStatusReport = $reportController->getScheduleStatusReportData(request());
 
+        $masterlistPatients = Patient::query()
+            ->with([
+                'guardian',
+                'immunizationRecords' => function ($q) {
+                    $q->with('vaccine')
+                        ->orderBy('dose_number')
+                        ->orderBy('date_administered');
+                },
+            ])
+            ->latest()
+            ->get()
+            ->each(function (Patient $patient) {
+                $patient->setAttribute('guardian_name', $patient->guardian?->name);
+                $patient->setAttribute('guardian_contact', $patient->guardian?->contact_number);
+
+                $recordsByVaccine = [];
+                foreach ($patient->immunizationRecords as $record) {
+                    $vName = $record->vaccine?->name ?? '';
+                    $key = null;
+                    if (strcasecmp($vName, 'BCG') === 0) {
+                        $key = 'BCG';
+                    } elseif (stripos($vName, 'Hep') !== false) {
+                        $key = 'Hep B';
+                    } elseif (stripos($vName, 'Penta') !== false) {
+                        $key = 'Pentavalent';
+                    } elseif (strcasecmp($vName, 'PCV') === 0) {
+                        $key = 'PCV';
+                    } elseif (strcasecmp($vName, 'OPV') === 0) {
+                        $key = 'OPV';
+                    } elseif (strcasecmp($vName, 'IPV') === 0) {
+                        $key = 'IPV';
+                    } elseif (strcasecmp($vName, 'MMR') === 0 || stripos($vName, 'Measles') !== false || strcasecmp($vName, 'MCV') === 0) {
+                        $key = 'MCV';
+                    }
+
+                    if ($key) {
+                        $formattedDate = $record->date_administered ? $record->date_administered->format('M d, Y') : '—';
+                        $recordsByVaccine[$key][] = [
+                            'id' => $record->id,
+                            'dose_number' => $record->dose_number,
+                            'date_administered' => $record->date_administered?->toDateString(),
+                            'formatted_date' => $formattedDate,
+                            'display_text' => 'D' . $record->dose_number . ' — ' . $formattedDate,
+                        ];
+                    }
+                }
+                $patient->setAttribute('vaccine_history', $recordsByVaccine);
+            })
+            ->values();
+
         return Inertia::render('immunization/index', [
             'tclRows' => $tclRows,
             'scheduledRows' => $scheduledRows,
@@ -194,6 +244,8 @@ class ImmunizationController extends Controller
             'vaccines' => $vaccines,
             'coverageReport' => $coverageReport,
             'scheduleStatusReport' => $scheduleStatusReport,
+            'masterlistPatients' => $masterlistPatients,
+            'patients' => $masterlistPatients,
             'initialView' => request()->query('view', 'tcl'),
         ]);
     }

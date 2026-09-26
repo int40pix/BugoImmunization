@@ -13,21 +13,63 @@ import AppLayout from '@/layouts/app-layout';
 import { Head, router } from '@inertiajs/react';
 import {
     AlertTriangle,
+    ArrowDown,
+    ArrowUp,
+    Baby,
     Bell,
     Building2,
     CalendarDays,
     CheckCircle2,
     ChevronDown,
     ChevronRight,
+    ChevronsUpDown,
     Eye,
     History,
+    Pencil,
     Search,
     SearchX,
     ShieldCheck,
     X,
 } from 'lucide-react';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import ReportsHub from './components/reports-hub';
+import { calculateAge, formatDateOfBirth, parseDateOfBirth } from '@/utils/patient-age';
+
+type VaccineDoseItem = {
+    id: number;
+    dose_number: number;
+    date_administered: string | null;
+    formatted_date: string | null;
+    display_text: string;
+};
+
+type MasterlistPatient = {
+    id: number;
+    patient_id: string;
+    first_name: string;
+    middle_name?: string | null;
+    last_name: string;
+    mother_name?: string | null;
+    date_of_birth: string;
+    guardian_name?: string | null;
+    guardian_contact?: string | null;
+    address?: string | null;
+    sex?: string;
+    status?: string;
+    vaccine_history?: Record<string, VaccineDoseItem[]>;
+    immunization_records?: Array<{
+        id: number;
+        dose_number: number;
+        date_administered: string | null;
+        vaccine?: { name: string };
+    }>;
+    immunizationRecords?: Array<{
+        id: number;
+        dose_number: number;
+        date_administered: string | null;
+        vaccine?: { name: string };
+    }>;
+};
 
 type TclRow = {
     patient_id: number;
@@ -111,6 +153,8 @@ type Props = {
     vaccines: Vaccine[];
     coverageReport?: any;
     scheduleStatusReport?: any;
+    masterlistPatients?: MasterlistPatient[];
+    patients?: MasterlistPatient[];
     initialView?: 'tcl' | 'scheduled' | 'history' | 'reports';
 };
 
@@ -121,6 +165,8 @@ export default function ImmunizationIndex({
     vaccines,
     coverageReport,
     scheduleStatusReport,
+    masterlistPatients = [],
+    patients = [],
     initialView,
 }: Props) {
     const [search, setSearch] = useState('');
@@ -293,6 +339,225 @@ export default function ImmunizationIndex({
     const selectedVaccine = vaccines.find(
         (vaccine) => String(vaccine.id) === vaccineFilter,
     );
+
+    const activeVaccineKey = useMemo<'BCG' | 'Hep B' | 'Pentavalent' | 'PCV' | 'OPV' | 'IPV' | 'MCV' | null>(() => {
+        if (vaccineFilter === 'all') return null;
+        const v = vaccines.find((vac) => String(vac.id) === vaccineFilter);
+        if (!v) return null;
+        const name = v.name.toLowerCase();
+        if (name === 'bcg') return 'BCG';
+        if (name.includes('hep')) return 'Hep B';
+        if (name.includes('penta')) return 'Pentavalent';
+        if (name === 'pcv') return 'PCV';
+        if (name === 'opv') return 'OPV';
+        if (name === 'ipv') return 'IPV';
+        if (name === 'mmr' || name === 'mcv' || name.includes('measles')) return 'MCV';
+        return null;
+    }, [vaccineFilter, vaccines]);
+
+    // Masterlist table sorting & continuous vertical scroll state
+    const [masterlistSortField, setMasterlistSortField] = useState<'patient_id' | 'name' | 'age'>('patient_id');
+    const [masterlistSortOrder, setMasterlistSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [masterlistVisibleCount, setMasterlistVisibleCount] = useState(40);
+    const masterlistScrollRef = useRef<HTMLDivElement>(null);
+
+    const handleMasterlistSort = (field: 'patient_id' | 'name' | 'age') => {
+        if (masterlistSortField === field) {
+            setMasterlistSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+        } else {
+            setMasterlistSortField(field);
+            setMasterlistSortOrder('asc');
+        }
+    };
+
+    const masterlistData: MasterlistPatient[] = useMemo(() => {
+        return (masterlistPatients && masterlistPatients.length > 0) ? masterlistPatients : patients;
+    }, [masterlistPatients, patients]);
+
+    const filteredMasterlistPatients = useMemo(() => {
+        const term = normalizedSearch;
+        return masterlistData.filter((p) => {
+            if (!term) return true;
+            const fullName = `${p.first_name} ${p.middle_name ?? ''} ${p.last_name}`.toLowerCase();
+            const pid = (p.patient_id ?? '').toLowerCase();
+            const guardian = (p.guardian_name ?? p.mother_name ?? '').toLowerCase();
+            const contact = (p.guardian_contact ?? '').toLowerCase();
+            const addr = (p.address ?? '').toLowerCase();
+
+            return (
+                fullName.includes(term) ||
+                pid.includes(term) ||
+                guardian.includes(term) ||
+                contact.includes(term) ||
+                addr.includes(term)
+            );
+        });
+    }, [masterlistData, normalizedSearch]);
+
+    const sortedMasterlistPatients = useMemo(() => {
+        const list = [...filteredMasterlistPatients];
+        list.sort((a, b) => {
+            let cmp = 0;
+            if (masterlistSortField === 'patient_id') {
+                cmp = (a.patient_id || '').localeCompare(b.patient_id || '', undefined, { numeric: true });
+            } else if (masterlistSortField === 'name') {
+                const nameA = `${a.last_name}, ${a.first_name}`.toLowerCase();
+                const nameB = `${b.last_name}, ${b.first_name}`.toLowerCase();
+                cmp = nameA.localeCompare(nameB);
+            } else if (masterlistSortField === 'age') {
+                const dateA = new Date(a.date_of_birth).getTime() || 0;
+                const dateB = new Date(b.date_of_birth).getTime() || 0;
+                cmp = dateB - dateA;
+            }
+            return masterlistSortOrder === 'asc' ? cmp : -cmp;
+        });
+        return list;
+    }, [filteredMasterlistPatients, masterlistSortField, masterlistSortOrder]);
+
+    const visibleMasterlistPatients = useMemo(() => {
+        return sortedMasterlistPatients.slice(0, masterlistVisibleCount);
+    }, [sortedMasterlistPatients, masterlistVisibleCount]);
+
+    useEffect(() => {
+        setMasterlistVisibleCount(40);
+        if (masterlistScrollRef.current) {
+            masterlistScrollRef.current.scrollTop = 0;
+        }
+    }, [search, vaccineFilter, viewMode]);
+
+    const handleMasterlistScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+        if (scrollTop + clientHeight >= scrollHeight - 200) {
+            setMasterlistVisibleCount((prev) => Math.min(prev + 30, sortedMasterlistPatients.length));
+        }
+    };
+
+    const formatBirthDate = (dobString?: string | null): string => {
+        if (!dobString) return '—';
+        const date = parseDateOfBirth(dobString);
+        if (!date) return '—';
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+        });
+    };
+
+    const formatPatientAge = (dobString?: string | null): string => {
+        if (!dobString) return '—';
+        const birthDate = parseDateOfBirth(dobString);
+        if (!birthDate) return '—';
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        birthDate.setHours(0, 0, 0, 0);
+
+        if (birthDate > today) return '—';
+
+        let totalMonths =
+            (today.getFullYear() - birthDate.getFullYear()) * 12 +
+            (today.getMonth() - birthDate.getMonth());
+
+        if (today.getDate() < birthDate.getDate()) {
+            totalMonths -= 1;
+        }
+        totalMonths = Math.max(0, totalMonths);
+
+        if (totalMonths === 0) {
+            const diffTime = today.getTime() - birthDate.getTime();
+            const totalDays = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+            if (totalDays === 0) return 'Today';
+            return `${totalDays} ${totalDays === 1 ? 'day' : 'days'}`;
+        }
+
+        if (totalMonths <= 24) {
+            return `${totalMonths} ${totalMonths === 1 ? 'month' : 'months'}`;
+        }
+
+        const years = Math.floor(totalMonths / 12);
+        const remainingMonths = totalMonths % 12;
+        if (remainingMonths === 0) {
+            return `${years} ${years === 1 ? 'yr' : 'yrs'}`;
+        }
+        return `${years} ${years === 1 ? 'yr' : 'yrs'} ${remainingMonths} ${remainingMonths === 1 ? 'mo' : 'mos'}`;
+    };
+
+    const getDosesForVaccine = (
+        patient: MasterlistPatient,
+        vaccineKey: 'BCG' | 'Hep B' | 'Pentavalent' | 'PCV' | 'OPV' | 'IPV' | 'MCV',
+    ): VaccineDoseItem[] => {
+        if (patient.vaccine_history && patient.vaccine_history[vaccineKey]) {
+            return patient.vaccine_history[vaccineKey];
+        }
+
+        const records = patient.immunization_records || patient.immunizationRecords;
+        if (records && Array.isArray(records)) {
+            return records
+                .filter((rec) => {
+                    const name = rec.vaccine?.name ?? '';
+                    if (vaccineKey === 'BCG') return name.toLowerCase() === 'bcg';
+                    if (vaccineKey === 'Hep B') return name.toLowerCase().includes('hep');
+                    if (vaccineKey === 'Pentavalent') return name.toLowerCase().includes('penta');
+                    if (vaccineKey === 'PCV') return name.toLowerCase() === 'pcv';
+                    if (vaccineKey === 'OPV') return name.toLowerCase() === 'opv';
+                    if (vaccineKey === 'IPV') return name.toLowerCase() === 'ipv';
+                    if (vaccineKey === 'MCV') {
+                        return (
+                            name.toLowerCase() === 'mmr' ||
+                            name.toLowerCase() === 'mcv' ||
+                            name.toLowerCase().includes('measles')
+                        );
+                    }
+                    return false;
+                })
+                .sort((a, b) => a.dose_number - b.dose_number)
+                .map((rec) => {
+                    const dateStr = rec.date_administered;
+                    let formattedDate = '—';
+                    if (dateStr) {
+                        const d = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
+                        if (!Number.isNaN(d.getTime())) {
+                            formattedDate = d.toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: '2-digit',
+                                year: 'numeric',
+                            });
+                        }
+                    }
+                    return {
+                        id: rec.id,
+                        dose_number: rec.dose_number,
+                        date_administered: dateStr,
+                        formatted_date: formattedDate,
+                        display_text: `D${rec.dose_number} — ${formattedDate}`,
+                    };
+                });
+        }
+
+        return [];
+    };
+
+    const renderVaccineDoses = (
+        patient: MasterlistPatient,
+        vaccineKey: 'BCG' | 'Hep B' | 'Pentavalent' | 'PCV' | 'OPV' | 'IPV' | 'MCV',
+    ) => {
+        const doses = getDosesForVaccine(patient, vaccineKey);
+        if (!doses || doses.length === 0) {
+            return <span className="text-muted-foreground/60 select-none font-medium">—</span>;
+        }
+
+        return (
+            <div className="flex flex-col space-y-1 font-mono text-[11px] leading-relaxed">
+                {doses.map((dose) => (
+                    <div
+                        key={`${patient.id}-${vaccineKey}-${dose.id || dose.dose_number}`}
+                        className="text-foreground/90 whitespace-nowrap"
+                    >
+                        {dose.display_text || `D${dose.dose_number} — ${dose.formatted_date || '—'}`}
+                    </div>
+                ))}
+            </div>
+        );
+    };
 
     const matchesPatientSearch = (
         patientName: string,
@@ -1037,623 +1302,382 @@ export default function ImmunizationIndex({
                     <CardContent className="p-2 sm:p-6 sm:pt-0">
                         {viewMode === 'tcl' ? (
                             <div className="w-full max-w-full overflow-hidden rounded-lg border">
-                                <div className="flex max-w-full overflow-x-auto no-scrollbar items-center gap-1.5 sm:gap-2 border-b bg-muted/20 px-2.5 sm:px-5 py-2.5 sm:py-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setStatusFilter('all')}
-                                        className={`shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 sm:gap-2 rounded-md border px-2.5 sm:px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
-                                            statusFilter === 'all'
-                                                ? 'bg-foreground text-background'
-                                                : 'bg-background hover:bg-muted'
-                                        }`}
-                                    >
-                                        All
-                                        <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                                                statusFilter === 'all'
-                                                    ? 'bg-background/20'
-                                                    : 'bg-muted text-muted-foreground'
-                                            }`}
-                                        >
-                                            {liveCounts.all}
-                                        </span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => setStatusFilter('current')}
-                                        className={`shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 sm:gap-2 rounded-md border px-2.5 sm:px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
-                                            statusFilter === 'current'
-                                                ? 'bg-foreground text-background'
-                                                : 'bg-background hover:bg-muted'
-                                        }`}
-                                    >
-                                        Current Age
-                                        <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                                                statusFilter === 'current'
-                                                    ? 'bg-background/20'
-                                                    : 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                                            }`}
-                                        >
-                                            {liveCounts.currentAge}
-                                        </span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => setStatusFilter('recent')}
-                                        className={`shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 sm:gap-2 rounded-md border px-2.5 sm:px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
-                                            statusFilter === 'recent'
-                                                ? 'bg-foreground text-background'
-                                                : 'bg-background hover:bg-muted'
-                                        }`}
-                                    >
-                                        Recent Due
-                                        <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                                                statusFilter === 'recent'
-                                                    ? 'bg-background/20'
-                                                    : 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300'
-                                            }`}
-                                        >
-                                            {liveCounts.recentDue}
-                                        </span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => setStatusFilter('overdue')}
-                                        className={`shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 sm:gap-2 rounded-md border px-2.5 sm:px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
-                                            statusFilter === 'overdue'
-                                                ? 'bg-foreground text-background'
-                                                : liveCounts.overdue > 0
-                                                  ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300'
-                                                  : 'bg-background hover:bg-muted'
-                                        }`}
-                                    >
-                                        Overdue
-                                        <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                                                statusFilter === 'overdue'
-                                                    ? 'bg-background/20'
-                                                    : liveCounts.overdue > 0
-                                                      ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
-                                                      : 'bg-muted text-muted-foreground'
-                                            }`}
-                                        >
-                                            {liveCounts.overdue}
-                                        </span>
-                                    </button>
-                                </div>
-
-                                {filteredTclRows.length === 0 ? (
-                                    isSpecificVaccineSelected ? (
-                                        <>
-                                            <div className="grid grid-cols-[32%_16%_12%_18%_22%] border-b-2 bg-muted/40 text-sm">
-                                                <div className="border-r-2 px-6 py-4 text-left font-semibold">
-                                                    Patient
-                                                </div>
-
-                                                <div className="border-r-2 px-6 py-4 text-center font-semibold">
-                                                    PID
-                                                </div>
-
-                                                <div className="border-r-2 px-6 py-4 text-center font-semibold">
-                                                    Dose
-                                                </div>
-
-                                                <div className="border-r-2 px-6 py-4 text-center font-semibold">
-                                                    Priority
-                                                </div>
-
-                                                <div className="px-6 py-4 text-center font-semibold">
-                                                    Scheduling Status
-                                                </div>
-                                            </div>
-
-                                            <div className="flex min-h-[170px] flex-col items-center justify-center px-6 py-10 text-center">
-                                                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                                                    {statusFilter === 'overdue' ? (
-                                                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                                                    ) : (
-                                                        <SearchX className="h-5 w-5 text-muted-foreground" />
-                                                    )}
-                                                </div>
-
-                                                <p className="font-medium">
-                                                    {statusFilter === 'overdue'
-                                                        ? 'No overdue vaccinations'
-                                                        : 'No matching vaccinations'}
-                                                </p>
-
-                                                <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                                                    {getEmptyStateText()}
-                                                </p>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="flex min-h-[120px] items-center justify-center px-6 py-10 text-center">
-                                            <p className="text-sm text-muted-foreground">
-                                                {getEmptyStateText()}
-                                            </p>
-                                        </div>
-                                    )
-                                ) : isSpecificVaccineSelected ? (
-                                    <>
-                                        {/* Mobile View (< md): Compact Cards */}
-                                        <div className="d-block d-md-none divide-y divide-border/60">
-                                            {filteredTclRows.map((row) => {
-                                                const status = getTclStatus(row);
-                                                return (
-                                                    <div
-                                                        key={`${row.patient_id}-${row.vaccine_id}-${row.dose_number}`}
-                                                        className="p-3 space-y-1.5 hover:bg-muted/15 transition-colors"
-                                                    >
-                                                        <div className="flex items-start justify-between gap-2">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    router.visit(
-                                                                        route('patients.show', row.patient_id),
-                                                                    )
-                                                                }
-                                                                className="text-left font-semibold text-xs underline-offset-4 hover:underline text-foreground truncate"
-                                                            >
-                                                                {row.patient_name}
-                                                            </button>
-                                                            <div className="flex flex-col items-end gap-0.5 shrink-0">
-                                                                <span
-                                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getPriorityClass(
-                                                                        row.schedule_label,
-                                                                    )}`}
-                                                                >
-                                                                    {row.schedule_label}
-                                                                </span>
-                                                                {row.days_due && row.days_due > 0 && row.schedule_label !== 'Current Age' ? (
-                                                                    <span className="text-[10px] font-medium text-muted-foreground">
-                                                                        {row.days_due}d due
-                                                                    </span>
-                                                                ) : null}
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                                                            <span className="font-mono bg-muted/70 px-1.5 py-0.2 rounded text-[10px] text-foreground/80">
-                                                                {row.patient_code ?? '—'}
-                                                            </span>
-                                                            <span>Dose {row.dose_number}</span>
-                                                            <span className={`font-medium ${status.className}`}>
-                                                                {status.text}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-
-                                        {/* Desktop View (md+): Fluid Table */}
-                                        <div className="d-none d-md-block w-full max-w-full overflow-x-auto">
-                                            <table className="w-full table-fixed text-sm">
-                                                <thead className="border-b-2 bg-muted/40">
-                                                    <tr>
-                                                        <th className="w-[32%] border-r-2 px-6 py-4 text-left font-semibold">
-                                                            Patient
-                                                        </th>
-                                                        <th className="w-[16%] border-r-2 px-6 py-4 text-center font-semibold">
-                                                            PID
-                                                        </th>
-                                                        <th className="w-[12%] border-r-2 px-6 py-4 text-center font-semibold">
-                                                            Dose
-                                                        </th>
-                                                        <th className="w-[18%] border-r-2 px-6 py-4 text-center font-semibold">
-                                                            Priority
-                                                        </th>
-                                                        <th className="w-[22%] px-6 py-4 text-center font-semibold">
-                                                            Scheduling Status
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-
-                                                <tbody>
-                                                    {filteredTclRows.map(
-                                                        (row) => {
-                                                            const status =
-                                                                getTclStatus(row);
-
-                                                            return (
-                                                                <tr
-                                                                    key={`${row.patient_id}-${row.vaccine_id}-${row.dose_number}`}
-                                                                    className="border-b-2 last:border-b-0 hover:bg-muted/20"
-                                                                >
-                                                                    <td className="border-r-2 px-6 py-5 text-left align-middle">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                router.visit(
-                                                                                    route(
-                                                                                        'patients.show',
-                                                                                        row.patient_id,
-                                                                                    ),
-                                                                                )
-                                                                            }
-                                                                            className="font-semibold underline-offset-4 hover:underline"
-                                                                        >
-                                                                            {row.patient_name}
-                                                                        </button>
-                                                                    </td>
-
-                                                                    <td className="border-r-2 px-6 py-5 text-center align-middle text-muted-foreground">
-                                                                        {row.patient_code ??
-                                                                            '—'}
-                                                                    </td>
-
-                                                                    <td className="border-r-2 px-6 py-5 text-center align-middle">
-                                                                        Dose{' '}
-                                                                        {
-                                                                            row.dose_number
-                                                                        }
-                                                                    </td>
-
-                                                                    <td className="border-r-2 px-6 py-5 text-center align-middle">
-                                                                        <div className="flex flex-col items-center justify-center gap-0.5">
-                                                                            <span
-                                                                                className={`font-semibold ${getPriorityClass(
-                                                                                    row.schedule_label,
-                                                                                )}`}
-                                                                            >
-                                                                                {row.schedule_label ??
-                                                                                    '—'}
-                                                                            </span>
-                                                                            {row.days_due && row.days_due > 0 && row.schedule_label !== 'Current Age' ? (
-                                                                                <span className="text-[11px] font-medium text-muted-foreground">
-                                                                                    {row.days_due} days due
-                                                                                </span>
-                                                                            ) : null}
-                                                                        </div>
-                                                                    </td>
-
-                                                                    <td className="px-6 py-5 text-center align-middle">
-                                                                        <span
-                                                                            className={`font-medium ${status.className}`}
-                                                                        >
-                                                                            {
-                                                                                status.text
-                                                                            }
-                                                                        </span>
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        },
-                                                    )}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div>
-                                        {/* Mobile View (< md): Compact Grouped Patient Cards */}
-                                        <div className="d-block d-md-none divide-y divide-border/60">
-                                            {patientGroups.map((patient) => {
-                                                const isExpanded =
-                                                    expandedPatients.has(
-                                                        patient.patient_id,
-                                                    );
-
-                                                return (
-                                                    <div
-                                                        key={patient.patient_id}
-                                                        className="p-3 space-y-2 hover:bg-muted/15 transition-colors"
-                                                    >
-                                                        <div
-                                                            onClick={() =>
-                                                                togglePatient(
-                                                                    patient.patient_id,
-                                                                )
-                                                            }
-                                                            className="cursor-pointer space-y-1.5"
-                                                        >
-                                                            <div className="flex items-center justify-between gap-2">
-                                                                <div className="flex items-center gap-1.5 min-w-0">
-                                                                    <span className="font-semibold text-xs text-foreground truncate">
-                                                                        {patient.patient_name}
-                                                                    </span>
-                                                                    <span className="font-mono bg-muted/70 px-1.5 py-0.2 rounded text-[10px] text-muted-foreground shrink-0 font-medium">
-                                                                        {patient.patient_code ?? '—'}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="flex items-center gap-1.5 shrink-0">
-                                                                    <span className="text-[10px] font-medium text-foreground/80 bg-muted/60 px-2 py-0.5 rounded-full">
-                                                                        {patient.rows.length}{' '}
-                                                                        {patient.rows.length === 1
-                                                                            ? 'vaccine'
-                                                                            : 'vaccines'}
-                                                                    </span>
-                                                                    {isExpanded ? (
-                                                                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                                                                    ) : (
-                                                                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
-                                                                <p className="text-[11px] text-muted-foreground truncate">
-                                                                    {getVaccineSummary(patient)}
-                                                                </p>
-                                                                <span className="text-[10px] font-medium text-primary shrink-0 ml-2">
-                                                                    {isExpanded
-                                                                        ? 'Hide'
-                                                                        : 'Details'}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        {isExpanded && (
-                                                            <div className="border-t border-border/40 pt-2 space-y-1.5">
-                                                                {patient.rows.map((row) => {
-                                                                    const status =
-                                                                        getTclStatus(row);
-                                                                    const scheduledDate =
-                                                                        formatDate(
-                                                                            row.scheduled_date,
-                                                                        );
-
-                                                                    return (
-                                                                        <div
-                                                                            key={`${row.patient_id}-${row.vaccine_id}-${row.dose_number}`}
-                                                                            className="flex flex-col gap-1 py-2 px-2.5 rounded-md bg-muted/30 text-xs"
-                                                                        >
-                                                                            <div className="flex items-center justify-between gap-2">
-                                                                                <span className="font-medium text-foreground truncate">
-                                                                                    {row.vaccine_name}
-                                                                                </span>
-                                                                                <div className="flex items-center gap-1.5 shrink-0">
-                                                                                    {row.days_due && row.days_due > 0 && row.schedule_label !== 'Current Age' ? (
-                                                                                        <span className="text-[10px] text-muted-foreground">
-                                                                                            {row.days_due}d due
-                                                                                        </span>
-                                                                                    ) : null}
-                                                                                    <span
-                                                                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getPriorityClass(
-                                                                                            row.schedule_label,
-                                                                                        )}`}
-                                                                                    >
-                                                                                        {row.schedule_label}
-                                                                                    </span>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                                                                                <span>
-                                                                                    Dose {row.dose_number}
-                                                                                </span>
-                                                                                <span
-                                                                                    className={`font-medium ${status.className}`}
-                                                                                >
-                                                                                    {status.text}
-                                                                                </span>
-                                                                            </div>
-                                                                            {scheduledDate && (
-                                                                                <div className="text-[10px] text-muted-foreground inline-flex items-center gap-1 pt-0.5">
-                                                                                    <CalendarDays className="h-3 w-3" />
-                                                                                    <span>
-                                                                                        Scheduled: {scheduledDate}
-                                                                                    </span>
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    );
-                                                                })}
-                                                                <div className="pt-1.5 flex justify-end">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            router.visit(
-                                                                                route(
-                                                                                    'patients.show',
-                                                                                    patient.patient_id,
-                                                                                ),
-                                                                            )
-                                                                        }
-                                                                        className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-                                                                    >
-                                                                        <Eye className="h-3.5 w-3.5" />
-                                                                        View full patient record
-                                                                    </button>
-                                                                </div>
-                                                            </div>
+                                <div
+                                    ref={masterlistScrollRef}
+                                    onScroll={handleMasterlistScroll}
+                                    className="custom-scrollbar w-full overflow-x-auto overflow-y-auto"
+                                    style={{
+                                        maxHeight: 'calc(100vh - 290px)',
+                                        minHeight: '400px',
+                                    }}
+                                >
+                                    <table className="w-full border-separate border-spacing-0 text-left text-xs min-w-[1850px]">
+                                        <thead className="sticky top-0 z-20 bg-muted/95 backdrop-blur-md">
+                                            <tr className="border-b border-border/60">
+                                                {/* 1. Patient ID (sticky top & left) */}
+                                                <th
+                                                    scope="col"
+                                                    className="sticky left-0 top-0 z-30 min-w-[110px] w-[110px] bg-muted/95 px-3.5 py-3 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap cursor-pointer select-none transition-colors hover:bg-muted"
+                                                    onClick={() => handleMasterlistSort('patient_id')}
+                                                >
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span>Patient ID</span>
+                                                        {masterlistSortField === 'patient_id' ? (
+                                                            masterlistSortOrder === 'asc' ? (
+                                                                <ArrowUp className="h-3.5 w-3.5 text-foreground" />
+                                                            ) : (
+                                                                <ArrowDown className="h-3.5 w-3.5 text-foreground" />
+                                                            )
+                                                        ) : (
+                                                            <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground/60" />
                                                         )}
                                                     </div>
-                                                );
-                                            })}
-                                        </div>
+                                                </th>
 
-                                        {/* Desktop View (md+): Fluid Accordion Table */}
-                                        <div className="d-none d-md-block">
-                                            {patientGroups.map(
-                                                (patient, index) => {
-                                                    const isExpanded =
-                                                        expandedPatients.has(
-                                                            patient.patient_id,
-                                                        );
+                                                {/* 2. Child Name (sticky top & left at 110px) */}
+                                                <th
+                                                    scope="col"
+                                                    className="sticky left-[110px] top-0 z-30 min-w-[190px] w-[190px] bg-muted/95 px-3.5 py-3 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap cursor-pointer select-none transition-colors hover:bg-muted"
+                                                    onClick={() => handleMasterlistSort('name')}
+                                                >
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span>Child Name</span>
+                                                        {masterlistSortField === 'name' ? (
+                                                            masterlistSortOrder === 'asc' ? (
+                                                                <ArrowUp className="h-3.5 w-3.5 text-foreground" />
+                                                            ) : (
+                                                                <ArrowDown className="h-3.5 w-3.5 text-foreground" />
+                                                            )
+                                                        ) : (
+                                                            <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground/60" />
+                                                        )}
+                                                    </div>
+                                                </th>
+
+                                                {/* 3. Age */}
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[95px] w-[95px] bg-muted/95 px-3.5 py-3 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap cursor-pointer select-none transition-colors hover:bg-muted"
+                                                    onClick={() => handleMasterlistSort('age')}
+                                                >
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span>Age</span>
+                                                        {masterlistSortField === 'age' ? (
+                                                            masterlistSortOrder === 'asc' ? (
+                                                                <ArrowUp className="h-3.5 w-3.5 text-foreground" />
+                                                            ) : (
+                                                                <ArrowDown className="h-3.5 w-3.5 text-foreground" />
+                                                            )
+                                                        ) : (
+                                                            <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground/60" />
+                                                        )}
+                                                    </div>
+                                                </th>
+
+                                                {/* 4. Birth Date */}
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[110px] w-[110px] bg-muted/95 px-3.5 py-3 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Birth Date
+                                                </th>
+
+                                                {/* 5. Mother / Guardian */}
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[160px] w-[160px] bg-muted/95 px-3.5 py-3 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Mother / Guardian
+                                                </th>
+
+                                                {/* 6. Contact */}
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[130px] w-[130px] bg-muted/95 px-3.5 py-3 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Contact
+                                                </th>
+
+                                                {/* 7. Address / Purok */}
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[140px] w-[140px] bg-muted/95 px-3.5 py-3 font-semibold text-foreground border-b border-r border-border/60 whitespace-nowrap"
+                                                >
+                                                    Address / Purok
+                                                </th>
+
+                                                {/* 8. BCG */}
+                                                <th
+                                                    scope="col"
+                                                    className={`sticky top-0 z-20 min-w-[135px] w-[135px] px-3.5 py-3 font-semibold border-b border-r border-border/60 whitespace-nowrap transition-colors ${
+                                                        activeVaccineKey === 'BCG'
+                                                            ? 'bg-primary/15 text-primary'
+                                                            : 'bg-muted/95 text-foreground'
+                                                    }`}
+                                                >
+                                                    BCG
+                                                </th>
+
+                                                {/* 9. Hep B */}
+                                                <th
+                                                    scope="col"
+                                                    className={`sticky top-0 z-20 min-w-[140px] w-[140px] px-3.5 py-3 font-semibold border-b border-r border-border/60 whitespace-nowrap transition-colors ${
+                                                        activeVaccineKey === 'Hep B'
+                                                            ? 'bg-primary/15 text-primary'
+                                                            : 'bg-muted/95 text-foreground'
+                                                    }`}
+                                                >
+                                                    Hep B
+                                                </th>
+
+                                                {/* 10. Pentavalent */}
+                                                <th
+                                                    scope="col"
+                                                    className={`sticky top-0 z-20 min-w-[140px] w-[140px] px-3.5 py-3 font-semibold border-b border-r border-border/60 whitespace-nowrap transition-colors ${
+                                                        activeVaccineKey === 'Pentavalent'
+                                                            ? 'bg-primary/15 text-primary'
+                                                            : 'bg-muted/95 text-foreground'
+                                                    }`}
+                                                >
+                                                    Pentavalent
+                                                </th>
+
+                                                {/* 11. PCV */}
+                                                <th
+                                                    scope="col"
+                                                    className={`sticky top-0 z-20 min-w-[140px] w-[140px] px-3.5 py-3 font-semibold border-b border-r border-border/60 whitespace-nowrap transition-colors ${
+                                                        activeVaccineKey === 'PCV'
+                                                            ? 'bg-primary/15 text-primary'
+                                                            : 'bg-muted/95 text-foreground'
+                                                    }`}
+                                                >
+                                                    PCV
+                                                </th>
+
+                                                {/* 12. OPV */}
+                                                <th
+                                                    scope="col"
+                                                    className={`sticky top-0 z-20 min-w-[140px] w-[140px] px-3.5 py-3 font-semibold border-b border-r border-border/60 whitespace-nowrap transition-colors ${
+                                                        activeVaccineKey === 'OPV'
+                                                            ? 'bg-primary/15 text-primary'
+                                                            : 'bg-muted/95 text-foreground'
+                                                    }`}
+                                                >
+                                                    OPV
+                                                </th>
+
+                                                {/* 13. IPV */}
+                                                <th
+                                                    scope="col"
+                                                    className={`sticky top-0 z-20 min-w-[140px] w-[140px] px-3.5 py-3 font-semibold border-b border-r border-border/60 whitespace-nowrap transition-colors ${
+                                                        activeVaccineKey === 'IPV'
+                                                            ? 'bg-primary/15 text-primary'
+                                                            : 'bg-muted/95 text-foreground'
+                                                    }`}
+                                                >
+                                                    IPV
+                                                </th>
+
+                                                {/* 14. MCV */}
+                                                <th
+                                                    scope="col"
+                                                    className={`sticky top-0 z-20 min-w-[140px] w-[140px] px-3.5 py-3 font-semibold border-b border-r border-border/60 whitespace-nowrap transition-colors ${
+                                                        activeVaccineKey === 'MCV'
+                                                            ? 'bg-primary/15 text-primary'
+                                                            : 'bg-muted/95 text-foreground'
+                                                    }`}
+                                                >
+                                                    MCV
+                                                </th>
+
+                                                {/* 15. Actions */}
+                                                <th
+                                                    scope="col"
+                                                    className="sticky top-0 z-20 min-w-[90px] w-[90px] bg-muted/95 px-3 py-3 text-center font-semibold text-foreground border-b border-border/60 whitespace-nowrap"
+                                                >
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            {visibleMasterlistPatients.length === 0 ? (
+                                                <tr>
+                                                    <td
+                                                        colSpan={15}
+                                                        className="px-6 py-16 text-center text-muted-foreground"
+                                                    >
+                                                        <div className="flex flex-col items-center justify-center space-y-2.5">
+                                                            <div className="rounded-full bg-muted/60 p-3 text-muted-foreground">
+                                                                <Baby className="h-6 w-6" />
+                                                            </div>
+                                                            <p className="font-medium text-foreground text-sm">
+                                                                No patient records found
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground max-w-sm">
+                                                                Try clearing your search query or adjusting your filters to find children in the registry.
+                                                            </p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                visibleMasterlistPatients.map((patient) => {
+                                                    const fullName = `${patient.first_name}${patient.middle_name ? ` ${patient.middle_name}` : ''} ${patient.last_name}`;
+                                                    const motherOrGuardian = patient.guardian_name || patient.mother_name || '—';
 
                                                     return (
-                                                        <div
-                                                            key={
-                                                                patient.patient_id
-                                                            }
-                                                            className={
-                                                                index !==
-                                                                patientGroups.length -
-                                                                    1
-                                                                    ? 'border-b'
-                                                                    : ''
-                                                            }
+                                                        <tr
+                                                            key={patient.id}
+                                                            className="group border-b border-border/40 hover:bg-muted/20 transition-colors"
                                                         >
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    togglePatient(
-                                                                        patient.patient_id,
-                                                                    )
-                                                                }
-                                                                aria-expanded={
-                                                                    isExpanded
-                                                                }
-                                                                className="grid w-full grid-cols-[44px_minmax(0,1fr)_260px] items-center gap-3 px-5 py-5 text-left transition-colors hover:bg-muted/30"
+                                                            {/* 1. Patient ID: sticky left */}
+                                                            <td className="sticky left-0 z-10 min-w-[110px] w-[110px] bg-card group-hover:bg-muted/30 px-3.5 py-3 font-mono text-xs border-b border-r border-border/40 whitespace-nowrap text-foreground/90 font-medium transition-colors">
+                                                                {patient.patient_id}
+                                                            </td>
+
+                                                            {/* 2. Child Name: sticky left at 110px */}
+                                                            <td className="sticky left-[110px] z-10 min-w-[190px] w-[190px] bg-card group-hover:bg-muted/30 px-3.5 py-3 font-medium text-xs border-b border-r border-border/40 whitespace-nowrap transition-colors">
+                                                                <div
+                                                                    className="truncate max-w-[180px] text-foreground font-semibold"
+                                                                    title={fullName}
+                                                                >
+                                                                    {fullName}
+                                                                </div>
+                                                            </td>
+
+                                                            {/* 3. Age */}
+                                                            <td className="min-w-[95px] w-[95px] px-3.5 py-3 text-xs border-b border-r border-border/40 whitespace-nowrap text-foreground/80">
+                                                                {formatPatientAge(patient.date_of_birth)}
+                                                            </td>
+
+                                                            {/* 4. Birth Date */}
+                                                            <td className="min-w-[110px] w-[110px] px-3.5 py-3 text-xs border-b border-r border-border/40 whitespace-nowrap text-foreground/80">
+                                                                {formatBirthDate(patient.date_of_birth)}
+                                                            </td>
+
+                                                            {/* 5. Mother / Guardian */}
+                                                            <td className="min-w-[160px] w-[160px] px-3.5 py-3 text-xs border-b border-r border-border/40">
+                                                                <div
+                                                                    className="truncate max-w-[150px] text-foreground/80"
+                                                                    title={motherOrGuardian}
+                                                                >
+                                                                    {motherOrGuardian}
+                                                                </div>
+                                                            </td>
+
+                                                            {/* 6. Contact */}
+                                                            <td className="min-w-[130px] w-[130px] px-3.5 py-3 font-mono text-[11px] border-b border-r border-border/40 whitespace-nowrap text-foreground/80">
+                                                                {patient.guardian_contact || '—'}
+                                                            </td>
+
+                                                            {/* 7. Address / Purok */}
+                                                            <td className="min-w-[140px] w-[140px] px-3.5 py-3 text-xs border-b border-r border-border/40">
+                                                                <div
+                                                                    className="truncate max-w-[130px] text-foreground/80"
+                                                                    title={patient.address || undefined}
+                                                                >
+                                                                    {patient.address || '—'}
+                                                                </div>
+                                                            </td>
+
+                                                            {/* 8. BCG */}
+                                                            <td
+                                                                className={`min-w-[135px] w-[135px] px-3.5 py-3 align-top border-b border-r border-border/40 transition-colors ${
+                                                                    activeVaccineKey === 'BCG' ? 'bg-primary/5' : ''
+                                                                }`}
                                                             >
-                                                                <div className="flex items-center justify-center text-muted-foreground">
-                                                                    {isExpanded ? (
-                                                                        <ChevronDown className="h-4 w-4" />
-                                                                    ) : (
-                                                                        <ChevronRight className="h-4 w-4" />
-                                                                    )}
+                                                                {renderVaccineDoses(patient, 'BCG')}
+                                                            </td>
+
+                                                            {/* 9. Hep B */}
+                                                            <td
+                                                                className={`min-w-[140px] w-[140px] px-3.5 py-3 align-top border-b border-r border-border/40 transition-colors ${
+                                                                    activeVaccineKey === 'Hep B' ? 'bg-primary/5' : ''
+                                                                }`}
+                                                            >
+                                                                {renderVaccineDoses(patient, 'Hep B')}
+                                                            </td>
+
+                                                            {/* 10. Pentavalent */}
+                                                            <td
+                                                                className={`min-w-[140px] w-[140px] px-3.5 py-3 align-top border-b border-r border-border/40 transition-colors ${
+                                                                    activeVaccineKey === 'Pentavalent' ? 'bg-primary/5' : ''
+                                                                }`}
+                                                            >
+                                                                {renderVaccineDoses(patient, 'Pentavalent')}
+                                                            </td>
+
+                                                            {/* 11. PCV */}
+                                                            <td
+                                                                className={`min-w-[140px] w-[140px] px-3.5 py-3 align-top border-b border-r border-border/40 transition-colors ${
+                                                                    activeVaccineKey === 'PCV' ? 'bg-primary/5' : ''
+                                                                }`}
+                                                            >
+                                                                {renderVaccineDoses(patient, 'PCV')}
+                                                            </td>
+
+                                                            {/* 12. OPV */}
+                                                            <td
+                                                                className={`min-w-[140px] w-[140px] px-3.5 py-3 align-top border-b border-r border-border/40 transition-colors ${
+                                                                    activeVaccineKey === 'OPV' ? 'bg-primary/5' : ''
+                                                                }`}
+                                                            >
+                                                                {renderVaccineDoses(patient, 'OPV')}
+                                                            </td>
+
+                                                            {/* 13. IPV */}
+                                                            <td
+                                                                className={`min-w-[140px] w-[140px] px-3.5 py-3 align-top border-b border-r border-border/40 transition-colors ${
+                                                                    activeVaccineKey === 'IPV' ? 'bg-primary/5' : ''
+                                                                }`}
+                                                            >
+                                                                {renderVaccineDoses(patient, 'IPV')}
+                                                            </td>
+
+                                                            {/* 14. MCV */}
+                                                            <td
+                                                                className={`min-w-[140px] w-[140px] px-3.5 py-3 align-top border-b border-r border-border/40 transition-colors ${
+                                                                    activeVaccineKey === 'MCV' ? 'bg-primary/5' : ''
+                                                                }`}
+                                                            >
+                                                                {renderVaccineDoses(patient, 'MCV')}
+                                                            </td>
+
+                                                            {/* 15. Actions */}
+                                                            <td className="min-w-[90px] w-[90px] px-2 py-3 border-b border-border/40 text-center">
+                                                                <div className="flex items-center justify-center gap-1.5">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        type="button"
+                                                                        className="h-7 w-7 rounded-lg border border-border/60 bg-background/50 hover:bg-muted hover:text-foreground text-muted-foreground transition-colors cursor-pointer"
+                                                                        title="View patient record"
+                                                                        onClick={() => router.visit(`/patients/${patient.id}`)}
+                                                                    >
+                                                                        <Eye className="h-3.5 w-3.5" />
+                                                                        <span className="sr-only">View</span>
+                                                                    </Button>
+
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        type="button"
+                                                                        className="h-7 w-7 rounded-lg border border-border/60 bg-background/50 hover:bg-muted hover:text-foreground text-muted-foreground transition-colors cursor-pointer"
+                                                                        title="Edit patient record"
+                                                                        onClick={() => router.visit(`/patients/${patient.id}/edit`)}
+                                                                    >
+                                                                        <Pencil className="h-3.5 w-3.5" />
+                                                                        <span className="sr-only">Edit</span>
+                                                                    </Button>
                                                                 </div>
-
-                                                                <div className="min-w-0">
-                                                                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                                                                        <p className="font-semibold text-base">
-                                                                            {
-                                                                                patient.patient_name
-                                                                            }
-                                                                        </p>
-
-                                                                        <p className="text-xs text-muted-foreground">
-                                                                            {patient.patient_code ??
-                                                                                'No Patient ID'}
-                                                                        </p>
-                                                                    </div>
-
-                                                                    <p className="mt-1 truncate text-sm text-muted-foreground">
-                                                                        {getVaccineSummary(
-                                                                            patient,
-                                                                        )}
-                                                                    </p>
-                                                                </div>
-
-                                                                <div className="border-l pl-6 text-right">
-                                                                    <p className="text-sm font-medium">
-                                                                        {getGroupSummary(
-                                                                            patient,
-                                                                        )}
-                                                                    </p>
-
-                                                                    <p className="mt-1 text-xs text-muted-foreground">
-                                                                        {isExpanded
-                                                                            ? 'Hide details'
-                                                                            : 'View details'}
-                                                                    </p>
-                                                                </div>
-                                                            </button>
-
-                                                            {isExpanded && (
-                                                                <div className="border-t bg-muted/10 px-6 py-2 pl-[72px] min-w-0 max-w-full">
-                                                                    {patient.rows.map(
-                                                                        (
-                                                                            row,
-                                                                            rowIndex,
-                                                                        ) => {
-                                                                            const status =
-                                                                                getTclStatus(
-                                                                                    row,
-                                                                                );
-
-                                                                            const scheduledDate =
-                                                                                formatDate(
-                                                                                    row.scheduled_date,
-                                                                                );
-
-                                                                            return (
-                                                                                <div
-                                                                                    key={`${row.patient_id}-${row.vaccine_id}-${row.dose_number}`}
-                                                                                    className={`grid gap-4 py-4 grid-cols-[minmax(180px,1.4fr)_100px_minmax(120px,1fr)_minmax(170px,1.2fr)] items-center ${
-                                                                                        rowIndex !==
-                                                                                        patient
-                                                                                            .rows
-                                                                                            .length -
-                                                                                            1
-                                                                                            ? 'border-b'
-                                                                                            : ''
-                                                                                    }`}
-                                                                                >
-                                                                                    <p className="text-sm font-medium">
-                                                                                        {
-                                                                                            row.vaccine_name
-                                                                                        }
-                                                                                    </p>
-
-                                                                                    <p className="text-center text-sm text-muted-foreground">
-                                                                                        Dose{' '}
-                                                                                        {
-                                                                                            row.dose_number
-                                                                                        }
-                                                                                    </p>
-
-                                                                                    <div className="flex flex-col items-center justify-center gap-0.5">
-                                                                                        <p
-                                                                                            className={`text-center text-sm font-medium ${getPriorityClass(
-                                                                                                row.schedule_label,
-                                                                                            )}`}
-                                                                                        >
-                                                                                            {
-                                                                                                row.schedule_label
-                                                                                            }
-                                                                                        </p>
-                                                                                        {row.days_due && row.days_due > 0 && row.schedule_label !== 'Current Age' ? (
-                                                                                            <span className="text-[11px] text-muted-foreground font-medium">
-                                                                                                {row.days_due} days due
-                                                                                            </span>
-                                                                                        ) : null}
-                                                                                    </div>
-
-                                                                                    <div className="text-right">
-                                                                                        <p
-                                                                                            className={`text-sm ${status.className}`}
-                                                                                        >
-                                                                                            {
-                                                                                                status.text
-                                                                                            }
-                                                                                        </p>
-
-                                                                                        {scheduledDate && (
-                                                                                            <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                                                                <CalendarDays className="h-3.5 w-3.5" />
-
-                                                                                                {
-                                                                                                    scheduledDate
-                                                                                                }
-                                                                                            </p>
-                                                                                        )}
-                                                                                    </div>
-                                                                                </div>
-                                                                            );
-                                                                        },
-                                                                    )}
-
-                                                                    <div className="flex justify-end border-t py-3">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                router.visit(
-                                                                                    route(
-                                                                                        'patients.show',
-                                                                                        patient.patient_id,
-                                                                                    ),
-                                                                                )
-                                                                            }
-                                                                            className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-xs font-medium transition-colors hover:bg-muted"
-                                                                        >
-                                                                            <Eye className="h-3.5 w-3.5" />
-                                                                            View patient record
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
+                                                            </td>
+                                                        </tr>
                                                     );
-                                                },
+                                                })
                                             )}
-                                        </div>
-                                    </div>
-                                )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         ) : viewMode === 'scheduled' ? (
                             <div className="w-full max-w-full overflow-hidden rounded-lg border">
