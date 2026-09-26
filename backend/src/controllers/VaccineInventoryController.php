@@ -87,25 +87,34 @@ class VaccineInventoryController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | REMAINING DEMAND
+        | CURRENT DEMAND (SCHEDULED + UNSCHEDULED)
         |--------------------------------------------------------------------------
         |
-        | Demand returned by the scheduling service already distinguishes
-        | scheduled patients from unscheduled patients. For inventory coverage,
-        | the remaining demand is the unscheduled eligible demand.
+        | Counts all active pediatric patients who currently need this vaccine,
+        | regardless of schedule status:
+        | - Active schedules with status: scheduled, upcoming, or overdue
+        | - Active eligible patients who are not yet scheduled
         |
         */
 
-        $remainingDemandByVaccine =
-            $priorityService
-                ->getDemandByVaccineDose()
-                ->groupBy('vaccine_id')
-                ->map(
-                    fn ($rows) =>
-                        (int) $rows->sum(
-                            'unscheduled_patients'
-                        )
-                );
+        $pendingSchedulesByVaccine = PatientVaccineSchedule::query()
+            ->pending()
+            ->whereHas('patient', fn ($q) => $q->where('status', 'Active'))
+            ->selectRaw('vaccine_id, COUNT(*) as count')
+            ->groupBy('vaccine_id')
+            ->pluck('count', 'vaccine_id');
+
+        $unscheduledByVaccine = $priorityService
+            ->getDemandByVaccineDose()
+            ->groupBy('vaccine_id')
+            ->map(fn ($rows) => (int) $rows->sum('unscheduled_patients'));
+
+        $remainingDemandByVaccine = $vaccines
+            ->mapWithKeys(function (Vaccine $vaccine) use ($pendingSchedulesByVaccine, $unscheduledByVaccine) {
+                $scheduledCount = (int) $pendingSchedulesByVaccine->get($vaccine->id, 0);
+                $unscheduledCount = (int) $unscheduledByVaccine->get($vaccine->id, 0);
+                return [$vaccine->id => $scheduledCount + $unscheduledCount];
+            });
 
         $inventory = $vaccines
             ->map(function (Vaccine $vaccine) use (
@@ -278,7 +287,7 @@ class VaccineInventoryController extends Controller
                     $remainingDemand <= 0 =>
                         'No Current Demand',
 
-                    $freeStock < $remainingDemand =>
+                    $usableStock < $remainingDemand =>
                         'Insufficient',
 
                     default =>

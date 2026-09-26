@@ -164,19 +164,34 @@ class DashboardController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | REMAINING CURRENT DEMAND
+        | CURRENT DEMAND (SCHEDULED + UNSCHEDULED)
         |--------------------------------------------------------------------------
+        |
+        | Counts all active pediatric patients who currently need this vaccine,
+        | regardless of schedule status:
+        | - Active schedules with status: scheduled, upcoming, or overdue
+        | - Active eligible patients who are not yet scheduled
+        |
         */
 
-        $remainingDemandByVaccine = $priorityService
+        $pendingSchedulesByVaccine = PatientVaccineSchedule::query()
+            ->pending()
+            ->whereHas('patient', fn ($q) => $q->where('status', 'Active'))
+            ->selectRaw('vaccine_id, COUNT(*) as count')
+            ->groupBy('vaccine_id')
+            ->pluck('count', 'vaccine_id');
+
+        $unscheduledByVaccine = $priorityService
             ->getDemandByVaccineDose()
             ->groupBy('vaccine_id')
-            ->map(
-                fn ($rows) =>
-                    (int) $rows->sum(
-                        'unscheduled_patients'
-                    )
-            );
+            ->map(fn ($rows) => (int) $rows->sum('unscheduled_patients'));
+
+        $remainingDemandByVaccine = $vaccines
+            ->mapWithKeys(function (Vaccine $vaccine) use ($pendingSchedulesByVaccine, $unscheduledByVaccine) {
+                $scheduledCount = (int) $pendingSchedulesByVaccine->get($vaccine->id, 0);
+                $unscheduledCount = (int) $unscheduledByVaccine->get($vaccine->id, 0);
+                return [$vaccine->id => $scheduledCount + $unscheduledCount];
+            });
 
         $vaccineStockDemand = $vaccines
             ->map(function (Vaccine $vaccine) use (
@@ -225,7 +240,7 @@ class DashboardController extends Controller
                     $remainingDemand <= 0 =>
                         'No Current Demand',
 
-                    $freeStock < $remainingDemand =>
+                    $usableStock < $remainingDemand =>
                         'Insufficient',
 
                     default =>
