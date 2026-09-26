@@ -25,10 +25,13 @@ import {
     ChevronsUpDown,
     Eye,
     History,
+    MapPin,
     Pencil,
+    Phone,
     Search,
     SearchX,
     ShieldCheck,
+    User,
     X,
 } from 'lucide-react';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
