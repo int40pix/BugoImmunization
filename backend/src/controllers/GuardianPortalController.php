@@ -609,10 +609,17 @@ class GuardianPortalController extends Controller
                 default => 'In Stock',
             };
 
-            $doses = collect(range(1, $requiredDoses))->map(function (int $doseNumber) use ($vaccine, $recordsByDose, $schedulesByDose, $vials, $stockStatus) {
+            $doses = collect(range(1, $requiredDoses))->map(function (int $doseNumber) use ($vaccine, $recordsByDose, $schedulesByDose, $vials, $stockStatus, $patient) {
                 $record = $recordsByDose->get($doseNumber);
                 $schedule = $schedulesByDose->get($doseNumber);
                 $scheduleDef = $vaccine->schedules->firstWhere('dose_number', $doseNumber);
+                $recommendedDate = $this->calculateDoseRecommendedDate(
+                    $vaccine,
+                    $doseNumber,
+                    $recordsByDose,
+                    $schedulesByDose,
+                    $patient->date_of_birth ? Carbon::parse($patient->date_of_birth)->format('Y-m-d') : null
+                );
 
                 return [
                     'dose_number' => $doseNumber,
@@ -637,6 +644,7 @@ class GuardianPortalController extends Controller
                         'stock_vials' => $vials,
                         'stock_status' => $stockStatus,
                     ] : null,
+                    'recommended_date' => $recommendedDate ? $recommendedDate->format('Y-m-d') : null,
                 ];
             })->values();
 
@@ -807,5 +815,145 @@ class GuardianPortalController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Calculate recommended date for a specific dose based on:
+     * 1. Last administered dose of this vaccine + cumulative intervals
+     * 2. Last scheduled dose of this vaccine + cumulative intervals
+     * 3. Child's date of birth + recommended age
+     *
+     * Automatically aligns to Bugo Health Center's Wednesday clinic schedule.
+     */
+    protected function calculateDoseRecommendedDate(
+        Vaccine $vaccine,
+        int $targetDose,
+        $records,
+        $schedules,
+        ?string $dateOfBirth
+    ): ?Carbon {
+        $getRecord = function (int $d) use ($records, $vaccine) {
+            return $records->get($vaccine->id . ':' . $d) ?? $records->get($d);
+        };
+        $getSchedule = function (int $d) use ($schedules, $vaccine) {
+            return $schedules->get($vaccine->id . ':' . $d) ?? $schedules->get($d);
+        };
+
+        // If target dose is already administered or explicitly scheduled, no blank calculation needed
+        if ($getRecord($targetDose)?->date_administered || $getSchedule($targetDose)?->scheduled_date) {
+            return null;
+        }
+
+        // Find most recent administered dose prior to targetDose
+        $lastAdministeredDose = null;
+        $lastAdministeredDate = null;
+        for ($d = 1; $d < $targetDose; $d++) {
+            $rec = $getRecord($d);
+            if ($rec && $rec->date_administered) {
+                $lastAdministeredDose = $d;
+                $lastAdministeredDate = Carbon::parse($rec->date_administered);
+            }
+        }
+
+        // Find most recent scheduled dose prior to targetDose if none administered
+        $lastScheduledDose = null;
+        $lastScheduledDate = null;
+        if (!$lastAdministeredDate) {
+            for ($d = 1; $d < $targetDose; $d++) {
+                $sched = $getSchedule($d);
+                if ($sched && $sched->scheduled_date) {
+                    $lastScheduledDose = $d;
+                    $lastScheduledDate = Carbon::parse($sched->scheduled_date);
+                }
+            }
+        }
+
+        $baseDate = null;
+        $startDoseNum = 1;
+
+        if ($lastAdministeredDate) {
+            $baseDate = $lastAdministeredDate->copy();
+            $startDoseNum = $lastAdministeredDose + 1;
+        } elseif ($lastScheduledDate) {
+            $baseDate = $lastScheduledDate->copy();
+            $startDoseNum = $lastScheduledDose + 1;
+        } elseif ($dateOfBirth) {
+            $dob = Carbon::parse($dateOfBirth);
+            $firstScheduleDef = $vaccine->schedules->firstWhere('dose_number', 1);
+            $daysFromDob = $this->parseRecommendedAgeToDays($firstScheduleDef?->recommended_age);
+            $baseDate = $dob->copy()->addDays((int) $daysFromDob);
+            $startDoseNum = 2;
+        }
+
+        if (!$baseDate) {
+            return null;
+        }
+
+        for ($step = $startDoseNum; $step <= $targetDose; $step++) {
+            $stepSchedule = $vaccine->schedules->firstWhere('dose_number', $step);
+            $intervalDays = 28; // Standard 4 weeks for EPI multi-dose routine
+
+            if ($stepSchedule && !empty($stepSchedule->interval)) {
+                $parsedInt = (int) $stepSchedule->interval;
+                if ($parsedInt > 0) {
+                    $intervalDays = $parsedInt;
+                }
+            } elseif ($stepSchedule && !empty($stepSchedule->recommended_age)) {
+                $prevSchedule = $vaccine->schedules->firstWhere('dose_number', $step - 1);
+                if ($prevSchedule && !empty($prevSchedule->recommended_age)) {
+                    $diffDays = $this->parseRecommendedAgeToDays($stepSchedule->recommended_age) -
+                        $this->parseRecommendedAgeToDays($prevSchedule->recommended_age);
+                    if ($diffDays > 0) {
+                        $intervalDays = (int) $diffDays;
+                    }
+                }
+            }
+
+            $baseDate->addDays($intervalDays);
+        }
+
+        // Bugo Health Center Wednesday clinic alignment
+        if (!$baseDate->isWednesday()) {
+            $baseDate->next(Carbon::WEDNESDAY);
+        }
+
+        return $baseDate;
+    }
+
+    /**
+     * Converts a recommended age string (e.g. '1.5 months', '6 weeks', '9 months') to days.
+     */
+    protected function parseRecommendedAgeToDays(?string $ageStr): float
+    {
+        if (!$ageStr) {
+            return 0.0;
+        }
+
+        $normalized = trim(strtolower($ageStr));
+        if (in_array($normalized, ['0 days', '0 day', 'at birth', 'birth'], true)) {
+            return 0.0;
+        }
+
+        if (preg_match('/([\d.]+)\s*(day|days|week|weeks|month|months|mo|mos|year|years|yr|yrs)?/', $normalized, $matches)) {
+            $val = (float) $matches[1];
+            $unit = $matches[2] ?? 'days';
+
+            if (str_starts_with($unit, 'day')) {
+                return (float) round($val);
+            }
+            if (str_starts_with($unit, 'week')) {
+                return (float) round($val * 7);
+            }
+            if (str_starts_with($unit, 'mo')) {
+                return (float) round($val * 30);
+            }
+            if (str_starts_with($unit, 'year') || str_starts_with($unit, 'yr')) {
+                return (float) round($val * 365);
+            }
+
+            return (float) round($val);
+        }
+
+        return 0.0;
     }
 }

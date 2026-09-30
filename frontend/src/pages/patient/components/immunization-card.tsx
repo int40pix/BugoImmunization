@@ -9,9 +9,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { router } from '@inertiajs/react';
 import {
+    CalendarDays,
     Check,
     CheckCircle2,
     ClipboardList,
+    Clock3,
     Pencil,
     Plus,
     Printer,
@@ -21,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { getDoseRecommendedDate } from '@/utils/immunization-schedule';
 
 type CardRecord = {
     id: number;
@@ -41,6 +44,12 @@ type ImmunizationCardDose = {
     recommended_age: string | null;
     interval: string | null;
     record: CardRecord | null;
+    schedule?: {
+        id: number;
+        scheduled_date: string | null;
+        status: string;
+    } | null;
+    recommended_date?: string | null;
 };
 
 export type ImmunizationCardVaccine = {
@@ -150,6 +159,11 @@ export default function ImmunizationCard({
         typeof window !== 'undefined'
             ? `${window.location.origin}/patients/${patient.id}`
             : `/patients/${patient.id}`;
+
+    const administeredCardDoses = immunizationCard.reduce(
+        (acc, v) => acc + v.doses.filter((d) => Boolean(d.record?.date_administered)).length,
+        0,
+    );
 
 const parseDate = (date: string | null) => {
     if (!date) {
@@ -1146,17 +1160,21 @@ const handleSaveCard = () => {
             <CardHeader className="no-print border-b p-3.5 sm:p-5">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-primary">
+                                Republic of the Philippines · Department of Health
+                            </span>
+                        </div>
                         <CardTitle className="text-base sm:text-lg">
-                            Child Immunization Record
+                            Barangay Bugo Health Center — Child Immunization Card
                         </CardTitle>
-
                         <p className="mt-0.5 text-xs text-muted-foreground">
-                            Digital vaccination card based on the patient's applicable vaccine schedule.
+                            Expanded Program on Immunization (EPI) Official Record
                         </p>
                     </div>
 
                     {!isCardEditing ? (
-                        <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 flex-wrap">
                             <Button
                                 type="button"
                                 variant="outline"
@@ -1178,6 +1196,14 @@ const handleSaveCard = () => {
                                 <Pencil className="mr-1.5 h-3.5 w-3.5" />
                                 Edit Card
                             </Button>
+
+                            <Badge
+                                variant="outline"
+                                className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium py-1 px-2.5"
+                            >
+                                <Check className="mr-1 h-3 w-3" />
+                                {administeredCardDoses} Doses Completed
+                            </Badge>
                         </div>
                     ) : (
                         <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
@@ -1373,8 +1399,22 @@ const handleSaveCard = () => {
                                             <div className="divide-y divide-border/60">
                                                 {vaccine.doses.map((dose) => {
                                                     const isDone = Boolean(
-                                                        dose.record,
+                                                        dose.record?.date_administered,
                                                     );
+                                                    const isScheduled =
+                                                        !isDone &&
+                                                        Boolean(
+                                                            dose.schedule
+                                                                ?.scheduled_date,
+                                                        );
+                                                    const recDate =
+                                                        !isDone && !isScheduled
+                                                            ? getDoseRecommendedDate(
+                                                                  vaccine,
+                                                                  dose,
+                                                                  patient.date_of_birth,
+                                                              )
+                                                            : null;
                                                     const targetAge =
                                                         formatRecommendedAge(
                                                             dose.recommended_age,
@@ -1417,6 +1457,21 @@ const handleSaveCard = () => {
                                                                                     ?.date_administered ??
                                                                                     null,
                                                                             )}
+                                                                        </span>
+                                                                    ) : isScheduled ? (
+                                                                        <span className="inline-flex items-center gap-1 rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-400">
+                                                                            <Clock3 className="h-3 w-3" />
+                                                                            Due: {formatCompactDate(
+                                                                                dose
+                                                                                    .schedule
+                                                                                    ?.scheduled_date ??
+                                                                                    null,
+                                                                            )}
+                                                                        </span>
+                                                                    ) : recDate ? (
+                                                                        <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-400" title="Recommended date based on last administration">
+                                                                            <CalendarDays className="h-3 w-3" />
+                                                                            Rec: {formatCompactDate(recDate)}
                                                                         </span>
                                                                     ) : (
                                                                         <span className="text-xs text-muted-foreground/80 italic">
@@ -2079,6 +2134,23 @@ const handleSaveCard = () => {
                                                                     vaccine.vaccine_id,
                                                                     dose.dose_number,
                                                                 );
+                                                            const isDone = Boolean(
+                                                                dose.record?.date_administered,
+                                                            );
+                                                            const isScheduled =
+                                                                !isDone &&
+                                                                Boolean(
+                                                                    dose.schedule
+                                                                        ?.scheduled_date,
+                                                                );
+                                                            const recDate =
+                                                                !isDone && !isScheduled
+                                                                    ? getDoseRecommendedDate(
+                                                                          vaccine,
+                                                                          dose,
+                                                                          patient.date_of_birth,
+                                                                      )
+                                                                    : null;
 
                                                             return (
                                                                 <div
@@ -2096,21 +2168,35 @@ const handleSaveCard = () => {
                                                                     </span>
 
                                                                     {!isCardEditing ? (
-                                                                        <span
-                                                                            className={`text-center ${
-                                                                                dose.record
-                                                                                    ? 'font-semibold'
-                                                                                    : 'text-muted-foreground'
-                                                                            }`}
-                                                                        >
-                                                                            {dose.record
-                                                                                ? formatCompactDate(
-                                                                                      dose
-                                                                                          .record
-                                                                                          .date_administered,
-                                                                                  )
-                                                                                : '—'}
-                                                                        </span>
+                                                                        isDone ? (
+                                                                            <span className="text-center font-semibold text-foreground">
+                                                                                {formatCompactDate(
+                                                                                    dose.record?.date_administered ?? null,
+                                                                                )}
+                                                                            </span>
+                                                                        ) : isScheduled ? (
+                                                                            <div className="flex flex-col items-center">
+                                                                                <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400 no-print">
+                                                                                    Due: {formatCompactDate(dose.schedule?.scheduled_date ?? null)}
+                                                                                </span>
+                                                                                <span className="text-[11px] font-medium text-muted-foreground print-only">
+                                                                                    Due: {formatCompactDate(dose.schedule?.scheduled_date ?? null)}
+                                                                                </span>
+                                                                            </div>
+                                                                        ) : recDate ? (
+                                                                            <div className="flex flex-col items-center" title="Recommended date based on last administration">
+                                                                                <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400 no-print">
+                                                                                    Rec: {formatCompactDate(recDate)}
+                                                                                </span>
+                                                                                <span className="text-[11px] font-medium text-muted-foreground italic print-only">
+                                                                                    Rec: {formatCompactDate(recDate)}
+                                                                                </span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <span className="text-center text-muted-foreground">
+                                                                                —
+                                                                            </span>
+                                                                        )
                                                                     ) : (
                                                                         <Input
                                                                             type="date"
@@ -2119,6 +2205,7 @@ const handleSaveCard = () => {
                                                                                 draft?.dateAdministered ??
                                                                                 ''
                                                                             }
+                                                                            placeholder={recDate ? formatCompactDate(recDate) : ''}
                                                                             min={formatDateForInput(
                                                                                 patient.date_of_birth,
                                                                             )}
