@@ -704,6 +704,99 @@ class PatientImmunizationScheduleService
     }
 
     /**
+     * Resolves the patient's immediate next recommended clinic visit.
+     *
+     * 1. If the patient has any unadministered doses that are currently DUE (eligible today/overdue),
+     *    prompts to visit the next upcoming Wednesday clinic.
+     * 2. If all currently due doses are complete, finds the earliest upcoming recommended dose date,
+     *    respecting mandatory intervals (cooldown) from the last administration and minimum age,
+     *    aligned to Wednesday clinic.
+     * 3. If all routine vaccines are completed, returns completion status.
+     */
+    public function resolveNextVisitRecommendation(Patient $patient): array
+    {
+        $this->clearCache();
+
+        $patient->loadMissing([
+            'immunizationRecords.vaccine',
+            'optionalVaccines',
+            'vaccineSchedules',
+        ]);
+
+        $schedule = collect($this->getSchedule($patient));
+
+        $uncompleted = $schedule->where('completed', false);
+        if ($uncompleted->isEmpty()) {
+            return [
+                'has_due_vaccines' => false,
+                'is_all_completed' => true,
+                'next_recommended_date' => null,
+                'target_wednesday' => null,
+                'prompt' => 'All routine infant immunization doses are completed.',
+                'due_vaccines' => [],
+            ];
+        }
+
+        $candidates = $uncompleted->filter(
+            fn ($item) => (bool) ($item['previous_dose_completed'] ?? false)
+        );
+
+        $dueCandidates = $candidates->filter(fn ($item) => (bool) ($item['eligible'] ?? false));
+
+        // Case 1: Child still has DUE vaccines (eligible right now)
+        if ($dueCandidates->isNotEmpty()) {
+            $nextWednesday = Carbon::today()->next(Carbon::WEDNESDAY);
+            $dueNames = $dueCandidates->pluck('vaccine_name')->unique()->values()->all();
+
+            return [
+                'has_due_vaccines' => true,
+                'is_all_completed' => false,
+                'next_recommended_date' => $nextWednesday->toDateString(),
+                'target_wednesday' => $nextWednesday->toDateString(),
+                'prompt' => 'Next recommended visit date: Wednesday, ' . $nextWednesday->format('M d, Y') . '.',
+                'due_vaccines' => $dueNames,
+            ];
+        }
+
+        // Case 2: No doses due today. Find earliest upcoming visit respecting interval cooldown & age.
+        $earliestCandidate = $candidates
+            ->sortBy(function ($item) {
+                $target = $item['target_wednesday'] ?? $item['recommended_date'] ?? null;
+                return $target ? Carbon::parse($target)->timestamp : PHP_INT_MAX;
+            })
+            ->first();
+
+        if ($earliestCandidate) {
+            $rawTarget = $earliestCandidate['target_wednesday'] ?? $earliestCandidate['recommended_date'];
+            $targetDate = $rawTarget ? Carbon::parse($rawTarget) : null;
+
+            if ($targetDate && $targetDate->lte(Carbon::today())) {
+                $targetDate = Carbon::today()->next(Carbon::WEDNESDAY);
+            }
+
+            if ($targetDate) {
+                return [
+                    'has_due_vaccines' => false,
+                    'is_all_completed' => false,
+                    'next_recommended_date' => $targetDate->toDateString(),
+                    'target_wednesday' => $targetDate->toDateString(),
+                    'prompt' => 'Next recommended visit date: Wednesday, ' . $targetDate->format('M d, Y') . '.',
+                    'due_vaccines' => [],
+                ];
+            }
+        }
+
+        return [
+            'has_due_vaccines' => false,
+            'is_all_completed' => false,
+            'next_recommended_date' => null,
+            'target_wednesday' => null,
+            'prompt' => null,
+            'due_vaccines' => [],
+        ];
+    }
+
+    /**
      * Return only vaccines that participate in this
      * patient's structured immunization schedule.
      *

@@ -305,7 +305,7 @@ export function NavUser() {
                                                     </div>
 
                                                     {notification.description && (
-                                                        <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs leading-relaxed">
+                                                        <p className="text-muted-foreground mt-0.5 line-clamp-3 text-xs leading-relaxed">
                                                             {
                                                                 notification.description
                                                             }

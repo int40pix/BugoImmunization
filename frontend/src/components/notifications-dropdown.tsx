@@ -226,7 +226,7 @@ export function NotificationsDropdown({
                                         </div>
 
                                         {notification.description && (
-                                            <p className="text-muted-foreground mt-1 text-xs leading-relaxed line-clamp-2">
+                                            <p className="text-muted-foreground mt-1 text-xs leading-relaxed line-clamp-3">
                                                 {notification.description}
                                             </p>
                                         )}

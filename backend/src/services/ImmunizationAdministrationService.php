@@ -429,6 +429,9 @@ class ImmunizationAdministrationService
             // Dispatch notification to guardian user if linked
             $guardianUser = $freshRecord->patient?->guardian?->user;
             if ($guardianUser) {
+                $nextRecommendation = $this->scheduleService
+                    ->resolveNextVisitRecommendation($freshRecord->patient);
+
                 Notification::send(
                     $guardianUser,
                     new VaccineAdministeredNotification(
@@ -437,7 +440,9 @@ class ImmunizationAdministrationService
                         vaccine: $freshRecord->vaccine,
                         doseNumber: $doseNumber,
                         dateAdministered: $recordDate,
-                        administeredByName: $freshRecord->administeredBy?->name ?? 'Health Center Staff'
+                        administeredByName: $freshRecord->administeredBy?->name ?? 'Health Center Staff',
+                        nextVisitPrompt: $nextRecommendation['prompt'] ?? null,
+                        nextRecommendedDate: $nextRecommendation['next_recommended_date'] ?? null
                     )
                 );
             }

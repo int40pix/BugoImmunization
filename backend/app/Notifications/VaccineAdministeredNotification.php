@@ -19,7 +19,9 @@ class VaccineAdministeredNotification extends Notification
         public ?Vaccine $vaccine = null,
         public ?int $doseNumber = null,
         public ?string $dateAdministered = null,
-        public ?string $administeredByName = null
+        public ?string $administeredByName = null,
+        public ?string $nextVisitPrompt = null,
+        public ?string $nextRecommendedDate = null
     ) {}
 
     /**
@@ -46,6 +48,9 @@ class VaccineAdministeredNotification extends Notification
 
         $title = "Vaccination Recorded: {$firstName}";
         $description = "{$firstName} received {$vaccineName} (Dose {$dose}) on {$dateFormatted} at Barangay Bugo Health Center. Administered by {$staff}.";
+        if ($this->nextVisitPrompt) {
+            $description .= " {$this->nextVisitPrompt}";
+        }
 
         $url = "/guardian/children/{$this->patient->id}";
 
@@ -63,6 +68,8 @@ class VaccineAdministeredNotification extends Notification
             'batch_number' => $this->record->batch_number,
             'date_administered' => $rawDate,
             'administered_by' => $staff,
+            'next_visit_prompt' => $this->nextVisitPrompt,
+            'next_recommended_date' => $this->nextRecommendedDate,
             'created_at' => now()->toIso8601String(),
         ];
     }

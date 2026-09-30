@@ -286,4 +286,145 @@ class VaccineSchedulingNextVisitTest extends TestCase
         ]);
         $invalidResponse->assertSessionHasErrors('scheduled_date');
     }
+
+    public function test_administration_notification_prompts_next_wednesday_if_child_has_remaining_due_vaccine(): void
+    {
+        $role = Role::firstOrCreate(['name' => 'guardian'], ['display_name' => 'Guardian']);
+        $guardianUser = User::factory()->create([
+            'role_id' => $role->id,
+            'role' => 'guardian',
+        ]);
+        $this->guardian->update(['user_id' => $guardianUser->id]);
+
+        // Child is 6 weeks old (eligible for both BCG at birth and Penta 1 at 6 weeks)
+        $this->baby->update([
+            'date_of_birth' => Carbon::today()->subWeeks(6)->toDateString(),
+        ]);
+
+        // Administer BCG only. Penta 1 is still DUE!
+        $adminService = app(ImmunizationAdministrationService::class);
+        $adminService->administer(
+            patient: $this->baby,
+            vaccineId: $this->bcg->id,
+            administeredBy: $this->staff->id,
+            dateAdministered: Carbon::today()->toDateString()
+        );
+
+        $notification = $guardianUser->notifications()->first();
+        $this->assertNotNull($notification);
+        $this->assertEquals('vaccination', $notification->data['type']);
+        $this->assertStringContainsString('Next recommended visit date: Wednesday', $notification->data['description']);
+
+        $nextWed = Carbon::today()->next(Carbon::WEDNESDAY)->format('M d, Y');
+        $this->assertStringContainsString($nextWed, $notification->data['description']);
+    }
+
+    public function test_administration_notification_calculates_next_recommended_date_respecting_cooldown_when_no_due_vaccines_remain(): void
+    {
+        $role = Role::firstOrCreate(['name' => 'guardian'], ['display_name' => 'Guardian']);
+        $guardianUser = User::factory()->create([
+            'role_id' => $role->id,
+            'role' => 'guardian',
+        ]);
+        $this->guardian->update(['user_id' => $guardianUser->id]);
+
+        // Record BCG as already given at birth
+        ImmunizationRecord::create([
+            'patient_id' => $this->baby->id,
+            'vaccine_id' => $this->bcg->id,
+            'dose_number' => 1,
+            'date_administered' => $this->baby->date_of_birth,
+            'source' => 'Hospital / Birth Facility',
+        ]);
+
+        // Child is 6 weeks old (only Penta 1 was due)
+        $this->baby->update([
+            'date_of_birth' => Carbon::today()->subWeeks(6)->toDateString(),
+        ]);
+
+        // Administer Penta 1 today.
+        $adminService = app(ImmunizationAdministrationService::class);
+        $adminService->administer(
+            patient: $this->baby,
+            vaccineId: $this->penta->id,
+            administeredBy: $this->staff->id,
+            dateAdministered: Carbon::today()->toDateString()
+        );
+
+        $notification = $guardianUser->notifications()->first();
+        $this->assertNotNull($notification);
+        $this->assertEquals('vaccination', $notification->data['type']);
+
+        // Next dose is Penta 2. Cooldown is 28 days from today!
+        $expectedDate = Carbon::today()->addDays(28);
+        if (! $expectedDate->isWednesday()) {
+            $expectedDate->next(Carbon::WEDNESDAY);
+        }
+
+        $this->assertStringContainsString('Next recommended visit date: Wednesday, ' . $expectedDate->format('M d, Y'), $notification->data['description']);
+    }
+
+    public function test_administration_notification_prompts_completion_when_all_vaccines_done(): void
+    {
+        $role = Role::firstOrCreate(['name' => 'guardian'], ['display_name' => 'Guardian']);
+        $guardianUser = User::factory()->create([
+            'role_id' => $role->id,
+            'role' => 'guardian',
+        ]);
+        $this->guardian->update(['user_id' => $guardianUser->id]);
+
+        // Child is 1 year old, has already completed all Penta, IPV, and Measles doses
+        $this->baby->update([
+            'date_of_birth' => Carbon::today()->subMonths(12)->toDateString(),
+        ]);
+
+        ImmunizationRecord::create([
+            'patient_id' => $this->baby->id,
+            'vaccine_id' => $this->penta->id,
+            'dose_number' => 1,
+            'date_administered' => Carbon::today()->subMonths(10)->toDateString(),
+            'source' => 'Clinic',
+        ]);
+        ImmunizationRecord::create([
+            'patient_id' => $this->baby->id,
+            'vaccine_id' => $this->penta->id,
+            'dose_number' => 2,
+            'date_administered' => Carbon::today()->subMonths(9)->toDateString(),
+            'source' => 'Clinic',
+        ]);
+        ImmunizationRecord::create([
+            'patient_id' => $this->baby->id,
+            'vaccine_id' => $this->penta->id,
+            'dose_number' => 3,
+            'date_administered' => Carbon::today()->subMonths(8)->toDateString(),
+            'source' => 'Clinic',
+        ]);
+        ImmunizationRecord::create([
+            'patient_id' => $this->baby->id,
+            'vaccine_id' => $this->ipv->id,
+            'dose_number' => 1,
+            'date_administered' => Carbon::today()->subMonths(8)->toDateString(),
+            'source' => 'Clinic',
+        ]);
+        ImmunizationRecord::create([
+            'patient_id' => $this->baby->id,
+            'vaccine_id' => $this->measles->id,
+            'dose_number' => 1,
+            'date_administered' => Carbon::today()->subMonths(3)->toDateString(),
+            'source' => 'Clinic',
+        ]);
+
+        // Administer BCG (the only routine vaccine remaining)
+        $adminService = app(ImmunizationAdministrationService::class);
+        $adminService->administer(
+            patient: $this->baby,
+            vaccineId: $this->bcg->id,
+            administeredBy: $this->staff->id,
+            dateAdministered: Carbon::today()->toDateString()
+        );
+
+        $notification = $guardianUser->notifications()->first();
+        $this->assertNotNull($notification);
+        $this->assertStringContainsString('All routine infant immunization doses are completed', $notification->data['description']);
+    }
 }
