@@ -132,7 +132,7 @@ Execute the automated test suite from `backend/`:
 ```bash
 php artisan test
 ```
-**Status**: **34 passed (89 assertions), 0 failures**.
+**Status**: **66 passed (310 assertions), 0 failures**.
 
 Execute TypeScript validation:
 ```bash

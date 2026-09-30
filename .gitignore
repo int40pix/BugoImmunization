@@ -25,6 +25,7 @@ backend/storage/logs/*
 dist/
 public/build/
 backend/public/build/
+backend/public/assets/
 public/hot/
 public/storage
 

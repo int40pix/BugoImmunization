@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Capstone Project Proposal - Bugo Pediatric Immunization Management System</title>
+<style>
+  @page {
+    size: letter portrait;
+    margin: 0.8in;
+  }
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 11.5pt;
+    line-height: 1.45;
+    color: #000;
+    margin: 0;
+    background: #fff;
+  }
+  .title-page {
+    text-align: center;
+    page-break-after: always;
+    padding-top: 0.25in;
+  }
+  .title-page h1 {
+    font-size: 13pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 1.35;
+    margin-bottom: 1.25rem;
+  }
+  .title-page .sub-block {
+    margin-bottom: 1.25rem;
+    font-size: 11pt;
+    line-height: 1.35;
+  }
+  .title-page .authors {
+    margin-top: 1.25rem;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+    line-height: 1.35;
+    font-size: 11pt;
+  }
+  .page-break {
+    page-break-after: always;
+  }
+  h1.chapter-title {
+    font-size: 13.5pt;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    margin-top: 0;
+    margin-bottom: 1.25rem;
+  }
+  h2.section-title {
+    font-size: 11.5pt;
+    font-weight: bold;
+    margin-top: 1.1rem;
+    margin-bottom: 0.4rem;
+  }
+  h3.sub-title {
+    font-size: 11pt;
+    font-weight: bold;
+    margin-top: 0.9rem;
+    margin-bottom: 0.35rem;
+  }
+  p {
+    margin-top: 0;
+    margin-bottom: 0.7rem;
+    text-align: justify;
+    text-indent: 0.5in;
+  }
+  p.no-indent {
+    text-indent: 0;
+  }
+  ol, ul {
+    margin-top: 0;
+    margin-bottom: 0.7rem;
+    padding-left: 0.65in;
+  }
+  li {
+    margin-bottom: 0.3rem;
+    text-align: justify;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.8rem;
+    margin-bottom: 1.2rem;
+    font-size: 10pt;
+  }
+  th, td {
+    border: 1px solid #444;
+    padding: 4px 8px;
+    vertical-align: top;
+  }
+  th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    text-align: center;
+  }
+  .toc-table td {
+    padding: 3px 6px;
+    font-size: 9.5pt;
+    line-height: 1.25;
+  }
+  .toc-table th {
+    padding: 4px 6px;
+    font-size: 10pt;
+  }
+  .diagram-box {
+    border: 1px solid #444;
+    padding: 6px 8px;
+    margin: 0.8rem auto;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 6.8pt;
+    white-space: pre;
+    background-color: #fcfcfc;
+    line-height: 1.05;
+    page-break-inside: avoid;
+  }
+  .figure-caption {
+    font-weight: bold;
+    text-align: center;
+    font-size: 10pt;
+    margin-top: 0.4rem;
+    margin-bottom: 1.2rem;
+  }
+  .reference-entry {
+    padding-left: 0.5in;
+    text-indent: -0.5in;
+    margin-bottom: 0.55rem;
+    text-align: justify;
+    font-size: 10.5pt;
+    line-height: 1.35;
+  }
+</style>
+</head>
+<body>
+
+<!-- TITLE PAGE -->
+<div class="title-page">
+  <h1>DESIGN AND DEVELOPMENT OF A WEB-BASED PEDIATRIC IMMUNIZATION TRACKING, VACCINE INVENTORY MANAGEMENT, AND AUTOMATED REMINDER NOTIFICATION SYSTEM WITH QR CODE-ENABLED PATIENT RECORD MANAGEMENT</h1>
+  
+  <div class="sub-block">
+    A Capstone Project Proposal<br>
+    Presented to<br>
+    The Faculty of the College of Information Technology<br>
+    <strong>Tagoloan Community College</strong><br>
+    Tagoloan, Misamis Oriental
+  </div>
+
+  <div class="sub-block">
+    In Partial Fulfillment<br>
+    Of the Requirements for the Degree<br>
+    <strong>Bachelor of Science in Information Technology</strong>
+  </div>
+
+  <div class="authors">
+    By<br><br>
+    ALERTA, BRANDOLPH O.<br>
+    ALVAREZ, ADRIANA<br>
+    BUICO, JUSTINE V. (Project Manager)<br>
+    CAÑEDA, JOBERT T.<br>
+    MATA, MARK LOURENCE B.<br>
+    SUMILLA, ARRON GABRIEL T.<br>
+    URGELLO, JOHNBERT S.
+  </div>
+
+  <div style="font-weight: bold; margin-top: 2rem;">
+    MAY 2026
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="page-break">
+  <h1 class="chapter-title">TABLE OF CONTENTS</h1>
+  <table class="toc-table">
+    <thead>
+      <tr>
+        <th style="text-align: left;">SECTION</th>
+        <th style="width: 15%; text-align: center;">PAGE</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>TITLE PAGE</strong></td><td style="text-align: center;">i</td></tr>
+      <tr><td><strong>TABLE OF CONTENTS</strong></td><td style="text-align: center;">ii</td></tr>
+      <tr><td><strong>CHAPTER 1: BACKGROUND OF THE STUDY</strong></td><td style="text-align: center;">1</td></tr>
+      <tr><td style="padding-left: 20px;">Project Context</td><td style="text-align: center;">1</td></tr>
+      <tr><td style="padding-left: 20px;">Purpose and Description</td><td style="text-align: center;">2</td></tr>
+      <tr><td style="padding-left: 20px;">Conceptual Framework</td><td style="text-align: center;">3</td></tr>
+      <tr><td style="padding-left: 20px;">Objectives of the Study</td><td style="text-align: center;">5</td></tr>
+      <tr><td style="padding-left: 20px;">Scope and Limitations</td><td style="text-align: center;">6</td></tr>
+      <tr><td style="padding-left: 20px;">Definition of Terms</td><td style="text-align: center;">7</td></tr>
+      <tr><td><strong>CHAPTER 2: REVIEW OF RELATED LITERATURE AND STUDIES</strong></td><td style="text-align: center;">10</td></tr>
+      <tr><td style="padding-left: 20px;">Related Literature</td><td style="text-align: center;">11</td></tr>
+      <tr><td style="padding-left: 20px;">Related Studies</td><td style="text-align: center;">14</td></tr>
+      <tr><td style="padding-left: 20px;">Synthesis of the Study</td><td style="text-align: center;">16</td></tr>
+      <tr><td><strong>CHAPTER 3: RESEARCH METHODOLOGY</strong></td><td style="text-align: center;">17</td></tr>
+      <tr><td style="padding-left: 20px;">Waterfall Model Overview</td><td style="text-align: center;">17</td></tr>
+      <tr><td style="padding-left: 20px;">Planning and Requirement Gathering Phase</td><td style="text-align: center;">19</td></tr>
+      <tr><td style="padding-left: 20px;">System Design Phase</td><td style="text-align: center;">19</td></tr>
+      <tr><td style="padding-left: 20px;">Development Phase</td><td style="text-align: center;">20</td></tr>
+      <tr><td style="padding-left: 20px;">Testing Phase</td><td style="text-align: center;">22</td></tr>
+      <tr><td style="padding-left: 20px;">Deployment Phase</td><td style="text-align: center;">23</td></tr>
+      <tr><td style="padding-left: 20px;">Evaluation Phase</td><td style="text-align: center;">24</td></tr>
+      <tr><td><strong>REFERENCES</strong></td><td style="text-align: center;">25</td></tr>
+      <tr><td><strong>APPENDICES</strong></td><td style="text-align: center;">28</td></tr>
+      <tr><td style="padding-left: 20px;">APPENDIX A: Scanned Copy of Received Letter to Client</td><td style="text-align: center;">28</td></tr>
+      <tr><td style="padding-left: 20px;">APPENDIX B: Scanned Copy of Interview Guide Questions</td><td style="text-align: center;">29</td></tr>
+      <tr><td style="padding-left: 20px;">APPENDIX C: Scanned Copy of Child Immunization Record</td><td style="text-align: center;">30</td></tr>
+      <tr><td style="padding-left: 20px;">APPENDIX D: Scanned Copy of Individual Treatment Record (ITR)</td><td style="text-align: center;">31</td></tr>
+      <tr><td style="padding-left: 20px;">APPENDIX E: Scanned Copy of Baby's Health Record Book</td><td style="text-align: center;">33</td></tr>
+      <tr><td style="padding-left: 20px;">APPENDIX F: Scanned Copy of Immunization Record from Baby's Health Book</td><td style="text-align: center;">34</td></tr>
+      <tr><td style="padding-left: 20px;">APPENDIX G: Photographic Documentation of Health Center Fieldwork</td><td style="text-align: center;">35</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- CHAPTER 1 -->
+<div class="page-break">
+  <h1 class="chapter-title">Chapter 1<br>BACKGROUND OF THE STUDY</h1>
+
+  <h2 class="section-title">Project Context</h2>
+  <p>Children are more vulnerable to illnesses because their immune systems are still developing, making their health a priority. Vaccination is a cost-effective way to protect children from infectious diseases, strengthen immunity, and reduce child mortality. However, challenges in immunization access and monitoring remain, highlighting the need for improved systems to ensure timely and complete vaccination (United Nations, 2015; Gavi, the Vaccine Alliance, 2023). Barangay Bugo Health Center is the primary healthcare facility in the community, providing services such as immunization and basic medical care. It is managed by a small team of healthcare workers who currently rely on manual record-keeping for vaccination tracking. This locale was chosen due to its active role in immunization programs and its need for a more efficient system to manage and monitor vaccination records.</p>
+  
+  <p>One of the main problems faced by the Bugo Health Center is the lack of a proper system for monitoring vaccine supplies. Because vaccine stocks are not tracked efficiently, the health center may experience shortages that can prevent children from receiving their scheduled immunizations. This causes inconvenience for patients and their families who travel to the health center expecting vaccination services only to find that the required vaccine is unavailable. Such situations can lead to missed immunization opportunities, service delays, complaints, and reduced public trust in healthcare services. The health center also relies on paper records and logbooks to manage patient information, which can result in incomplete records, reporting delays, and difficulties in tracking immunization schedules. According to Rahmadhan and Handayani (2023), manual data recording increases the risk of errors, data loss, and inconsistencies that affect the accuracy and timeliness of immunization information.</p>
+
+  <p>To address these challenges, the study proposes the design and development of a <strong>Web-Based Pediatric Immunization Tracking, Vaccine Inventory Management, and Automated Reminder Notification System with QR Code-Enabled Patient Record Management</strong>. The proposed system monitors vaccine inventory in real time, tracks stock availability, and utilizes inventory thresholds to identify low-stock vaccines before shortages occur. This information supports healthcare personnel in maintaining vaccine availability and helps prevent unnecessary visits by informing parents about vaccine availability before their scheduled appointments.</p>
+
+  <p>The system also manages pediatric immunization records through a centralized platform and assigns a unique QR code to every registered patient. By scanning the QR code, authorized healthcare personnel can quickly access, verify, and update patient vaccination information without manually searching through records. The system further supports automated in-app reminder notifications for upcoming schedules, overdue vaccinations, and vaccine stock updates. Through the integration of vaccination tracking, inventory monitoring, automated reminders, and QR code-enabled record management, the proposed system aims to improve service efficiency, reduce missed opportunities for immunization, and support better healthcare delivery at Barangay Bugo Health Center.</p>
+
+  <h2 class="section-title">Purpose and Description</h2>
+  <p>The purpose of the proposed system is to provide a centralized web-based platform that improves pediatric immunization management, vaccine inventory monitoring, and patient record handling at Barangay Bugo Health Center. The system aims to support healthcare personnel in maintaining accurate immunization records, monitoring vaccine availability, and ensuring that vaccination services are delivered efficiently.</p>
+
+  <p>The system includes a <strong>Vaccine Inventory Management Module</strong> that tracks vaccine stocks in real time, records vaccine quantities, monitors expiration dates and lot numbers, and utilizes threshold-based alerts to identify approaching vaccine expirations (within 30 days) and low inventory levels (15 doses or fewer) before shortages occur. The module implements a First-Expired, First-Out (FEFO) allocation algorithm to prioritize older viable batches and prevent vaccine spoilage. An immutable transaction audit ledger records all balance changes (receipts, administrations, open-vial wastage, spoilage, and manual adjustments) with user attribution to guarantee strict batch and inventory accountability. The module also utilizes priority flagging to identify patients who are nearing completion of their immunization series, allowing healthcare personnel to reserve and allocate vaccines to these children when supplies are limited.</p>
+
+  <p>The proposed system also includes a <strong>Vaccination Tracking Module</strong> that records administered vaccines, monitors immunization schedules based on Department of Health (DOH) standard intervals, and maintains an interactive digital immunization card mirroring the official DOH Baby's Health Record Book. To improve efficiency in managing patient records, each registered patient is assigned a standardized unique Patient ID (<code>PT-XXXXXX</code>) and a high-contrast QR code linked directly to their profile. Authorized healthcare personnel can scan the QR code using any smartphone or web camera to instantly access, verify, and update vaccination records in one click without manually searching through logbooks.</p>
+
+  <p>The <strong>Reminder and Notification Module</strong> automatically evaluates active patient schedules and dispatches in-app portal notifications regarding upcoming vaccination appointments, overdue immunizations, low vaccine stocks, and batch expirations. The module runs scheduled background daemons every Monday at 08:00 AM to consolidate multiple eligible milestone doses for each child into a single, clean next-visit reminder, employing an anti-bloat deduplication mechanism that purges outdated reminders for the same child to keep guardian inboxes organized.</p>
+
+  <p>The system also features a dedicated <strong>Guardian Portal</strong> where parents and registered caregivers can securely log in to monitor their child's vaccination progress, view upcoming appointment schedules, inspect real-time health center vaccine stock availability, and present a digital high-contrast QR pass on mobile devices.</p>
+
+  <p>A <strong>Staff Management Module</strong> provides strict Role-Based Access Control (RBAC) across five distinct roles: Administrator, Nurse, Midwife, Barangay Health Worker (BHW), and Guardian. Administrators manage staff credentials, monitor account security, enforce mandatory password changes on first login, and moderate guardian password recovery requests through a single-pending request queue.</p>
+
+  <p>Finally, the <strong>Reporting and Health Analytics Module</strong> generates formal DOH-aligned reports, specifically: (1) the <em>Vaccine Coverage Report</em>, which calculates target cohorts, dose completion rates, and child line listings filterable by date range, vaccine biologic, and dose; and (2) the <em>Immunization Schedule Status Report</em>, which outlines upcoming and overdue children with an interactive 1-click status synchronization engine. Both reports are exportable into landscape A4 PDF and RFC-4180 CSV formats.</p>
+
+  <h2 class="section-title">Conceptual Framework</h2>
+  <p>The conceptual framework of the proposed Web-Based Pediatric Immunization Tracking, Vaccine Inventory Management, and Automated Reminder Notification System with QR Code-Enabled Patient Record Management follows the Input–Process–Output (IPO) model, as illustrated in Figure 1.0.</p>
+
+  <div class="diagram-box">
++-----------------------------------+     +-----------------------------------+     +-----------------------------------+
+|               INPUT               |     |              PROCESS              |     |              OUTPUT               |
++-----------------------------------+     +-----------------------------------+     +-----------------------------------+
+| • Patient Details                 |     | • Patient Management Module       |     | • Patient QR Code                 |
+| • Immunization Details            | --> | • Vaccination Tracking Module     | --> | • Digital Immunization Card       |
+| • Staff & Guardian Details        |     | • Staff Management Module         |     | • Updated Vaccination Records     |
+| • Vaccine Inventory Details       |     | • Vaccine Inventory Module        |     | • Vaccination Schedules           |
+|                                   |     |                                   |     | • Reminder Notifications          |
+|                                   |     |                                   |     | • Low-Stock Alerts                |
+|                                   |     |                                   |     | • Near-Expiry Vaccine Alerts      |
+|                                   |     |                                   |     | • Vaccine Inventory Reports       |
+|                                   |     |                                   |     | • Vaccine Coverage Report         |
+|                                   |     |                                   |     | • Immunization Schedule Status    |
+|                                   |     |                                   |     |   Report                          |
+|                                   |     |                                   |     | • Staff & Guardian Records        |
++-----------------------------------+     +-----------------------------------+     +-----------------------------------+
+  </div>
+  <div class="figure-caption">Figure 1.0 Conceptual Framework (IPO Model)</div>
+
+  <p>The <strong>Input</strong> component encompasses all baseline data required to initialize and operate the platform. This consists of pediatric patient profiles capturing personal demographics and clinical birth anthropometrics (birth weight, length, head and chest circumferences, gestational maturity, and birth attendant) matching the official DOH Baby's Health Record Book, alongside official DOH immunization milestones, historical vaccination statuses, authorized staff and guardian account credentials, and vaccine inventory details including lot numbers, expiration dates, stock quantities, and alert thresholds.</p>
+
+  <p>The <strong>Process</strong> component coordinates the four core functional modules of the system: Patient Management Module (registration, vitals profiling, and QR generation), Vaccination Tracking Module (milestone interval calculations and clinical administration), Staff Management Module (Role-Based Access Control and credential management), and Vaccine Inventory Module (First-Expired, First-Out batch tracking, stock deduction, and automatic archiving).</p>
+
+  <p>The <strong>Output</strong> component yields actionable clinical tools and administrative decision-support artifacts. These include the patient's standardized QR code and digital health pass, the interactive electronic Bakuna card, updated vaccination records, dynamic vaccination schedules, consolidated weekly next-visit reminder alerts, real-time inventory threshold warnings, vaccine inventory reports, official Vaccine Coverage and Schedule Status reports in landscape A4 PDF and RFC-4180 CSV formats, and verified staff and guardian records.</p>
+
+  <h2 class="section-title">Objectives of the Study</h2>
+  <p class="no-indent"><strong>General Objective:</strong><br>
+  The general objective of the study is to design and develop a Web-Based Pediatric Immunization Tracking, Vaccine Inventory Management, and Automated Reminder Notification System with QR Code-Enabled Patient Record Management for Barangay Bugo Health Center.</p>
+
+  <p class="no-indent"><strong>Specific Objectives:</strong></p>
+  <ol>
+    <li>To gather data on immunization processes and operations through qualitative data collection techniques including key informant reviews and direct observation (UNICEF Philippines, 2024).</li>
+    <li>To design context diagrams, Level-0 and Level-1 data flow diagrams (DFD), entity-relationship diagrams (ERD), and a multi-tier horizontal system architecture using draw.io based on standard software engineering design methodologies (JGraph Ltd, 2020).</li>
+    <li>To develop the following core modules:
+      <ul>
+        <li><em>Patient Management Module</em>: Manages patient intake, birth vitals recording, standardized Patient ID assignment (<code>PT-XXXXXX</code>), dynamic QR code generation, and guardian profile linkage (<code>GRD-YYYY-XXXX</code>).</li>
+        <li><em>Vaccination Tracking Module</em>: Records administered vaccines in a single click, dynamically computes subsequent milestone dates, maintains historical records, and renders an interactive electronic Bakuna card.</li>
+        <li><em>Reminder and Notification Module</em>: Dispatches in-app portal notifications for upcoming schedules, overdue immunizations, and stock shortages, executing weekly consolidated reminder routines with anti-bloat deduplication.</li>
+        <li><em>Staff Management Module</em>: Governs user roles across five access levels, temporary password initial-change policies, and guardian password recovery moderation.</li>
+        <li><em>Vaccine Inventory Module</em>: Tracks batch lots, expiration dates, and quantities using First-Expired, First-Out (FEFO) logic, records an immutable transaction audit ledger, and enforces automated daily batch archiving.</li>
+        <li><em>Reporting and Decision Support</em>: Generates downloadable Vaccine Coverage Reports and Immunization Schedule Status Reports in landscape A4 PDF and RFC-4180 CSV formats.</li>
+      </ul>
+    </li>
+    <li>To implement the web application using a modern full-stack architecture comprising <strong>ReactJS 19</strong>, <strong>TypeScript 5.7</strong>, <strong>Tailwind CSS v4</strong>, and <strong>Bootstrap 5 grid utilities</strong> for a mobile-responsive interface; <strong>Inertia.js v2</strong> as the seamless single-page application bridge; <strong>Laravel 12</strong> (PHP 8.2+) for backend business logic and scheduled cron daemons; <strong>MySQL 8.0+ / MariaDB</strong> for relational persistence; <strong>Vite 6</strong> as the frontend build tool; and <strong>Visual Studio Code</strong> as the development environment (Castillon et al., 2024; Kochnev, 2023).</li>
+    <li>To test the system using functional and system testing approaches with tools such as <strong>PHPUnit 11</strong> for automated backend unit, integration, and feature testing, static compilation checks with TypeScript, and manual cross-browser and physical mobile device validation (Bergmann, 2023).</li>
+    <li>To evaluate the system's usability, efficiency, and reliability in managing pediatric immunization records, vaccine inventory, reminder notifications, and patient record management using survey questionnaires administered to Barangay Health Workers (BHWs), midwives, nurses, and parents based on the <strong>ISO/IEC 25010</strong> software quality standard.</li>
+  </ol>
+
+  <h2 class="section-title">Scope and Limitations</h2>
+  <p>The study focuses on the design and development of a Web-Based Pediatric Immunization Tracking, Vaccine Inventory Management, and Automated Reminder Notification System with QR Code-Enabled Patient Record Management for Barangay Bugo Health Center, Cagayan de Oro City. The system includes pediatric patient intake, birth vitals recording, standardized Patient ID generation, high-contrast QR code assignment, camera-based QR scanning, clinical dose administration, First-Expired, First-Out (FEFO) vaccine inventory management, automated weekly visit reminders, official DOH coverage and schedule status reporting, and Role-Based Access Control across five distinct user roles.</p>
+
+  <p>The study is subject to the following limitations:</p>
+  <ul>
+    <li><em>Clinical and Financial Scope</em>: The system does not provide medical diagnosis, clinical treatment prescribing, pharmaceutical sales, or billing and financial accounting services.</li>
+    <li><em>External System Integration</em>: The system does not feature real-time automatic synchronization with external regional or national health information systems (such as DOH FHSIS or PhilHealth). Patients transferring from other health centers require manual encoding of previous vaccination records by authorized healthcare personnel.</li>
+    <li><em>Hardware Temperature Tracking Exclusion</em>: The system focuses strictly on digital vaccine inventory management (batch lot numbers, expiration dates, dose quantities, and FEFO stock rotation) and does not interface with physical IoT hardware, refrigeration sensors, or continuous temperature monitoring devices. Health center temperature compliance and cold-storage monitoring follow standard manual DOH health center protocols.</li>
+    <li><em>Local Server Hosting and Network Connectivity</em>: To ensure uninterrupted clinic operations during community internet outages, the system is designed to be hosted on a local clinic server accessible over the health center's Local Area Network (LAN). Under local LAN deployment, healthcare staff can continue recording vaccinations and managing inventory without public internet access. However, external parent access to the online Guardian Portal and web notification delivery require active internet connectivity.</li>
+    <li><em>Digital Device Accessibility</em>: For parents and caregivers without access to mobile smartphones or digital devices, the health center issues physical printed copies of the child's immunization card with the system-generated QR code attached.</li>
+  </ul>
+
+  <h2 class="section-title">Definition of Terms</h2>
+  <p><strong>ACID Transactions.</strong> Database operations ensuring Atomicity, Consistency, Isolation, and Durability. In this study, ACID transactions guarantee that clinical dose administration and inventory stock decrement occur simultaneously and reliably without data corruption.</p>
+  <p><strong>Barangay Health Center.</strong> A primary community healthcare facility that delivers basic health services, maternal and child healthcare, and routine pediatric immunizations to barangay residents.</p>
+  <p><strong>Electronic Bakuna Card.</strong> A digital, interactive health record that mirrors the official Department of Health (DOH) Child Immunization Record and Baby's Health Record Book, displaying completed and upcoming vaccine doses.</p>
+  <p><strong>First-Expired, First-Out (FEFO).</strong> An inventory management algorithm that prioritizes the allocation and administration of vaccine batches with the earliest expiration dates to minimize wastage and spoilage.</p>
+  <p><strong>Guardian Portal.</strong> A dedicated web-based user interface allowing verified parents and caregivers to securely log in, view their child's digital Bakuna card, inspect health center vaccine availability, and view upcoming appointments.</p>
+  <p><strong>Immutable Audit Ledger.</strong> A non-destructible database record (<code>vaccine_inventory_transactions</code>) that logs every inventory modification—including stock receipts, clinical administrations, wastage, spoilage, and reconciliations—with user attribution and balance snapshots.</p>
+  <p><strong>Inertia.js.</strong> A client-side routing and adapter library that connects Laravel backend controllers directly with React components, eliminating REST API boilerplate while maintaining single-page application performance.</p>
+  <p><strong>ISO/IEC 25010.</strong> An international software quality evaluation standard used to assess the system across criteria including functional suitability, usability, performance efficiency, and reliability.</p>
+  <p><strong>Milestone Scheduling.</strong> The algorithmic calculation of prospective vaccination dates based on a child's birth date and official Philippine DOH Expanded Program on Immunization (EPI) guidelines.</p>
+  <p><strong>PHPUnit.</strong> An automated testing framework for PHP used in this study to execute 66 automated unit, integration, and feature test cases to ensure backend reliability.</p>
+  <p><strong>Portal Reminders.</strong> Automated in-app notifications generated within the system portal to notify guardians and staff regarding upcoming visits, overdue immunizations, and stock shortages.</p>
+  <p><strong>QR Code (Quick Response Code).</strong> A two-dimensional matrix barcode containing encoded patient identification data that allows healthcare workers to retrieve patient records instantly through camera scanning.</p>
+  <p><strong>Role-Based Access Control (RBAC).</strong> A security mechanism that restricts system features and administrative data access based on authorized user roles (Administrator, Nurse, Midwife, BHW, and Guardian).</p>
+  <p><strong>Vaccine Coverage Report.</strong> A health analytics report that calculates target cohorts, dose completion rates, and child line listings filterable by date range, vaccine biologic, and dose number.</p>
+  <p><strong>Vaccine Inventory Threshold.</strong> A predetermined numerical boundary (such as &lt;= 15 doses for stock or &lt;= 30 days for expiration) that automatically triggers warning alerts for health center staff.</p>
+</div>
+
+<!-- CHAPTER 2 -->
+<div class="page-break">
+  <h1 class="chapter-title">Chapter 2<br>REVIEW OF RELATED LITERATURE AND STUDIES</h1>
+
+  <h2 class="section-title">Introduction</h2>
+  <p>This chapter contains a review of related literature and studies connected to the proposed Web-Based Pediatric Immunization Tracking, Vaccine Inventory Management, and Automated Reminder Notification System with QR Code-Enabled Patient Record Management. It discusses previous studies, existing systems, and important concepts related to pediatric immunization tracking, vaccine inventory management, electronic health records, QR code technology, automated notifications, and digital information management in healthcare. The purpose of this chapter is to provide a clear background for the study by examining how current technologies and systems contribute to improving vaccination services, vaccine availability monitoring, patient record management, and healthcare operations.</p>
+
+  <h2 class="section-title">Related Literature</h2>
+  <p><strong>Electronic Health Record Systems:</strong> Electronic health record systems are digital platforms used to store and manage patient information in healthcare facilities. These systems are important because paper-based documentation often causes incomplete records and difficulty in retrieving information. Wurster et al. (2022) explained that electronic patient records improve documentation quality by making patient data more organized and accessible. Kodama et al. (2023) also stated that electronic medical record-connected systems reduce manual work and improve nursing documentation. These studies are related to the proposed QR code and web-based vaccination monitoring and record management system because both focus on improving healthcare documentation and record accessibility.</p>
+
+  <p><strong>Electronic Immunization Registries (EIRs):</strong> Electronic Immunization Registries are digital systems used to track and monitor immunization records. These systems help reduce inaccurate records and improve coordination among healthcare workers. Othman et al. (2026) reported that EIRs support real-time monitoring and help identify under-immunized children in communities. Sheel et al. (2025) also stated that EIRs improve vaccination coverage monitoring, support timely follow-up of children who missed vaccines, enhance data quality, and strengthen decision-making within health systems. The study further emphasized that EIRs provide secure and accessible immunization data that can be shared across different healthcare facilities. These findings are connected to the proposed study because the system also focuses on improving vaccination tracking and monitoring in Barangay Bugo Health Center.</p>
+
+  <p><strong>QR Code Technology in Healthcare:</strong> QR code technology is a digital tool used to provide quick access to stored information through scanning devices. This technology improves information retrieval and simplifies data management. Turamari (2022) stated that QR codes improve access to information and make services more efficient, while Stephen (2023) found that QR codes improve user experience and reduce manual searching. Akuoko (2022) also found that QR codes connected to health materials help parents quickly access vaccination information and guidelines. These studies are related to the proposed system because the study uses QR codes for faster record retrieval and easier access to vaccination related information.</p>
+
+  <p><strong>Automated Notification Systems:</strong> Automated notification systems are digital features that send reminders and alerts through patient portals, websites, or mobile applications. These systems are important because they help improve vaccination compliance and remind patients about healthcare schedules. Wagner et al. (2021) explained that automated reminder systems and online resource interventions helped improve childhood vaccination compliance by reminding parents about scheduled immunizations. The study found that reminder notifications reduced missed vaccinations and supported timely immunization visits. These findings are related to the proposed system because the study incorporates scheduled notification features for vaccination monitoring and appointment reminders.</p>
+
+  <p><strong>Personnel Management and Access Control:</strong> Staff management systems are digital platforms used to organize employee information, manage staff roles, and monitor personnel activities in healthcare institutions. These systems are important because manual staff management often causes administrative delays and difficulty in accessing personnel records. Castillon et al. (2024) explained that the SIM-KARS system improved administrative efficiency, transparency, and access to staff information through centralized personnel management. These findings are related to the proposed study because the system also includes a Staff Management Module that manages staff accounts, roles, and information in Barangay Bugo Health Center.</p>
+
+  <h2 class="section-title">Related Studies</h2>
+  <p><strong>Patil et al. (2026)</strong> developed *Vaccicare+*, a centralized digital platform in Pune, India, for managing and recording vaccination data with personalized schedules and QR-based data retrieval. The multi-module system contributed to improving healthcare service delivery and reducing missed vaccinations. However, a limitation of the system is its reliance on a high-resource hospital model, which assumes greater digital literacy among parents for the Parent Module to function properly. This is relevant to the proposed study for Barangay Bugo Health Center, which operates under different resource constraints. The proposed system addresses this through the Staff Management Module, which ensures the workflow is professionally managed by healthcare workers, midwives, and nurses rather than relying solely on parent-side technical proficiency.</p>
+
+  <p><strong>Malik et al. (2026)</strong> piloted a digital monitoring and action planning tool in the urban district of Lahore to track routine immunization coverage, which significantly improved the visibility of zero-dose children. However, a critical limitation was the persistence of data disparities due to the lack of a unified tracking system for mobile and migratory groups, leading to a recommendation for unique child identifiers. This is highly relevant to the proposed system, which implements this recommendation through the Patient Management Module. By generating a unique QR identifier for every registered child, the system ensures that individual records are accurately tracked and no longer lost in fragmented logs.</p>
+
+  <p><strong>Fajardo et al. (2025)</strong> developed a digital vaccination hub for the Peñaranda Rural Health Unit that achieved high usability scores by improving report generation speed. However, its primary limitation was that the system was highly customized for the specific workflows, reporting processes, and operational setup of the Peñaranda RHU, limiting its adaptability to other healthcare facilities with different administrative needs. This is relevant to the current study, which follows a similar tailored model. The proposed system utilizes its Reporting and Analytics Hub to provide administrative dashboards and reports designed specifically for the administrative habits and reporting requirements of Barangay Bugo Health Center Staff.</p>
+
+  <p><strong>Angni et al. (2025)</strong> developed a Health Service Monitoring System with Automatic Notification for Barangay Kauswagan Health Center that automated patient record management, vaccination reminders, and healthcare reporting processes. The system was designed to replace manual paper-based records with a digital platform to improve efficiency, reduce retrieval delays, and enhance healthcare service. The results revealed that 85% of healthcare staff experienced significant improvements in record retrieval efficiency, while the average retrieval time decreased from 5 minutes to less than one minute after implementation. Despite the effectiveness of the related system, it can still be improved further since the study did not include QR code-based patient data retrieval for patient identification and tracking within the patient management system. This is highly relevant to the proposed study because it supports the importance of a patient management system and aligns with the proposed system through the inclusion of the Patient Management Module with QR-code based data retrieval, which aims to further reduce retrieval delays and improve healthcare service delivery.</p>
+
+  <p><strong>Castillon et al. (2024)</strong> developed a web-based Immunization Management Information System in Southern Mindanao to automate record-keeping and vaccine inventory. The results proved that the system successfully modernized the management of stocks and basic pediatric records, improving overall data organization. However, a significant limitation was the system's lack of automated tracking for patient compliance, leading the authors to recommend the future addition of a "smart" reminder system specifically to identify and alert parents about missed or overdue appointments. This is highly relevant to the Barangay Bugo Project, which directly solves this gap through the Reminder and Notification Module. This module provides real-time visibility of a child's status and sends automated alerts for upcoming or missed doses to improve adherence.</p>
+
+  <p><strong>Batoon et al. (2022)</strong> developed a Public Health Record Management System (PHRMS) for a health center in Sto. Rosario, Bulacan, to automate data processing and reduce the risk of record loss. The result showed a high security rating and significantly reduced the time taken to find records compared to physical paper folders. However, the system still relied on manual search parameters to retrieve records, which can hinder speed during high-traffic periods. This is relevant to the proposed system, which integrates a scan-first approach within its Vaccination Tracking Module. By utilizing QR code technology for instant data retrieval, the current study eliminates the search-based delays identified in the Batoon study, ensuring that even walk-in patient records are accessed immediately.</p>
+
+  <h2 class="section-title">Synthesis of the Study</h2>
+  <p>The literature and studies discussed the use of digital systems in improving healthcare services, especially in record management, vaccination monitoring, and information accessibility. Electronic health record systems and electronic immunization registries help organize patient information, reduce manual work, and improve the accuracy of records. Studies about QR code technology showed that QR codes make information retrieval faster and easier, while automated notification systems help remind patients about vaccination schedules and improve compliance. Staff management systems were also shown to help healthcare facilities organize staff information, roles, and responsibilities more efficiently.</p>
+
+  <p>A common trend among the studies is the use of digital technology to replace traditional paper-based processes in healthcare services. Most of the systems focus on improving speed, accuracy, organization, and accessibility through features such as QR code scanning, digital record management, automated reminders, and centralized monitoring. The studies also emphasized the importance of real time tracking and better coordination among healthcare workers to improve healthcare service delivery.</p>
+
+  <p>Although the existing systems provided many improvements, several limitations were still identified. Some systems still depend on manual searching when retrieving records, while others do not include QR code based patient identification and tracking. Certain systems also lack automated reminder features for missed or overdue vaccinations. Other studies focused on systems designed for hospitals or selected healthcare facilities, making them less suitable for smaller community health centers with limited resources and different workflows. In addition, some systems rely heavily on parent-side technological literacy and greater institutional resources, highlighting the need for a staff-managed workflow that is more adaptable to community-based healthcare settings.</p>
+
+  <p>These studies support the need for the proposed QR code and web-based vaccination monitoring and record management system, and automated reminders for Barangay Bugo Health Center. The identified gaps show the importance of developing a system that combines QR code based patient identification, vaccination tracking, inventory management, automated notifications, staff management, and centralized record management in one platform. The proposed system aims to improve healthcare service delivery, reduce manual work, and provide a more efficient and organized way of managing vaccination records in the community.</p>
+</div>
+
+<!-- CHAPTER 3 -->
+<div class="page-break">
+  <h1 class="chapter-title">Chapter 3<br>RESEARCH METHODOLOGY</h1>
+
+  <h2 class="section-title">Waterfall Model Overview</h2>
+  <p>This chapter presents the methodology used in developing the Web-Based Pediatric Immunization Tracking, Vaccine Inventory Management, and Automated Reminder Notification System with QR Code-Enabled Patient Record Management, including the key activities, procedures, and tools applied throughout the development process. The study adopts the Waterfall model because it provides a structured and disciplined approach that enables the development team to focus on predefined project requirements. Its sequential phases make tasks easier to understand, organize, and manage while establishing clear schedules, milestones, and deadlines. Furthermore, the model promotes thorough planning and design before implementation, helping reduce errors and improve overall system quality. As a result, the Waterfall model is well-suited for projects that require clear documentation, defined objectives, and systematic progress tracking (Kirvan et al., 2024; Pratrian et al., 2024; Davies et al., 2023).</p>
+
+  <div class="diagram-box">
++------------------------------------------+
+| 1. Planning & Requirement Gathering      |
++--------------------+---------------------+
+                     |
+                     v
++--------------------+---------------------+
+| 2. System Design Phase                   |
++--------------------+---------------------+
+                     |
+                     v
++--------------------+---------------------+
+| 3. Development Phase                     |
++--------------------+---------------------+
+                     |
+                     v
++--------------------+---------------------+
+| 4. Testing Phase                         |
++--------------------+---------------------+
+                     |
+                     v
++--------------------+---------------------+
+| 5. Deployment Phase                      |
++--------------------+---------------------+
+                     |
+                     v
++--------------------+---------------------+
+| 6. Evaluation Phase                      |
++------------------------------------------+
+  </div>
+  <div class="figure-caption">Figure 2.0 Waterfall Model Architecture (Ardiansyah et al., 2022)</div>
+
+  <p>The proponents adopted the Waterfall model to provide a clear roadmap for project implementation by dividing the development process into manageable stages. The model presented by Ardiansyah et al. (2022) served as the basis for the system development process. Minor modifications were made to the SDLC phases to better align with the requirements of the proposed Web-Based Pediatric Immunization Tracking, Vaccine Inventory Management, and Automated Reminder Notification System with QR Code-Enabled Patient Record Management, particularly in supporting pediatric immunization tracking, vaccine inventory monitoring, automated reminder notifications, and QR code-enabled patient record management while maintaining the linear and sequential nature of the Waterfall approach.</p>
+
+  <h2 class="section-title">Planning and Requirement Gathering Phase</h2>
+  <p>During the Planning and Requirements Gathering Phase, the proponents gather baseline qualitative data regarding current pediatric immunization workflows and existing recording challenges. This phase supports the Chapter 1 objective of gathering data on immunization processes and operations through qualitative data collection techniques including key informant reviews and direct observation.</p>
+  <p>The main activity includes conducting structured interviews with health workers, midwives, and nurses, observing manual paper and logbook workflows, and analyzing existing immunization records within the health center. The tools used include Interview Guides and Observation Checklists to ensure structured and comprehensive qualitative data collection.</p>
+  <p>The expected output of this phase includes a comprehensive System Requirements Specification (SRS) and a documented workflow analysis of the health center's manual operations. This phase is essential in establishing a clear, fixed project scope before any architectural design begins, which aligns with Waterfall principles of thorough documentation and complete requirements stability prior to system engineering (UNICEF Philippines & Evobiota Consultancy Corporation, 2024; Rahmadhan & Handayani, 2023).</p>
+
+  <h2 class="section-title">System Design Phase</h2>
+  <p>During the System Design Phase, the proponents translate the gathered requirements into a structured system design that defines the architecture, database relationships, data flow, and module layouts of the proposed tracking platform. This phase supports the Chapter 1 objective of designing context diagrams, data flow diagrams, and system architecture using draw.io based on standard system design methodologies.</p>
+  <p>The main activity includes designing UI layouts, relational database schemas, Context Diagrams, and Data Flow Diagrams (DFD) to model how pediatric immunization and patient tracking data moves through the application. The tools used include Draw.io for creating multi-tier horizontal system architectures, logical schemas, and database entity relationships.</p>
+  <p>The expected output of this phase includes visual UI layouts, Entity Relationship Diagrams (ERD), Context Diagrams, and Level-0 and Level-1 Data Flow Diagrams (DFDs) that serve as the system's technical blueprint. This phase helps minimize design errors and validate system processes before coding, aligning with the Waterfall model's systematic and sequential planning approach (JGraph Ltd., 2020).</p>
+
+  <h2 class="section-title">Development Phase</h2>
+  <p>During the Development Phase, the proponents implement the multi-tier horizontal system architecture, transforming technical specifications and database models into a fully functional software system. The architecture separates concerns across the Presentation Layer, Application Layer, and Database Layer to ensure optimal performance, security, and maintainability.</p>
+
+  <div class="diagram-box">
++=======================================================================================================================+
+|                                        CLIENT TIER (PRESENTATION LAYER)                                               |
++=======================================================================================================================+
+|  Clinic Desktop Workstations           Health Center Mobile Tablets              Guardian Mobile Smartphones          |
+|  * Admin & Nurse Desk (1920x1080)      * Midwife & BHW Triage (1024x768)        * Parent Digital Portal (390x844)     |
+|  * High-speed clinical entry           * Touchscreen vitals & attendance        * Child Bakuna Card & QR display      |
+|                                                                                                                       |
+|  Presentation Components: ReactJS 19 + TypeScript 5.7 + Tailwind CSS v4 + Bootstrap 5 Grid + Radix UI                |
+|  * Interactive Child Bakuna Health Card                  * Dynamic QR Code Generator (qrcode.react)                   |
+|  * Camera-Based QR Code Scanner (html5-qrcode)           * Batch Wastage & Stock Adjustment Modals                    |
+|  * Health Reporting Hub (Coverage & Schedule Status)     * In-App Interactive Notification Center                     |
++===========================================================+===========================================================+
+                                                            |
+                                        HTTPS / TLS 1.3     |  Inertia.js v2 SPA Protocol
+                                        JSON / Form-Data    |  Landscape A4 PDF & RFC-4180 CSV Streams
+                                                            v
++=======================================================================================================================+
+|                                    APPLICATION TIER (APPLICATION & LOGIC LAYER)                                       |
++=======================================================================================================================+
+|  Web Server Gateway: Apache 2.4 / Nginx + PHP 8.2+ FastCGI (Laravel 12 Framework)                                     |
+|                                                                                                                       |
+|  * HTTP Routing & RBAC Middleware: Role authorization, temporary password enforcement, single-pending reset rules     |
+|  * Core Controllers: PatientController, ImmunizationController, VaccineInventoryController, ReportController          |
+|  * Domain Services: VaccineSchedulingPriorityService, VaccineInventoryService (FEFO), AutomatedReminderDispatcher    |
+|  * Reporting Engine: Barryvdh DomPDF facade (Landscape A4) and RFC-4180 CSV UTF-8 BOM streamer                       |
+|                                                                                                                       |
+|  Automated Background Cron Daemons:                                                                                   |
+|  * 05:55 AM Daily: 'inventory:auto-archive' (Retires expired & depleted lots with audit logs)                         |
+|  * 06:00 AM Daily: 'generate-vaccine-schedules' (Reconciles schedules & priorities against live inventory)            |
+|  * 06:10 AM Daily: 'inventory:check-alerts' (Issues Low Stock, Stockout, and Near-Expiry notifications)               |
+|  * 08:00 AM Mondays: 'visits:send-reminders' (Dispatches consolidated next-visit reminder alerts to guardians)       |
++===========================================================+===========================================================+
+                                                            |
+                                        PDO / SQL Engine    |  ACID Transaction Boundaries
+                                        Port 3306 (TCP)     |  Prepared Statement Execution
+                                                            v
++=======================================================================================================================+
+|                                      DATA TIER (PERSISTENCE & STORAGE LAYER)                                          |
++=======================================================================================================================+
+|  Relational Database Management System: MySQL 8.0+ / MariaDB 10.4+ (Database: `bugo_immunization`, InnoDB Engine)     |
+|  14 Normalized Tables:                                                                                                |
+|  * Authentication & RBAC: roles, users, password_reset_requests                                                       |
+|  * Demographics & Family: guardians, patients                                                                         |
+|  * Vaccine Catalog: vaccines, vaccine_schedules, patient_vaccines                                                     |
+|  * Vaccine Inventory: vaccine_inventories, vaccine_inventory_transactions                                             |
+|  * Clinical & Schedules: patient_vaccine_schedules, immunization_records, patient_immunization_card_rows              |
+|  * Notification Engine: notifications                                                                                 |
++=======================================================================================================================+
+  </div>
+  <div class="figure-caption">Figure 3.0 Multi-Tier Horizontal System Architecture</div>
+
+  <p>The frontend of the system is developed using <strong>ReactJS 19</strong>, <strong>TypeScript 5.7</strong>, <strong>Tailwind CSS v4</strong>, and <strong>Bootstrap 5 grid utilities</strong> to create a responsive and user-friendly interface accessible on desktop computers, clinic tablets, and mobile devices. It includes features such as patient registration, pediatric immunization tracking, vaccine inventory management, vaccine availability monitoring, QR code-enabled patient record access and updating, and automated reminder notifications. <strong>Inertia.js v2</strong> bridges the React frontend directly with the Laravel backend without the overhead of building and maintaining a redundant REST API. Visual Studio Code was used as the programming environment for development.</p>
+
+  <p>The backend of the system is developed using the <strong>Laravel 12</strong> framework running on PHP 8.2+ to manage vaccine inventory, pediatric immunization tracking, automated reminder notifications, and patient record management. The system monitors vaccine stock levels, vaccine availability, lot numbers, expiration dates, and threshold settings to support inventory control and assist healthcare personnel in maintaining adequate vaccine supplies. Threshold-based monitoring helps identify low-stock (&lt;= 15 doses) and near-expiry (&lt;= 30 days) vaccines before shortages or vaccine wastage occur. An automated daily daemon running at 05:55 AM (<code>inventory:auto-archive</code>) archives expired and zero-stock batches while creating permanent audit ledger entries.</p>
+
+  <p>The system also tracks patient immunization schedules and automatically sends in-app reminder notifications for upcoming vaccination appointments, overdue immunizations, vaccine availability updates, and inventory-related alerts. A scheduled background daemon runs every Monday at 08:00 AM (<code>visits:send-reminders</code>) to evaluate upcoming visits, consolidating multiple eligible milestone doses for each child into a single visit reminder and overwriting previous visit notifications to prevent inbox clutter.</p>
+
+  <p>The system incorporates QR code technology linked to each patient's unique Patient ID (<code>PT-XXXXXX</code>). By scanning the QR code using a smartphone, webcam, or QR-enabled device, authorized healthcare personnel can quickly access, verify, and update vaccination records without manually searching or entering patient information. This feature supports faster patient identification, efficient record management, and improved service delivery.</p>
+
+  <p><strong>MySQL 8.0+ / MariaDB</strong> is used to store and manage patient records, vaccination logs, appointment schedules, vaccine inventory information, lot numbers, expiration dates, threshold settings, notification records, and staff credentials across 14 normalized relational tables. Its relational database structure supports fast data retrieval, efficient query processing, and secure information management. According to Rahmadhan and Handayani (2023), centralized digital databases reduce data inconsistencies and improve overall data integrity.</p>
+
+  <h2 class="section-title">Testing Phase</h2>
+  <p>During the Testing Phase, the proponents subject the integrated web application to systematic testing procedures to verify functional correctness, security, and stability. This phase supports the Chapter 1 objective of testing the system using functional and system testing approaches to ensure that all core modules, including patient management, pediatric immunization tracking, vaccine inventory management, automated reminder notifications, and QR code-enabled patient record management, perform reliably under real-world conditions.</p>
+
+  <p>The backend was tested using automated unit, integration, and feature test suites built on <strong>PHPUnit 11</strong>. The automated testing suite executed <strong>66 test cases</strong> comprising <strong>310 assertions</strong>, achieving a <strong>100% pass rate with zero failures</strong>. The test suite validated critical clinical and administrative pathways, including user authentication, role-based access redirection, temporary password enforcement, single-pending password reset constraints, patient intake, atomic inventory deductions, open-vial wastage logging, First-Expired, First-Out (FEFO) batch prioritization, and automated generation and streaming of Vaccine Coverage and Schedule Status reports in landscape A4 PDF and CSV formats. In addition, static type verification was conducted across all frontend components using the TypeScript compiler (<code>npx tsc --noEmit</code>), passing with zero errors. Manual cross-browser testing and physical Android mobile device trials were also conducted to ensure interface responsiveness and camera-based QR decoding stability (Bergmann, 2023).</p>
+
+  <h2 class="section-title">Deployment Phase</h2>
+  <p>During the Deployment Phase, the proponents focus on hosting, installation, configuration, and data migration for Barangay Bugo Health Center. To guarantee continuous clinic operations during community internet outages, the primary application is hosted on a designated local clinic web server using XAMPP (Apache 2.4, PHP 8.2+, MySQL 8.0+), accessible to healthcare staff over the health center's Local Area Network (LAN). In addition, compiled Vite production assets ensure rapid page loading. For external parental access, the Guardian Portal operates online to provide mobile Bakuna cards and in-app appointment alerts.</p>
+
+  <h2 class="section-title">Evaluation Phase</h2>
+  <p>During the Evaluation Phase, the proponents systematically measure the technical quality, operational efficiency, and user acceptability of the newly deployed tracking platform. This phase supports the Chapter 1 objective of evaluating the system's usability, efficiency, and reliability using survey questionnaires administered to Barangay Health Workers (BHWs), midwives, nurses, and parents based on the <strong>ISO/IEC 25010</strong> software quality standard (Fajardo et al., 2025; Zhao et al., 2024).</p>
+</div>
+
+<!-- REFERENCES -->
+<div class="page-break">
+  <h1 class="chapter-title">REFERENCES</h1>
+
+  <h2 class="section-title">Conference Papers</h2>
+  <div class="reference-entry">Angni, H. S., Sigua, N. L., Gumahad, J. D., Asilo, J. M. M., Trazo, R. K. C., &amp; Ferrariz, J. O. (2025). Health services monitoring system with automatic notification for Brgy Kauswagan. In <em>1st International Conference - INNOVEX 2025</em> (Vol. 1). Horizon University Indonesia. https://kms-fict.horizon.ac.id/ojs/index.php/innovex/article/view/7/8</div>
+  <div class="reference-entry">Davies, J., Mann, N., Nguyen, N., Chanane, N., Eberhard, S., Cui, J., Winters, A., Kang, K., &amp; Andreassen, H. (2023, December). Leveraging agile and waterfall project management approaches in educational design [Poster presentation]. <em>Australasian Society for Computers in Learning in Tertiary Education Conference</em>, Christchurch, New Zealand. https://doi.org/10.14742/apubs.2023.522</div>
+
+  <h2 class="section-title">Institutional Publications</h2>
+  <div class="reference-entry">Akuoko, T. W. (2022, August). <em>Reach out and read: Expanding child immunization and oral health literacy using quick response codes in pediatric clinics in North Carolina</em> (Doctor of Nursing Practice project, East Carolina University). East Carolina University Scholarship. https://thescholarship.ecu.edu/server/api/core/bitstreams/95500e75-65cc-44c9-a3e4-8c0862909ef8/content</div>
+  <div class="reference-entry">United Nations Children's Fund (UNICEF) Philippines &amp; Evobiota Consultancy Corporation. (2024). <em>Qualitative study on routine immunization in selected regions in the Philippines</em>. UNICEF Philippines. https://www.unicef.org/philippines/reports/qualitative-study-routine-immunization</div>
+  <div class="reference-entry">United Nations. (2015). <em>Goal 3: Ensure healthy lives and promote well-being for all at all ages</em>. United Nations Sustainable Development Goals. https://sdgs.un.org/goals/goal3</div>
+
+  <h2 class="section-title">Preprints</h2>
+  <div class="reference-entry">Malik, M. Z., Mian, N., Memon, Z., Mirza, M. W., Rana, U. F., Alvi, M. A., Ahmed, W., Ummad, A., Ali, A., Naveed, U., Malik, K. S., Chaudhary, M. S., Waheed, M., &amp; Sattar, A. (2026). Digital monitoring and action planning to reach zero-dose and under-immunised children: Leveraging data for targeted immunisation responses. <em>medRxiv</em>. https://doi.org/10.1101/2026.03.03.26346932</div>
+
+  <h2 class="section-title">Journal Articles</h2>
+  <div class="reference-entry">Ardiansyah, A., Pratmanto, D., &amp; Aji, S. (2022). Sistem Informasi Jasa Servis Printer Dengan Metode Waterfall. <em>Indonesian Journal on Software Engineering (IJSE)</em>, 8(1), 35–42. http://ejournal.bsi.ac.id/ejurnal/index.php/ijse18</div>
+  <div class="reference-entry">Batoon, J. A., Benitez, A. B., Cajucom, K. Z., Dalusung, M. J. M., Faustino, S. J. D., Galvez, I. N. D., &amp; Mercado, L. J. L. (2022). Public Health Record Management System (PHRMS) for the Barangay Health Center of Sto. Rosario. <em>International Journal of Advanced Trends in Computer Science and Engineering</em>, 11(3), 112–118. https://doi.org/10.30534/ijatcse/2022/041132022</div>
+  <div class="reference-entry">Castillon, R., Jr., Alonzo, Z. E., Vesorio, G. B., &amp; Catedrilla, J. M. (2024). Strengthening public child healthcare: Development of an immunization management information system for a local community in Southern Mindanao, Philippines. <em>Journal of Health Research Studies</em>, 4(1), 32–45. https://journal-msugensan.org/index.php/JHRS/article/view/62/39</div>
+  <div class="reference-entry">Fajardo, M. R. M. R., Matalote, J. M. M., Quizon, C. N., Galang, D. M. G., Gonzales, J. M., &amp; Bulaclac, J. R. (2025). KidGuard Vaccination &amp; Information Hub: A localized digital immunization hub for Peñaranda, Nueva Ecija. <em>International Journal of Innovative Science and Research Technology (IJISRT)</em>, 10(9), 1351–1360. https://www.ijisrt.com/assets/upload/files/IJISRT25SEP1351.pdf</div>
+  <div class="reference-entry">Gavi, the Vaccine Alliance. (2023). <em>Annual progress report 2023: Building resilient routine immunization systems</em>. Gavi Alliance. https://www.gavi.org/progress-report</div>
+  <div class="reference-entry">Kodama, K., Konishi, S., Manabe, S., Okada, K., Yamaguchi, J., Wada, S., Sugimoto, K., Itoh, S., Takahashi, D., Kawasaki, R., Matsumura, Y., &amp; Takeda, T. (2023). Impact of an electronic medical record–connected questionnaire on efficient nursing documentation: Usability and efficacy study. <em>JMIR Nursing</em>, 6, e51303. https://doi.org/10.2196/51303</div>
+  <div class="reference-entry">Othman, Z. K., Ahmed, M. M., Okesanya, O. J., Musa, S. S., &amp; Lucero-Prisno, D. E., III. (2026). Digital vaccines for immunization equity: An approach to strengthen vaccine delivery and public trust in low- and middle-income countries. <em>JAMIA Open</em>, 9(2), ooag045. https://doi.org/10.1093/jamiaopen/ooag045</div>
+  <div class="reference-entry">Patil, K., Fartade, P., Kulkarni, H. R., &amp; Lokhande, V. (2026). Vaccicare+: A centralized digital vaccination management system. <em>Journal of Emerging Technologies and Innovative Research</em>, 13(1), 75–82. https://www.jetir.org/papers/JETIRHG06075.pdf</div>
+  <div class="reference-entry">Prasetyo, E., &amp; Putra, A. (2021). Implementasi Waterfall Model Dalam Pengembangan Sistem Informasi Eksekutif Penduduk. <em>Journal of Information Systems and Informatics</em>, 3(1), 120–131. http://journal-isi.org/index.php/isi</div>
+  <div class="reference-entry">Pratrian, Y., Hendriyan, Y., &amp; Kahfi, A. H. (2024). Development of web and mobile health services information system using waterfall method. <em>Computer Science (CO-SCIENCE)</em>, 6(1), 39–47. https://doi.org/10.31294/co-science.v6i1.10072</div>
+  <div class="reference-entry">Rahmadhan, F., &amp; Handayani, P. W. (2023). Factors affecting user acceptance of health center management information systems. <em>Healthcare Informatics Research</em>, 29(3), 215–226. https://doi.org/10.4258/hir.2023.29.3.215</div>
+  <div class="reference-entry">Sheel, M., Sheridan, S., &amp; Arcos, A. (2025). Strengthening immunization registries in primary healthcare settings: A systematic review. <em>The Lancet Global Health</em>, 13(4), e612–e624. https://doi.org/10.1016/S2214-109X(24)00450-X</div>
+  <div class="reference-entry">Stephen, G. (2023). QR code and their application in academic libraries. <em>International Journal of Information Management</em>, 8(2), 1–6.</div>
+  <div class="reference-entry">Turamari, R. N. (2022). QR code and their application in academic libraries. <em>SSRN Electronic Journal</em>. https://doi.org/10.2139/ssrn.4461104</div>
+  <div class="reference-entry">Wagner, N. M., Dempsey, A. F., Narwaney, K. J., Gleason, K. S., Kraus, C. R., Pyrzanowski, J., &amp; Glanz, J. M. (2021). Addressing logistical barriers to childhood vaccination using an automated reminder system and online resource intervention: A randomized controlled trial. <em>Vaccine</em>, 39(29), 3983–3990. https://doi.org/10.1016/j.vaccine.2021.05.068</div>
+  <div class="reference-entry">Wang, W. (2026). Influencing factors of individuals' willingness to share public health data in big data-driven healthcare: An empirical study. <em>Frontiers in Public Health</em>, 14(1), 1795–1808. https://doi.org/10.3389/fpubh.2026.1795026</div>
+  <div class="reference-entry">Wurster, F., Fütterer, G., Beckmann, M., Dittmer, K., Jaschke, J., Köberlein-Neu, J., Okumu, M.-R., Rusniok, C., Pfaff, H., &amp; Karbach, U. (2022). The analyzation of change in documentation due to the introduction of electronic patient records in hospitals—A systematic review. <em>Journal of Medical Systems</em>, 46(8), 54. https://doi.org/10.1007/s10916-022-01840-0</div>
+  <div class="reference-entry">Zhao, X., Zhang, Y., &amp; Liu, H. (2024). Empirical evaluation of digital healthcare systems using ISO/IEC 25010 product quality standards. <em>Computers in Biology and Medicine</em>, 170, 107954. https://doi.org/10.1016/j.compbiomed.2024.107954</div>
+
+  <h2 class="section-title">Software &amp; Standard Citations</h2>
+  <div class="reference-entry">Bergmann, S. (2023). <em>PHPUnit: The PHP testing framework</em> (Version 11) [Computer software]. https://phpunit.de/</div>
+  <div class="reference-entry">ISO/IEC 25010. (2011). <em>Systems and software engineering — Systems and software Quality Requirements and Evaluation (SQuaRE) — System and software quality models</em>. International Organization for Standardization. https://www.iso.org/standard/35733.html</div>
+  <div class="reference-entry">JGraph Ltd. (2020). <em>draw.io (Version 6.4.2) [Computer software]</em>. https://www.drawio.com</div>
+  <div class="reference-entry">Kirvan, P., Lutkevich, B., &amp; Lewis, S. (2024, November 15). <em>What is the Waterfall model?</em> TechTarget. https://www.techtarget.com/searchsoftwarequality/definition/waterfall-model</div>
+</div>
+
+<!-- APPENDICES -->
+<div>
+  <h1 class="chapter-title">APPENDICES</h1>
+
+  <h2 class="section-title">APPENDIX A: Scanned Copy of Received Letter to Client</h2>
+  <p><strong>Client:</strong> Elena B. Nuque (Adviser / Previous President, Bugo Health Center)<br>
+  <strong>Date of Letter:</strong> March 14, 2026<br>
+  <strong>Institution:</strong> Tagoloan Community College, Baluarte, Tagoloan, Misamis Oriental<br>
+  <strong>Signatories:</strong> Justine V. Buico (Project Manager), Neptale S. Roa III, MIT (Capstone Coordinator / Instructor)<br>
+  <em>(Refer to physical document scan in manuscript records: Page 28)</em></p>
+
+  <h2 class="section-title">APPENDIX B: Scanned Copy of Interview Guide Questions</h2>
+  <p><strong>Client Acknowledgment:</strong> Signed consent and interview agreement by Elena B. Nuque (Dated March 14, 2026).<br>
+  <strong>Scope of Instrument:</strong> 20 research questions covering patient intake, current manual challenges, reminder protocols, vaccine storage and stock shortages, staff device access, and data privacy safeguards.<br>
+  <em>(Refer to physical document scan in manuscript records: Page 29)</em></p>
+
+  <h2 class="section-title">APPENDIX C: Scanned Copy of Child Immunization Record</h2>
+  <p><strong>Official DOH Form:</strong> Department of Health Child Immunization Record (EPI Program).<br>
+  <strong>Key Vaccines Documented:</strong> BCG, Hepatitis B, Pentavalent (DPT-Hep B-HiB 1-3), Oral Polio Vaccine (OPV 1-3), Inactivated Polio Vaccine (IPV 1-2), Pneumococcal Conjugate Vaccine (PCV 1-3), and Measles, Mumps, Rubella (MMR 1-2).<br>
+  <em>(Refer to physical document scan in manuscript records: Page 30)</em></p>
+
+  <h2 class="section-title">APPENDIX D: Scanned Copy of Individual Treatment Record (ITR)</h2>
+  <p><strong>Health Center Form:</strong> Integrated Clinic Information System (ICLINICSYS) Individual Treatment Record.<br>
+  <strong>Content:</strong> Patient identification, anthropometrics (weight, height, BP), clinical consultation details, maternal history, child delivery vitals, and immunization administration logs (Front &amp; Back).<br>
+  <em>(Refer to physical document scan in manuscript records: Pages 31–32)</em></p>
+
+  <h2 class="section-title">APPENDIX E: Scanned Copy of Baby's Health Record Book</h2>
+  <p><strong>Clinical Booklet:</strong> Talaan ni Baby (Department of Health).<br>
+  <strong>Sample Intake Record:</strong> Child John Jacob A. Fabre (DOB: October 20, 2024; Mother: Nieva A. Alerta; Father: Johny G. Fabre; Birth Weight: 2.67 kg; Attendant: Dr. Manila).<br>
+  <em>(Refer to physical document scan in manuscript records: Page 33)</em></p>
+
+  <h2 class="section-title">APPENDIX F: Scanned Copy of Immunization Record from Baby's Health Book</h2>
+  <p><strong>Recorded Doses:</strong> Actual clinical entries showing administration dates for BCG (NMMC), Hepatitis B, Pentavalent 1-3, OPV 1-3, IPV, PCV 1-3, and MMR with Vitamin A drops.<br>
+  <em>(Refer to physical document scan in manuscript records: Page 34)</em></p>
+
+  <h2 class="section-title">APPENDIX G: Photographic Documentation of Health Center Fieldwork</h2>
+  <p><strong>Site Visit Documentation:</strong> Proponents (Team Catalyst) conducting on-site observation, key informant interviews, and clinic workflow assessment at Barangay Bugo Health Center, Cagayan de Oro City.<br>
+  <em>(Refer to physical photo records: Page 35)</em></p>
+</div>
+
+</body>
+</html>

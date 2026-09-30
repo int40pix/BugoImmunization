@@ -22,6 +22,7 @@
 | **Diagrams & DFDs** | [`diagrams/erd_and_workflows.md`](diagrams/erd_and_workflows.md) | Comprehensive system design document: IPO Model, Context Diagram (Level-0 DFD), Level-1 DFD (7 processes, 9 data stores), ERD, sequence diagrams, and UI wireframes. |
 | **API & Routes** | [`api/route_catalog.md`](api/route_catalog.md) | Complete catalog of 95+ HTTP endpoints, report exporters, and automated console daemons. |
 | **User Manual** | [`user-manual/user_guide.md`](user-manual/user_guide.md) | Operating manuals for Administrators, Healthcare Staff (Nurses, Midwives, BHWs), and Guardians. |
+| **Proposal Manuscript** | [`assets/documents/capstone_project_proposal.md`](../assets/documents/capstone_project_proposal.md) | Complete, publication-ready proposal manuscript (Chapters 1–3, References, and Appendices) aligned with the current system. (Also available as [`HTML`](../assets/documents/capstone_project_proposal.html)). |
 
 ---
 
