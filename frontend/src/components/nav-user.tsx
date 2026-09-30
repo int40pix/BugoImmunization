@@ -18,6 +18,7 @@ import { type AppNotification, type SharedData } from '@/types';
 import { router, usePage } from '@inertiajs/react';
 import {
     Bell,
+    CalendarClock,
     CheckCheck,
     ChevronsUpDown,
     CircleAlert,
@@ -106,6 +107,51 @@ function formatNotificationTime(date: string) {
     }
 
     return createdAt.toLocaleDateString();
+}
+
+function NotificationDescription({ description }: { description: string }) {
+    const splitIndex = description.search(/Next recommended visit date:/i);
+    const completionIndex = description.search(/All routine infant immunization doses are completed/i);
+
+    if (splitIndex !== -1) {
+        const mainText = description.slice(0, splitIndex).trim();
+        const nextVisitText = description.slice(splitIndex).trim();
+
+        return (
+            <div className="mt-1 text-xs leading-relaxed space-y-1.5">
+                {mainText && (
+                    <p className="text-muted-foreground">{mainText}</p>
+                )}
+                <div className="flex items-start gap-1.5 rounded-md bg-blue-500/10 border border-blue-500/20 px-2.5 py-1.5 text-[11px] font-medium text-blue-700 dark:text-blue-300">
+                    <CalendarClock className="h-3.5 w-3.5 shrink-0 text-blue-600 dark:text-blue-400 mt-0.5" />
+                    <span className="leading-snug">{nextVisitText}</span>
+                </div>
+            </div>
+        );
+    }
+
+    if (completionIndex !== -1) {
+        const mainText = description.slice(0, completionIndex).trim();
+        const completionText = description.slice(completionIndex).trim();
+
+        return (
+            <div className="mt-1 text-xs leading-relaxed space-y-1.5">
+                {mainText && (
+                    <p className="text-muted-foreground">{mainText}</p>
+                )}
+                <div className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+                    <CheckCheck className="h-3.5 w-3.5 shrink-0" />
+                    <span>{completionText}</span>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
+            {description}
+        </p>
+    );
 }
 
 export function NavUser() {
@@ -200,7 +246,7 @@ export function NavUser() {
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent
-                            className="w-[360px] overflow-hidden p-0"
+                            className="w-[380px] sm:w-[460px] md:w-[480px] max-w-[calc(100vw-1.5rem)] overflow-hidden p-0 shadow-xl border-border/80"
                             align="start"
                             side={
                                 isMobile
@@ -252,7 +298,7 @@ export function NavUser() {
                             <DropdownMenuSeparator className="m-0" />
 
                             {/* Notification List */}
-                            <div className="max-h-[360px] overflow-y-auto">
+                            <div className="max-h-[460px] overflow-y-auto">
                                 {notifications.length > 0 ? (
                                     notifications.map(
                                         (notification) => (
@@ -305,11 +351,11 @@ export function NavUser() {
                                                     </div>
 
                                                     {notification.description && (
-                                                        <p className="text-muted-foreground mt-0.5 line-clamp-3 text-xs leading-relaxed">
-                                                            {
+                                                        <NotificationDescription
+                                                            description={
                                                                 notification.description
                                                             }
-                                                        </p>
+                                                        />
                                                     )}
 
                                                     <p className="text-muted-foreground mt-1 text-[11px]">
