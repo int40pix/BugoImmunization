@@ -110,4 +110,71 @@ class Patient extends Model
             PatientVaccineSchedule::class
         );
     }
+
+    /**
+     * Stored previous Date of Birth before updating.
+     */
+    protected ?string $previousDob = null;
+
+    protected static function booted(): void
+    {
+        static::updating(function (Patient $patient) {
+            if ($patient->isDirty('date_of_birth')) {
+                $orig = $patient->getOriginal('date_of_birth');
+                $patient->previousDob = $orig ? \Carbon\Carbon::parse($orig)->toDateString() : null;
+            }
+        });
+
+        static::updated(function (Patient $patient) {
+            if ($patient->wasChanged('date_of_birth') && $patient->previousDob !== null) {
+                $patient->handleDateOfBirthChange($patient->previousDob);
+                $patient->previousDob = null;
+            }
+        });
+    }
+
+    /**
+     * Reconciles immunization records, clears obsolete automated schedules,
+     * and regenerates schedule commitments when a patient's Date of Birth changes.
+     */
+    public function handleDateOfBirthChange($oldDob): void
+    {
+        if (!$this->date_of_birth) {
+            return;
+        }
+
+        $newDobString = \Carbon\Carbon::parse($this->date_of_birth)->toDateString();
+
+        $oldDobString = $oldDob ? \Carbon\Carbon::parse($oldDob)->toDateString() : null;
+
+        // Update birth dose record administration dates if they were recorded on the old DoB or precede the new DoB
+        $this->immunizationRecords()
+            ->where(function ($q) use ($oldDobString, $newDobString) {
+                if ($oldDobString && $oldDobString !== $newDobString) {
+                    $q->whereDate('date_administered', $oldDobString)
+                      ->orWhereDate('date_administered', '<', $newDobString);
+                } else {
+                    $q->whereDate('date_administered', '<', $newDobString);
+                }
+            })
+            ->where(function ($q) {
+                $q->where('remarks', 'like', '%birth%')
+                  ->orWhere('source', 'Hospital / Birth Facility');
+            })
+            ->update(['date_administered' => $newDobString]);
+
+        // Remove unadministered automated schedules since their dates were anchored to the old DoB
+        $this->vaccineSchedules()
+            ->whereIn('status', ['scheduled', 'upcoming', 'overdue'])
+            ->where('is_manually_adjusted', false)
+            ->delete();
+
+        // Regenerate schedules with the new DoB for active patients
+        if ($this->status === 'Active') {
+            app(\App\Services\PatientImmunizationScheduleService::class)->clearCache();
+            $schedulingService = app(\App\Services\VaccineSchedulingPriorityService::class);
+            $schedulingService->clearCandidatePoolCache();
+            $schedulingService->generateSchedules();
+        }
+    }
 }

@@ -621,10 +621,35 @@ class GuardianPortalController extends Controller
                     $patient->date_of_birth ? Carbon::parse($patient->date_of_birth)->format('Y-m-d') : null
                 );
 
+                $vName = strtolower($vaccine->name ?? '');
+                $recAge = strtolower(trim($scheduleDef?->recommended_age ?? ''));
+                $isBirthDose = $doseNumber === 1 && (
+                    str_contains($vName, 'bcg') ||
+                    str_contains($vName, 'hepatitis b') ||
+                    str_contains($vName, 'hep b') ||
+                    in_array($recAge, ['at birth', 'birth', '0 days', '0 day'], true)
+                );
+
+                $isDue = false;
+                if (!$record && !$schedule) {
+                    if ($isBirthDose) {
+                        $isDue = true;
+                    } elseif ($recommendedDate && $recommendedDate->lte(Carbon::today())) {
+                        $isDue = true;
+                    } elseif ($patient->date_of_birth && $scheduleDef?->recommended_age) {
+                        $ageDays = $this->parseRecommendedAgeToDays($scheduleDef->recommended_age);
+                        $targetDate = Carbon::parse($patient->date_of_birth)->addDays((int) $ageDays);
+                        if ($targetDate->lte(Carbon::today())) {
+                            $isDue = true;
+                        }
+                    }
+                }
+
                 return [
                     'dose_number' => $doseNumber,
                     'recommended_age' => $scheduleDef?->recommended_age,
                     'interval' => $scheduleDef?->interval,
+                    'is_due' => $isDue,
                     'record' => $record ? [
                         'id' => $record->id,
                         'dose_number' => (int) $record->dose_number,
@@ -644,7 +669,7 @@ class GuardianPortalController extends Controller
                         'stock_vials' => $vials,
                         'stock_status' => $stockStatus,
                     ] : null,
-                    'recommended_date' => $recommendedDate ? $recommendedDate->format('Y-m-d') : null,
+                    'recommended_date' => (!$isDue && $recommendedDate) ? $recommendedDate->format('Y-m-d') : null,
                 ];
             })->values();
 
@@ -917,6 +942,18 @@ class GuardianPortalController extends Controller
             $baseDate->next(Carbon::WEDNESDAY);
         }
 
+        // If the calculated date is already on or before today, or if this is a birth dose (targetDose == 1 with birth age),
+        // it is DUE rather than an upcoming recommended milestone.
+        if ($baseDate->lte(Carbon::today())) {
+            return null;
+        }
+
+        $firstDef = $vaccine->schedules->firstWhere('dose_number', 1);
+        $firstAgeDays = $this->parseRecommendedAgeToDays($firstDef?->recommended_age);
+        if ($targetDose === 1 && $firstAgeDays <= 0) {
+            return null;
+        }
+
         return $baseDate;
     }
 
@@ -945,7 +982,18 @@ class GuardianPortalController extends Controller
                 return (float) round($val * 7);
             }
             if (str_starts_with($unit, 'mo')) {
-                return (float) round($val * 30);
+                if (abs($val - 1.5) < 0.01) {
+                    return 42.0; // 6 weeks (DOH EPI 1.5 months)
+                }
+                if (abs($val - 2.5) < 0.01) {
+                    return 70.0; // 10 weeks (DOH EPI 2.5 months)
+                }
+                if (abs($val - 3.5) < 0.01) {
+                    return 98.0; // 14 weeks (DOH EPI 3.5 months)
+                }
+                $whole = (int) floor($val);
+                $frac = $val - $whole;
+                return (float) round(($whole * 30) + ($frac * 28));
             }
             if (str_starts_with($unit, 'year') || str_starts_with($unit, 'yr')) {
                 return (float) round($val * 365);

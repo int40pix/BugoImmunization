@@ -214,7 +214,21 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
                                         type="date"
                                         max={today}
                                         value={data.date_of_birth}
-                                        onChange={(e) => setData('date_of_birth', e.target.value)}
+                                        onChange={(e) => {
+                                            const newDob = e.target.value;
+                                            setData((prev) => ({
+                                                ...prev,
+                                                date_of_birth: newDob,
+                                                bcg_date_administered:
+                                                    prev.bcg_received_at_birth && (!prev.bcg_date_administered || prev.bcg_date_administered === prev.date_of_birth || (newDob && prev.bcg_date_administered < newDob))
+                                                        ? newDob
+                                                        : prev.bcg_date_administered,
+                                                hepb_date_administered:
+                                                    prev.hepb_received_at_birth && (!prev.hepb_date_administered || prev.hepb_date_administered === prev.date_of_birth || (newDob && prev.hepb_date_administered < newDob))
+                                                        ? newDob
+                                                        : prev.hepb_date_administered,
+                                            }));
+                                        }}
                                         required
                                     />
                                 </Field>
@@ -483,7 +497,7 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
                                                 setData((prev) => ({
                                                     ...prev,
                                                     bcg_received_at_birth: isChecked,
-                                                    bcg_date_administered: isChecked ? (prev.bcg_date_administered || prev.date_of_birth || today) : '',
+                                                    bcg_date_administered: isChecked ? (prev.bcg_date_administered || prev.date_of_birth || '') : '',
                                                 }));
                                             }}
                                         />
@@ -506,8 +520,9 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
                                                 id="bcg_date"
                                                 type="date"
                                                 className="h-9 text-xs bg-background"
-                                                value={data.bcg_date_administered || data.date_of_birth || today}
+                                                min={data.date_of_birth || undefined}
                                                 max={today}
+                                                value={data.bcg_date_administered || data.date_of_birth || ''}
                                                 onChange={(e) => setData('bcg_date_administered', e.target.value)}
                                             />
                                         </div>
@@ -525,7 +540,7 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
                                                 setData((prev) => ({
                                                     ...prev,
                                                     hepb_received_at_birth: isChecked,
-                                                    hepb_date_administered: isChecked ? (prev.hepb_date_administered || prev.date_of_birth || today) : '',
+                                                    hepb_date_administered: isChecked ? (prev.hepb_date_administered || prev.date_of_birth || '') : '',
                                                 }));
                                             }}
                                         />
@@ -548,8 +563,9 @@ export default function PatientCreate({ guardian }: PatientCreateProps) {
                                                 id="hepb_date"
                                                 type="date"
                                                 className="h-9 text-xs bg-background"
-                                                value={data.hepb_date_administered || data.date_of_birth || today}
+                                                min={data.date_of_birth || undefined}
                                                 max={today}
+                                                value={data.hepb_date_administered || data.date_of_birth || ''}
                                                 onChange={(e) => setData('hepb_date_administered', e.target.value)}
                                             />
                                         </div>

@@ -640,9 +640,23 @@ export default function GuardianCreate() {
                                                     type="date"
                                                     max={new Date().toISOString().split('T')[0]}
                                                     value={child.date_of_birth}
-                                                    onChange={(e) =>
-                                                        setChild('date_of_birth', e.target.value)
-                                                    }
+                                                    onChange={(e) => {
+                                                        const newDob = e.target.value;
+                                                        setData('children', [
+                                                            {
+                                                                ...child,
+                                                                date_of_birth: newDob,
+                                                                bcg_date_administered:
+                                                                    child.bcg_received_at_birth && (!child.bcg_date_administered || child.bcg_date_administered === child.date_of_birth || (newDob && child.bcg_date_administered < newDob))
+                                                                        ? newDob
+                                                                        : child.bcg_date_administered,
+                                                                hepb_date_administered:
+                                                                    child.hepb_received_at_birth && (!child.hepb_date_administered || child.hepb_date_administered === child.date_of_birth || (newDob && child.hepb_date_administered < newDob))
+                                                                        ? newDob
+                                                                        : child.hepb_date_administered,
+                                                            },
+                                                        ]);
+                                                    }}
                                                     className="h-9 text-xs"
                                                     required
                                                 />
@@ -1111,8 +1125,9 @@ export default function GuardianCreate() {
                                                         id="reg_bcg_date"
                                                         type="date"
                                                         className="h-8 text-xs bg-background"
-                                                        value={child.bcg_date_administered || child.date_of_birth || ''}
+                                                        min={child.date_of_birth || undefined}
                                                         max={new Date().toISOString().split('T')[0]}
+                                                        value={child.bcg_date_administered || child.date_of_birth || ''}
                                                         onChange={(e) => setChild('bcg_date_administered', e.target.value)}
                                                     />
                                                 </div>
@@ -1152,8 +1167,9 @@ export default function GuardianCreate() {
                                                         id="reg_hepb_date"
                                                         type="date"
                                                         className="h-8 text-xs bg-background"
-                                                        value={child.hepb_date_administered || child.date_of_birth || ''}
+                                                        min={child.date_of_birth || undefined}
                                                         max={new Date().toISOString().split('T')[0]}
+                                                        value={child.hepb_date_administered || child.date_of_birth || ''}
                                                         onChange={(e) => setChild('hepb_date_administered', e.target.value)}
                                                     />
                                                 </div>

@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { getDoseRecommendedDate } from '@/utils/immunization-schedule';
+import { getDoseRecommendedDate, isDoseDue } from '@/utils/immunization-schedule';
 
 type CardRecord = {
     id: number;
@@ -50,6 +50,7 @@ type ImmunizationCardDose = {
         status: string;
     } | null;
     recommended_date?: string | null;
+    is_due?: boolean | null;
 };
 
 export type ImmunizationCardVaccine = {
@@ -1407,8 +1408,16 @@ const handleSaveCard = () => {
                                                             dose.schedule
                                                                 ?.scheduled_date,
                                                         );
+                                                    const isDue =
+                                                        !isDone &&
+                                                        !isScheduled &&
+                                                        isDoseDue(
+                                                            vaccine,
+                                                            dose,
+                                                            patient.date_of_birth,
+                                                        );
                                                     const recDate =
-                                                        !isDone && !isScheduled
+                                                        !isDone && !isScheduled && !isDue
                                                             ? getDoseRecommendedDate(
                                                                   vaccine,
                                                                   dose,
@@ -1467,6 +1476,11 @@ const handleSaveCard = () => {
                                                                                     ?.scheduled_date ??
                                                                                     null,
                                                                             )}
+                                                                        </span>
+                                                                    ) : isDue ? (
+                                                                        <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-400" title="Vaccine dose is due for administration">
+                                                                            <Clock3 className="h-3 w-3" />
+                                                                            Due
                                                                         </span>
                                                                     ) : recDate ? (
                                                                         <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-400" title="Recommended date based on last administration">
@@ -2143,8 +2157,16 @@ const handleSaveCard = () => {
                                                                     dose.schedule
                                                                         ?.scheduled_date,
                                                                 );
+                                                            const isDue =
+                                                                !isDone &&
+                                                                !isScheduled &&
+                                                                isDoseDue(
+                                                                    vaccine,
+                                                                    dose,
+                                                                    patient.date_of_birth,
+                                                                );
                                                             const recDate =
-                                                                !isDone && !isScheduled
+                                                                !isDone && !isScheduled && !isDue
                                                                     ? getDoseRecommendedDate(
                                                                           vaccine,
                                                                           dose,
@@ -2181,6 +2203,15 @@ const handleSaveCard = () => {
                                                                                 </span>
                                                                                 <span className="text-[11px] font-medium text-muted-foreground print-only">
                                                                                     Due: {formatCompactDate(dose.schedule?.scheduled_date ?? null)}
+                                                                                </span>
+                                                                            </div>
+                                                                        ) : isDue ? (
+                                                                            <div className="flex flex-col items-center" title="Vaccine dose is due for administration">
+                                                                                <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 no-print">
+                                                                                    Due
+                                                                                </span>
+                                                                                <span className="text-[11px] font-medium text-muted-foreground italic print-only">
+                                                                                    Due
                                                                                 </span>
                                                                             </div>
                                                                         ) : recDate ? (

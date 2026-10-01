@@ -18,6 +18,7 @@ export interface CardDoseLike {
         [key: string]: any;
     } | null;
     recommended_date?: string | null;
+    is_due?: boolean | null;
 }
 
 export interface CardVaccineLike {
@@ -119,7 +120,14 @@ export function recommendedAgeToDays(ageStr: string | null | undefined): number 
 
     if (unit.startsWith('day')) return Math.round(val);
     if (unit.startsWith('week')) return Math.round(val * 7);
-    if (unit.startsWith('mo')) return Math.round(val * 30);
+    if (unit.startsWith('mo')) {
+        if (Math.abs(val - 1.5) < 0.01) return 42; // 6 weeks (DOH EPI 1.5 months)
+        if (Math.abs(val - 2.5) < 0.01) return 70; // 10 weeks (DOH EPI 2.5 months)
+        if (Math.abs(val - 3.5) < 0.01) return 98; // 14 weeks (DOH EPI 3.5 months)
+        const whole = Math.floor(val);
+        const frac = val - whole;
+        return Math.round(whole * 30 + frac * 28);
+    }
     if (unit.startsWith('year') || unit.startsWith('yr')) return Math.round(val * 365);
 
     return Math.round(val);
@@ -151,6 +159,11 @@ export function getDoseRecommendedDate(
     targetDose: CardDoseLike,
     dateOfBirth: string | null | undefined,
 ): string | null {
+    // If dose is already marked due, it has no future recommended date
+    if (targetDose.is_due) {
+        return null;
+    }
+
     // 1. If backend already supplied recommended_date, use it directly
     if (targetDose.recommended_date) {
         return targetDose.recommended_date;
@@ -164,6 +177,24 @@ export function getDoseRecommendedDate(
     // 3. If this dose is already scheduled, return scheduled_date
     if (targetDose.schedule?.scheduled_date) {
         return targetDose.schedule.scheduled_date;
+    }
+
+    const vName = (vaccine.vaccine_name || '').toLowerCase();
+    const recAge = (targetDose.recommended_age || '').toLowerCase().trim();
+    const isBirthVaccine =
+        targetDose.dose_number === 1 && (
+            vName.includes('bcg') ||
+            vName.includes('hepatitis b') ||
+            vName.includes('hep b') ||
+            recAge === 'at birth' ||
+            recAge === 'birth' ||
+            recAge === '0 days' ||
+            recAge === '0 day'
+        );
+
+    // Birth doses are DUE at birth, not a future recommendation milestone
+    if (isBirthVaccine) {
+        return null;
     }
 
     const targetDoseNum = targetDose.dose_number;
@@ -248,9 +279,79 @@ export function getDoseRecommendedDate(
     // Align to Bugo clinic Wednesday
     baseDate = alignToWednesday(baseDate);
 
+    // If the calculated date is already today or in the past, it is DUE, not a future recommendation
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (baseDate <= today) {
+        return null;
+    }
+
     const year = baseDate.getFullYear();
     const month = String(baseDate.getMonth() + 1).padStart(2, '0');
     const day = String(baseDate.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
+}
+
+/**
+ * Checks whether an unadministered, unscheduled dose is currently DUE for administration.
+ * Doses are due if:
+ * 1. Explicitly flagged as is_due by the backend
+ * 2. Birth doses (BCG, Hepatitis B dose 1) that were not toggled as received at birth
+ * 3. Doses whose recommended age milestone date from DoB has already arrived (<= today)
+ */
+export function isDoseDue(
+    vaccine: CardVaccineLike,
+    targetDose: CardDoseLike,
+    dateOfBirth: string | null | undefined,
+): boolean {
+    if (targetDose.record?.date_administered) {
+        return false;
+    }
+    if (targetDose.schedule?.scheduled_date) {
+        return false;
+    }
+    if (targetDose.is_due) {
+        return true;
+    }
+
+    const vName = (vaccine.vaccine_name || '').toLowerCase();
+    const recAge = (targetDose.recommended_age || '').toLowerCase().trim();
+    const isBirthVaccine =
+        targetDose.dose_number === 1 && (
+            vName.includes('bcg') ||
+            vName.includes('hepatitis b') ||
+            vName.includes('hep b') ||
+            recAge === 'at birth' ||
+            recAge === 'birth' ||
+            recAge === '0 days' ||
+            recAge === '0 day'
+        );
+
+    if (isBirthVaccine) {
+        return true;
+    }
+
+    if (dateOfBirth) {
+        const parsedDob = parseDate(dateOfBirth);
+        if (parsedDob) {
+            const ageDays = recommendedAgeToDays(targetDose.recommended_age);
+            const targetDate = new Date(parsedDob);
+            targetDate.setDate(targetDate.getDate() + ageDays);
+
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+            if (targetDate <= today) {
+                if (targetDose.dose_number === 1) {
+                    return true;
+                }
+                const prevDose = vaccine.doses?.find((d) => d.dose_number === targetDose.dose_number - 1);
+                if (prevDose?.record?.date_administered) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }

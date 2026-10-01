@@ -347,6 +347,12 @@ class ImmunizationAdministrationService
                 ? Carbon::parse($dateAdministered)->startOfDay()
                 : Carbon::today();
 
+            if ($lockedPatient->date_of_birth && $recordDate->lt(Carbon::parse($lockedPatient->date_of_birth)->startOfDay())) {
+                throw new DomainException(
+                    'Administration date cannot be before the patient\'s date of birth.'
+                );
+            }
+
             $record =
                 ImmunizationRecord::query()
                     ->create([

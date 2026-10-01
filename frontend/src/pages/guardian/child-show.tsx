@@ -32,7 +32,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import React, { useState } from 'react';
 import ChildQrModal, { type QrChildItem } from './components/child-qr-modal';
 import { StockBadge } from './components/stock-badge';
-import { getDoseRecommendedDate } from '@/utils/immunization-schedule';
+import { getDoseRecommendedDate, isDoseDue } from '@/utils/immunization-schedule';
 
 type RecordItem = {
     id: number;
@@ -82,6 +82,7 @@ type ImmunizationCardDose = {
         stock_status?: string;
     } | null;
     recommended_date?: string | null;
+    is_due?: boolean | null;
 };
 
 type ImmunizationCardVaccine = {
@@ -904,8 +905,16 @@ export default function GuardianChildShow({
                                                 const schedule = doseItem.schedule;
                                                 const isDone = Boolean(record);
                                                 const isScheduled = !isDone && Boolean(schedule);
+                                                const isDue =
+                                                    !isDone &&
+                                                    !isScheduled &&
+                                                    isDoseDue(
+                                                        vaccine,
+                                                        doseItem,
+                                                        patient.date_of_birth,
+                                                    );
                                                 const recDate =
-                                                    !isDone && !isScheduled
+                                                    !isDone && !isScheduled && !isDue
                                                         ? getDoseRecommendedDate(
                                                               vaccine,
                                                               doseItem,
@@ -961,6 +970,11 @@ export default function GuardianChildShow({
                                                                     <div className="inline-flex items-center gap-1 rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:text-blue-400">
                                                                         <Clock3 className="h-3 w-3" />
                                                                         <span>Due: {formatCompactDate(schedule?.scheduled_date ?? null)}</span>
+                                                                    </div>
+                                                                ) : isDue ? (
+                                                                    <div className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-400" title="Vaccine dose is due for administration">
+                                                                        <Clock3 className="h-3 w-3" />
+                                                                        <span>Due</span>
                                                                     </div>
                                                                 ) : recDate ? (
                                                                     <div className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-400" title="Recommended date based on last administration">
@@ -1108,8 +1122,16 @@ export default function GuardianChildShow({
                                                                 {vaccine.doses.map((dose) => {
                                                                     const isDone = Boolean(dose.record?.date_administered);
                                                                     const isScheduled = !isDone && Boolean(dose.schedule?.scheduled_date);
+                                                                    const isDue =
+                                                                        !isDone &&
+                                                                        !isScheduled &&
+                                                                        isDoseDue(
+                                                                            vaccine,
+                                                                            dose,
+                                                                            patient.date_of_birth,
+                                                                        );
                                                                     const recDate =
-                                                                        !isDone && !isScheduled
+                                                                        !isDone && !isScheduled && !isDue
                                                                             ? getDoseRecommendedDate(
                                                                                   vaccine,
                                                                                   dose,
@@ -1137,6 +1159,15 @@ export default function GuardianChildShow({
                                                                                     </span>
                                                                                     <span className="text-[11px] font-medium text-muted-foreground print-only">
                                                                                         Due: {formatCompactDate(dose.schedule?.scheduled_date ?? null)}
+                                                                                    </span>
+                                                                                </div>
+                                                                            ) : isDue ? (
+                                                                                <div className="flex flex-col items-center" title="Vaccine dose is due for administration">
+                                                                                    <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 no-print">
+                                                                                        Due
+                                                                                    </span>
+                                                                                    <span className="text-[11px] font-medium text-muted-foreground italic print-only">
+                                                                                        Due
                                                                                     </span>
                                                                                 </div>
                                                                             ) : recDate ? (

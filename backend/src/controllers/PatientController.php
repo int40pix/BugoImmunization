@@ -338,6 +338,7 @@ class PatientController extends Controller
             'bcg_date_administered' => [
                 'nullable',
                 'date',
+                'after_or_equal:date_of_birth',
                 'before_or_equal:today',
             ],
 
@@ -349,6 +350,7 @@ class PatientController extends Controller
             'hepb_date_administered' => [
                 'nullable',
                 'date',
+                'after_or_equal:date_of_birth',
                 'before_or_equal:today',
             ],
         ]);
@@ -401,11 +403,15 @@ class PatientController extends Controller
         $hepbVaccine = Vaccine::where('name', 'like', '%Hepatitis B%')->first();
 
         if ($request->boolean('bcg_received_at_birth') && $bcgVaccine) {
+            $bcgDate = $request->input('bcg_date_administered') ?: $patient->date_of_birth;
+            if (\Carbon\Carbon::parse($bcgDate)->lt(\Carbon\Carbon::parse($patient->date_of_birth))) {
+                $bcgDate = $patient->date_of_birth;
+            }
             ImmunizationRecord::create([
                 'patient_id' => $patient->id,
                 'vaccine_id' => $bcgVaccine->id,
                 'dose_number' => 1,
-                'date_administered' => $request->input('bcg_date_administered') ?: $patient->date_of_birth,
+                'date_administered' => $bcgDate,
                 'administered_by' => null,
                 'source' => 'Hospital / Birth Facility',
                 'remarks' => 'Received at birth',
@@ -413,11 +419,15 @@ class PatientController extends Controller
         }
 
         if ($request->boolean('hepb_received_at_birth') && $hepbVaccine) {
+            $hepbDate = $request->input('hepb_date_administered') ?: $patient->date_of_birth;
+            if (\Carbon\Carbon::parse($hepbDate)->lt(\Carbon\Carbon::parse($patient->date_of_birth))) {
+                $hepbDate = $patient->date_of_birth;
+            }
             ImmunizationRecord::create([
                 'patient_id' => $patient->id,
                 'vaccine_id' => $hepbVaccine->id,
                 'dose_number' => 1,
-                'date_administered' => $request->input('hepb_date_administered') ?: $patient->date_of_birth,
+                'date_administered' => $hepbDate,
                 'administered_by' => null,
                 'source' => 'Hospital / Birth Facility',
                 'remarks' => 'Birth dose received at birth',
@@ -817,6 +827,30 @@ class PatientController extends Controller
                             $patient->date_of_birth ? Carbon::parse($patient->date_of_birth)->format('Y-m-d') : null
                         );
 
+                        $vName = strtolower($vaccine->name ?? '');
+                        $recAge = strtolower(trim($schedule?->recommended_age ?? ''));
+                        $isBirthDose = $doseNumber === 1 && (
+                            str_contains($vName, 'bcg') ||
+                            str_contains($vName, 'hepatitis b') ||
+                            str_contains($vName, 'hep b') ||
+                            in_array($recAge, ['at birth', 'birth', '0 days', '0 day'], true)
+                        );
+
+                        $isDue = false;
+                        if (!$record && !$patientSchedule) {
+                            if ($isBirthDose) {
+                                $isDue = true;
+                            } elseif ($recommendedDate && $recommendedDate->lte(Carbon::today())) {
+                                $isDue = true;
+                            } elseif ($patient->date_of_birth && $schedule?->recommended_age) {
+                                $ageDays = $this->parseRecommendedAgeToDays($schedule->recommended_age);
+                                $targetDate = Carbon::parse($patient->date_of_birth)->addDays((int) $ageDays);
+                                if ($targetDate->lte(Carbon::today())) {
+                                    $isDue = true;
+                                }
+                            }
+                        }
+
                         return [
                             'dose_number' => $doseNumber,
 
@@ -825,6 +859,8 @@ class PatientController extends Controller
 
                             'interval' =>
                                 $schedule?->interval,
+
+                            'is_due' => $isDue,
 
                             'record' => $record
                                 ? [
@@ -877,7 +913,7 @@ class PatientController extends Controller
                                 ]
                                 : null,
 
-                            'recommended_date' => $recommendedDate
+                            'recommended_date' => (!$isDue && $recommendedDate)
                                 ? $recommendedDate->format('Y-m-d')
                                 : null,
                         ];
@@ -1189,7 +1225,12 @@ class PatientController extends Controller
             }
         }
 
+        $oldDob = $patient->date_of_birth ? Carbon::parse($patient->date_of_birth)->toDateString() : null;
         $patient->update($validated);
+
+        if ($patient->wasChanged('date_of_birth')) {
+            $patient->handleDateOfBirthChange($oldDob);
+        }
 
         return redirect()
             ->route('patients.index')
@@ -1338,6 +1379,18 @@ class PatientController extends Controller
             $baseDate->next(Carbon::WEDNESDAY);
         }
 
+        // If the calculated date is already on or before today, or if this is a birth dose (targetDose == 1 with birth age),
+        // it is DUE rather than an upcoming recommended milestone.
+        if ($baseDate->lte(Carbon::today())) {
+            return null;
+        }
+
+        $firstDef = $vaccine->schedules->firstWhere('dose_number', 1);
+        $firstAgeDays = $this->parseRecommendedAgeToDays($firstDef?->recommended_age);
+        if ($targetDose === 1 && $firstAgeDays <= 0) {
+            return null;
+        }
+
         return $baseDate;
     }
 
@@ -1366,7 +1419,18 @@ class PatientController extends Controller
                 return (float) round($val * 7);
             }
             if (str_starts_with($unit, 'mo')) {
-                return (float) round($val * 30);
+                if (abs($val - 1.5) < 0.01) {
+                    return 42.0; // 6 weeks (DOH EPI 1.5 months)
+                }
+                if (abs($val - 2.5) < 0.01) {
+                    return 70.0; // 10 weeks (DOH EPI 2.5 months)
+                }
+                if (abs($val - 3.5) < 0.01) {
+                    return 98.0; // 14 weeks (DOH EPI 3.5 months)
+                }
+                $whole = (int) floor($val);
+                $frac = $val - $whole;
+                return (float) round(($whole * 30) + ($frac * 28));
             }
             if (str_starts_with($unit, 'year') || str_starts_with($unit, 'yr')) {
                 return (float) round($val * 365);

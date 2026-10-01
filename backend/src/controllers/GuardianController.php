@@ -834,11 +834,15 @@ class GuardianController extends Controller
                         ]);
 
                         if (!empty($child['bcg_received_at_birth']) && $bcgVaccine) {
+                            $bcgDate = !empty($child['bcg_date_administered']) ? $child['bcg_date_administered'] : $patient->date_of_birth;
+                            if (\Carbon\Carbon::parse($bcgDate)->lt(\Carbon\Carbon::parse($patient->date_of_birth))) {
+                                $bcgDate = $patient->date_of_birth;
+                            }
                             ImmunizationRecord::create([
                                 'patient_id' => $patient->id,
                                 'vaccine_id' => $bcgVaccine->id,
                                 'dose_number' => 1,
-                                'date_administered' => !empty($child['bcg_date_administered']) ? $child['bcg_date_administered'] : $patient->date_of_birth,
+                                'date_administered' => $bcgDate,
                                 'administered_by' => null,
                                 'source' => 'Hospital / Birth Facility',
                                 'remarks' => 'Received at birth',
@@ -846,11 +850,15 @@ class GuardianController extends Controller
                         }
 
                         if (!empty($child['hepb_received_at_birth']) && $hepbVaccine) {
+                            $hepbDate = !empty($child['hepb_date_administered']) ? $child['hepb_date_administered'] : $patient->date_of_birth;
+                            if (\Carbon\Carbon::parse($hepbDate)->lt(\Carbon\Carbon::parse($patient->date_of_birth))) {
+                                $hepbDate = $patient->date_of_birth;
+                            }
                             ImmunizationRecord::create([
                                 'patient_id' => $patient->id,
                                 'vaccine_id' => $hepbVaccine->id,
                                 'dose_number' => 1,
-                                'date_administered' => !empty($child['hepb_date_administered']) ? $child['hepb_date_administered'] : $patient->date_of_birth,
+                                'date_administered' => $hepbDate,
                                 'administered_by' => null,
                                 'source' => 'Hospital / Birth Facility',
                                 'remarks' => 'Birth dose received at birth',

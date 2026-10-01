@@ -962,6 +962,20 @@ class PatientImmunizationScheduleService
         Carbon $date,
         float $months
     ): Carbon {
+        // Standard DOH EPI pediatric milestones:
+        // 1.5 months = 6 weeks (42 days)
+        // 2.5 months = 10 weeks (70 days)
+        // 3.5 months = 14 weeks (98 days)
+        if (abs($months - 1.5) < 0.01) {
+            return $date->addWeeks(6);
+        }
+        if (abs($months - 2.5) < 0.01) {
+            return $date->addWeeks(10);
+        }
+        if (abs($months - 3.5) < 0.01) {
+            return $date->addWeeks(14);
+        }
+
         $whole =
             (int) floor(
                 $months
@@ -978,7 +992,7 @@ class PatientImmunizationScheduleService
         if ($fraction > 0) {
             $date->addDays(
                 (int) round(
-                    $fraction * 30
+                    $fraction * 28
                 )
             );
         }

@@ -41,6 +41,7 @@ class ImmunizationRecordController extends Controller
             'date_administered' => [
                 'required',
                 'date',
+                'after_or_equal:' . $patient->date_of_birth->toDateString(),
                 'before_or_equal:today',
             ],
 
