@@ -25,6 +25,7 @@ import {
     CheckCircle2,
     History,
     Info,
+    Layers,
     MapPin,
     Package,
     ShieldCheck,
@@ -182,6 +183,30 @@ export default function VaccinationManagement({
 
     const [selectedOptionalVaccineId, setSelectedOptionalVaccineId] =
         useState('');
+
+    // Session (Batch) Administration State
+    const [showSessionModal, setShowSessionModal] = useState(false);
+    const [showSessionProceedModal, setShowSessionProceedModal] = useState(false);
+    const [isSubmittingSession, setIsSubmittingSession] = useState(false);
+    const [sessionAdministeredBy, setSessionAdministeredBy] = useState<string>('');
+    const [sessionDateAdministered, setSessionDateAdministered] = useState<string>('');
+    const [sessionConsentGivenBy, setSessionConsentGivenBy] = useState<string>('');
+    const [sessionRemarks, setSessionRemarks] = useState<string>('');
+    const [sessionConsentObtained, setSessionConsentObtained] = useState<boolean>(false);
+    const [sessionHealthScreened, setSessionHealthScreened] = useState<boolean>(true);
+    const [sessionAllergyChecked, setSessionAllergyChecked] = useState<boolean>(true);
+    const [sessionFiveRightsVerified, setSessionFiveRightsVerified] = useState<boolean>(true);
+    const [sessionDoseConfigs, setSessionDoseConfigs] = useState<
+        Record<
+            number,
+            {
+                selected: boolean;
+                injection_site: string;
+                is_custom_site: boolean;
+                remarks: string;
+            }
+        >
+    >({});
 
     const parseDate = (date: string | null) => {
         if (!date) {
@@ -463,6 +488,195 @@ export default function VaccinationManagement({
         );
     };
 
+    // Helper functions and handlers for Multi-Vaccine Clinical Session Administration
+    const getTodayDateString = () => {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const sessionCandidates = vaccinationOptions.filter(
+        (opt) => opt.can_administer
+    );
+
+    const getDefaultInjectionSite = (vaccineName: string): string => {
+        const lower = vaccineName.toLowerCase();
+        if (
+            lower.includes('opv') ||
+            lower.includes('rotavirus') ||
+            lower.includes('oral')
+        ) {
+            return 'Oral Drops';
+        }
+        if (lower.includes('penta') || lower.includes('dpt')) {
+            return 'Anterolateral Left Thigh (IM)';
+        }
+        if (lower.includes('pcv') || lower.includes('pneumo')) {
+            return 'Anterolateral Right Thigh (IM)';
+        }
+        if (lower.includes('ipv') || lower.includes('inactivated polio')) {
+            return 'Anterolateral Right Thigh (IM)';
+        }
+        if (lower.includes('measles') || lower.includes('mmr')) {
+            return 'Left Deltoid (SC)';
+        }
+        if (lower.includes('bcg')) {
+            return 'Right Deltoid (ID)';
+        }
+        if (lower.includes('hep') || lower.includes('hepa')) {
+            return 'Anterolateral Right Thigh (IM)';
+        }
+        return 'Anterolateral Left Thigh (IM)';
+    };
+
+    const isOralVaccine = (vaccineName: string): boolean => {
+        const lower = vaccineName.toLowerCase();
+        return (
+            lower.includes('opv') ||
+            lower.includes('rotavirus') ||
+            lower.includes('oral')
+        );
+    };
+
+    const handleOpenSessionModal = () => {
+        const initialConfigs: Record<
+            number,
+            {
+                selected: boolean;
+                injection_site: string;
+                is_custom_site: boolean;
+                remarks: string;
+            }
+        > = {};
+
+        sessionCandidates.forEach((cand) => {
+            initialConfigs[cand.vaccine_id] = {
+                selected: true,
+                injection_site: getDefaultInjectionSite(cand.vaccine_name),
+                is_custom_site: false,
+                remarks: '',
+            };
+        });
+
+        setSessionDoseConfigs(initialConfigs);
+        setSessionConsentGivenBy(
+            patient.guardian?.name || patient.guardian_name || ''
+        );
+        setSessionDateAdministered(getTodayDateString());
+        setSessionAdministeredBy(
+            auth?.user?.id
+                ? String(auth.user.id)
+                : staffUsers?.[0]?.id
+                  ? String(staffUsers[0].id)
+                  : ''
+        );
+        setSessionConsentObtained(false);
+        setSessionHealthScreened(true);
+        setSessionAllergyChecked(true);
+        setSessionFiveRightsVerified(true);
+        setSessionRemarks('');
+        setShowSessionProceedModal(false);
+        setShowSessionModal(true);
+    };
+
+    const handleCloseSessionModal = () => {
+        if (isSubmittingSession) return;
+        setShowSessionModal(false);
+        setShowSessionProceedModal(false);
+    };
+
+    const toggleSessionVaccine = (vaccineId: number, selected: boolean) => {
+        setSessionDoseConfigs((prev) => ({
+            ...prev,
+            [vaccineId]: {
+                ...prev[vaccineId],
+                selected,
+            },
+        }));
+    };
+
+    const updateSessionVaccineSite = (
+        vaccineId: number,
+        site: string,
+        isCustom = false
+    ) => {
+        setSessionDoseConfigs((prev) => ({
+            ...prev,
+            [vaccineId]: {
+                ...prev[vaccineId],
+                injection_site: site,
+                is_custom_site: isCustom,
+            },
+        }));
+    };
+
+    const updateSessionVaccineRemarks = (
+        vaccineId: number,
+        remarks: string
+    ) => {
+        setSessionDoseConfigs((prev) => ({
+            ...prev,
+            [vaccineId]: {
+                ...prev[vaccineId],
+                remarks,
+            },
+        }));
+    };
+
+    const selectedSessionCandidates = sessionCandidates.filter(
+        (cand) => sessionDoseConfigs[cand.vaccine_id]?.selected
+    );
+
+    const isSessionReady =
+        sessionConsentObtained &&
+        sessionConsentGivenBy.trim().length > 0 &&
+        selectedSessionCandidates.length > 0;
+
+    const handleSubmitSession = () => {
+        if (!isSessionReady || isSubmittingSession) return;
+
+        setIsSubmittingSession(true);
+
+        const payloadDoses = selectedSessionCandidates.map((cand) => {
+            const config = sessionDoseConfigs[cand.vaccine_id];
+            return {
+                vaccine_id: cand.vaccine_id,
+                injection_site: config?.injection_site?.trim() || null,
+                vaccine_inventory_id: cand.reserved_batch_id || null,
+                remarks: config?.remarks?.trim() || null,
+            };
+        });
+
+        router.post(
+            `/immunization/patients/${patient.id}/administer-session`,
+            {
+                consent_obtained: true,
+                consent_given_by: sessionConsentGivenBy.trim(),
+                administered_by: sessionAdministeredBy
+                    ? Number(sessionAdministeredBy)
+                    : undefined,
+                date_administered: sessionDateAdministered || undefined,
+                session_remarks: sessionRemarks.trim() || null,
+                doses: payloadDoses,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setShowSessionProceedModal(false);
+                    setShowSessionModal(false);
+                },
+                onError: () => {
+                    setShowSessionProceedModal(false);
+                },
+                onFinish: () => {
+                    setIsSubmittingSession(false);
+                },
+            }
+        );
+    };
+
     const handleAssignOptionalVaccine = (
         vaccine: OptionalVaccine,
     ) => {
@@ -668,6 +882,18 @@ export default function VaccinationManagement({
                                         </h3>
                                     </div>
                                     <div className="flex items-center gap-2">
+                                        {sessionCandidates.length >= 2 && (
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                onClick={handleOpenSessionModal}
+                                                className="h-7 text-[11px] px-2.5 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                                                title="Administer all eligible vaccines together in this clinical encounter"
+                                            >
+                                                <Layers className="h-3.5 w-3.5 mr-1" />
+                                                Session ({sessionCandidates.length})
+                                            </Button>
+                                        )}
                                         {vaccinationOptions.length > 0 && (
                                             <Button
                                                 type="button"
@@ -1694,6 +1920,529 @@ export default function VaccinationManagement({
                             </div>
                         </div>
                     )}
+
+            {/* MULTI-VACCINE CLINICAL SESSION ADMINISTRATION MODAL */}
+            {showSessionModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-4 animate-in fade-in duration-150">
+                    <div className="w-full max-w-2xl max-h-[92vh] flex flex-col rounded-2xl border bg-background shadow-2xl overflow-hidden">
+                        {/* MODAL HEADER */}
+                        <div className="flex items-start justify-between gap-4 border-b px-5 py-4 bg-muted/20">
+                            <div className="flex items-center gap-3">
+                                <div className="rounded-xl bg-emerald-500/10 p-2.5 text-emerald-600 dark:text-emerald-400 shrink-0 border border-emerald-500/20">
+                                    <Layers className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-base sm:text-lg font-bold text-foreground">
+                                            Clinical Session Administration
+                                        </h3>
+                                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                                            Multi-Vaccine Encounter
+                                        </span>
+                                    </div>
+                                    <p className="mt-0.5 text-xs text-muted-foreground">
+                                        Patient: <span className="font-semibold text-foreground">{patientName}</span>
+                                        {patient.patient_id ? ` • ID: ${patient.patient_id}` : ''}
+                                        {patient.date_of_birth ? ` • DOB: ${formatDate(patient.date_of_birth)}` : ''}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                disabled={isSubmittingSession}
+                                onClick={handleCloseSessionModal}
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        {/* MODAL BODY (SCROLLABLE) */}
+                        <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-5 p-4 sm:p-6 text-sm">
+                            {/* SHARED ENCOUNTER DETAILS */}
+                            <div className="rounded-xl border bg-muted/20 p-4 space-y-3">
+                                <div className="flex items-center gap-2 text-foreground font-semibold text-xs uppercase tracking-wider">
+                                    <UserCheck className="h-4 w-4 text-primary" />
+                                    <span>Clinical Encounter Details</span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="session-admin-by" className="text-xs font-medium">
+                                            Administered By
+                                        </Label>
+                                        <select
+                                            id="session-admin-by"
+                                            value={sessionAdministeredBy}
+                                            onChange={(e) => setSessionAdministeredBy(e.target.value)}
+                                            className="w-full text-xs h-9 rounded-md border border-input bg-background px-2.5 text-foreground shadow-xs outline-none focus:border-primary focus:ring-1 focus:ring-ring"
+                                            disabled={isSubmittingSession}
+                                        >
+                                            {staffUsers && staffUsers.length > 0 ? (
+                                                staffUsers.map((staff) => (
+                                                    <option key={staff.id} value={staff.id}>
+                                                        {staff.name} ({staff.role})
+                                                    </option>
+                                                ))
+                                            ) : auth?.user ? (
+                                                <option value={auth.user.id}>
+                                                    {auth.user.name} ({auth.user.role || 'Staff'})
+                                                </option>
+                                            ) : (
+                                                <option value="">Health Center Staff</option>
+                                            )}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="session-date-admin" className="text-xs font-medium">
+                                            Date Administered
+                                        </Label>
+                                        <Input
+                                            id="session-date-admin"
+                                            type="date"
+                                            max={getTodayDateString()}
+                                            min={patient.date_of_birth ? patient.date_of_birth.split('T')[0] : undefined}
+                                            value={sessionDateAdministered}
+                                            onChange={(e) => setSessionDateAdministered(e.target.value)}
+                                            className="h-9 text-xs bg-background"
+                                            disabled={isSubmittingSession}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="session-consent-given" className="text-xs font-medium">
+                                            Consent Given By <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="session-consent-given"
+                                            type="text"
+                                            placeholder="e.g. Maria Santos (Mother)"
+                                            value={sessionConsentGivenBy}
+                                            onChange={(e) => setSessionConsentGivenBy(e.target.value)}
+                                            className="h-9 text-xs bg-background"
+                                            disabled={isSubmittingSession}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* SECTION 1: PARENT / GUARDIAN INFORMED CONSENT & SAFETY CHECKLIST */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {/* Informed Consent */}
+                                <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-3.5 space-y-2">
+                                    <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                                        <ShieldCheck className="h-4 w-4 shrink-0" />
+                                        <h4 className="font-semibold text-xs sm:text-sm">
+                                            Informed Consent Verified
+                                        </h4>
+                                    </div>
+
+                                    <div className="flex items-start space-x-2 pt-1">
+                                        <Checkbox
+                                            id="session-consent-cb"
+                                            checked={sessionConsentObtained}
+                                            onCheckedChange={(checked) => setSessionConsentObtained(Boolean(checked))}
+                                            disabled={isSubmittingSession}
+                                        />
+                                        <div className="grid gap-1 leading-none">
+                                            <label
+                                                htmlFor="session-consent-cb"
+                                                className="text-xs font-medium leading-normal cursor-pointer select-none text-foreground"
+                                            >
+                                                Consent Granted for Session <span className="text-destructive">*</span>
+                                            </label>
+                                            <p className="text-[11px] text-muted-foreground leading-tight">
+                                                Caregiver informed of session vaccines, benefits, and possible mild reactions.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Clinical Checklist */}
+                                <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3.5 space-y-2">
+                                    <div className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
+                                        <CheckCircle2 className="h-4 w-4 shrink-0" />
+                                        <h4 className="font-semibold text-xs sm:text-sm">
+                                            Pre-Vaccination Safety Screen
+                                        </h4>
+                                    </div>
+
+                                    <div className="space-y-1.5 pt-1 text-xs">
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="session-health-screen"
+                                                checked={sessionHealthScreened}
+                                                onCheckedChange={(c) => setSessionHealthScreened(Boolean(c))}
+                                                disabled={isSubmittingSession}
+                                            />
+                                            <label htmlFor="session-health-screen" className="text-[11px] font-medium cursor-pointer">
+                                                Health assessment cleared (no acute fever)
+                                            </label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="session-allergy-check"
+                                                checked={sessionAllergyChecked}
+                                                onCheckedChange={(c) => setSessionAllergyChecked(Boolean(c))}
+                                                disabled={isSubmittingSession}
+                                            />
+                                            <label htmlFor="session-allergy-check" className="text-[11px] font-medium cursor-pointer">
+                                                No known severe allergic history
+                                            </label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="session-five-rights"
+                                                checked={sessionFiveRightsVerified}
+                                                onCheckedChange={(c) => setSessionFiveRightsVerified(Boolean(c))}
+                                                disabled={isSubmittingSession}
+                                            />
+                                            <label htmlFor="session-five-rights" className="text-[11px] font-medium cursor-pointer">
+                                                5 Rights &amp; Cold Chain Verified
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* SECTION 2: VACCINE DOSES CHECKLIST & ANATOMICAL INJECTION SITES */}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between flex-wrap gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <Syringe className="h-4 w-4 text-primary" />
+                                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                            Select Vaccines to Administer &amp; Injection Sites
+                                        </span>
+                                    </div>
+                                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                                        {selectedSessionCandidates.length} of {sessionCandidates.length} Selected
+                                    </span>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {sessionCandidates.map((option) => {
+                                        const config = sessionDoseConfigs[option.vaccine_id] || {
+                                            selected: true,
+                                            injection_site: getDefaultInjectionSite(option.vaccine_name),
+                                            is_custom_site: false,
+                                            remarks: '',
+                                        };
+                                        const isSelected = config.selected;
+                                        const isOral = isOralVaccine(option.vaccine_name);
+
+                                        return (
+                                            <div
+                                                key={option.vaccine_id}
+                                                className={`border rounded-xl p-3.5 space-y-3 transition ${
+                                                    isSelected
+                                                        ? 'bg-card border-border shadow-xs'
+                                                        : 'opacity-50 bg-muted/20 border-dashed'
+                                                }`}
+                                            >
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <label className="flex items-start gap-2.5 cursor-pointer select-none min-w-0">
+                                                        <Checkbox
+                                                            checked={isSelected}
+                                                            onCheckedChange={(checked) =>
+                                                                toggleSessionVaccine(option.vaccine_id, Boolean(checked))
+                                                            }
+                                                            disabled={isSubmittingSession}
+                                                            className="mt-0.5"
+                                                        />
+                                                        <div>
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="font-bold text-xs sm:text-sm text-foreground">
+                                                                    {option.vaccine_name}
+                                                                </span>
+                                                                <span className="inline-flex items-center rounded border border-primary/20 bg-primary/5 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                                                                    Dose {option.dose_number} of {option.required_doses}
+                                                                </span>
+                                                                <span className={`text-[10px] font-semibold ${getPriorityClass(option.schedule_label)}`}>
+                                                                    {option.schedule_label}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-[11px] text-muted-foreground mt-0.5 capitalize">
+                                                                Category: {option.category}
+                                                            </p>
+                                                        </div>
+                                                    </label>
+
+                                                    <div className="text-right shrink-0">
+                                                        {option.reserved_batch_number ? (
+                                                            <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded bg-muted text-foreground border">
+                                                                Batch: {option.reserved_batch_number}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                                                                In Stock ({option.available_stock} doses)
+                                                            </span>
+                                                        )}
+                                                        {option.reserved_batch_expiration_date && (
+                                                            <span className="block text-[10px] text-muted-foreground mt-0.5">
+                                                                Exp: {formatDate(option.reserved_batch_expiration_date)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* ROUTE & SITE CONTROLS */}
+                                                {isSelected && (
+                                                    <div className="pt-2.5 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                                                        <span className="font-medium text-muted-foreground shrink-0">
+                                                            {isOral ? 'Administration Route:' : 'Injection Site:'}
+                                                        </span>
+
+                                                        {isOral ? (
+                                                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold text-xs border border-emerald-500/20">
+                                                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                                                Oral Drops (Liquid)
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex flex-wrap items-center gap-1.5">
+                                                                {[
+                                                                    { label: 'Left Thigh (IM)', value: 'Anterolateral Left Thigh (IM)' },
+                                                                    { label: 'Right Thigh (IM)', value: 'Anterolateral Right Thigh (IM)' },
+                                                                    { label: 'Left Deltoid', value: 'Left Deltoid (IM/SC)' },
+                                                                    { label: 'Right Deltoid', value: 'Right Deltoid (ID)' },
+                                                                ].map((site) => {
+                                                                    const isActive = config.injection_site === site.value && !config.is_custom_site;
+                                                                    return (
+                                                                        <button
+                                                                            key={site.value}
+                                                                            type="button"
+                                                                            disabled={isSubmittingSession}
+                                                                            onClick={() => updateSessionVaccineSite(option.vaccine_id, site.value, false)}
+                                                                            className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition ${
+                                                                                isActive
+                                                                                    ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                                                                                    : 'bg-background hover:bg-muted text-foreground border-input'
+                                                                            }`}
+                                                                        >
+                                                                            {site.label}
+                                                                        </button>
+                                                                    );
+                                                                })}
+
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={isSubmittingSession}
+                                                                    onClick={() =>
+                                                                        updateSessionVaccineSite(
+                                                                            option.vaccine_id,
+                                                                            config.is_custom_site ? config.injection_site : '',
+                                                                            true
+                                                                        )
+                                                                    }
+                                                                    className={`px-2 py-1 rounded-md text-[11px] font-medium border transition ${
+                                                                        config.is_custom_site
+                                                                            ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                                                                            : 'bg-background hover:bg-muted text-foreground border-input'
+                                                                    }`}
+                                                                >
+                                                                    Custom...
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {isSelected && config.is_custom_site && !isOral && (
+                                                    <Input
+                                                        type="text"
+                                                        placeholder="Specify custom injection site / route..."
+                                                        value={config.injection_site}
+                                                        onChange={(e) =>
+                                                            updateSessionVaccineSite(option.vaccine_id, e.target.value, true)
+                                                        }
+                                                        className="h-8 text-xs bg-background mt-1"
+                                                        disabled={isSubmittingSession}
+                                                        autoFocus
+                                                    />
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* SECTION 3: GENERAL SESSION REMARKS */}
+                            <div className="space-y-1.5">
+                                <Label htmlFor="session-general-remarks" className="text-xs font-semibold">
+                                    Session Remarks (Optional)
+                                </Label>
+                                <Input
+                                    id="session-general-remarks"
+                                    type="text"
+                                    placeholder="e.g. Well-tolerated, no acute distress observed during post-vaccination observation"
+                                    value={sessionRemarks}
+                                    onChange={(e) => setSessionRemarks(e.target.value)}
+                                    maxLength={1000}
+                                    className="h-9 text-xs"
+                                    disabled={isSubmittingSession}
+                                />
+                            </div>
+
+                            {/* INVENTORY & UNIFIED NOTIFICATION NOTICE */}
+                            <div className="rounded-xl border border-dashed bg-muted/20 p-3.5 text-xs text-muted-foreground space-y-1">
+                                <div className="font-semibold text-foreground flex items-center gap-1.5">
+                                    <Package className="h-3.5 w-3.5 text-primary" />
+                                    <span>Atomic Record &amp; Consolidated Notification</span>
+                                </div>
+                                <p>
+                                    Confirming records all selected doses in a single transaction, deducts batches, and sends a single consolidated next-visit notification to the guardian.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* MODAL FOOTER */}
+                        <div className="flex flex-col-reverse gap-2 border-t px-5 py-3.5 bg-muted/20 sm:flex-row sm:justify-between sm:items-center">
+                            <div className="text-xs text-muted-foreground">
+                                {!isSessionReady && (
+                                    <span className="text-amber-600 dark:text-amber-400 font-medium">
+                                        * Informed consent, caregiver name, and at least 1 dose required
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 text-xs"
+                                    disabled={isSubmittingSession}
+                                    onClick={handleCloseSessionModal}
+                                >
+                                    Cancel
+                                </Button>
+
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    className="h-9 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                                    disabled={!isSessionReady || isSubmittingSession}
+                                    onClick={() => setShowSessionProceedModal(true)}
+                                >
+                                    <Syringe className="mr-1.5 h-4 w-4" />
+                                    Record All {selectedSessionCandidates.length} Doses
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* CONFIRMATION POPUP MODAL FOR SESSION: "Proceed with Session Administration?" */}
+            {showSessionProceedModal && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-4 animate-in fade-in duration-150">
+                    <div className="w-full max-w-lg rounded-xl border bg-background shadow-2xl overflow-hidden flex flex-col">
+                        <div className="flex items-start justify-between gap-3 border-b px-5 py-4 bg-muted/20">
+                            <div className="flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400">
+                                <div className="rounded-full bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400 shrink-0">
+                                    <Layers className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-base sm:text-lg font-bold text-foreground">
+                                        Proceed with Session Administration?
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        Please review the session summary before recording into the health record.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-5 space-y-4 text-xs">
+                            <div className="grid grid-cols-2 gap-2 text-xs border rounded-lg p-3 bg-muted/10">
+                                <div>
+                                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Patient</span>
+                                    <strong className="text-foreground text-xs">{patientName}</strong>
+                                </div>
+                                <div>
+                                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Consent By</span>
+                                    <strong className="text-foreground text-xs">{sessionConsentGivenBy}</strong>
+                                </div>
+                                <div>
+                                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Administered By</span>
+                                    <strong className="text-foreground text-xs">
+                                        {staffUsers?.find((s) => String(s.id) === String(sessionAdministeredBy))?.name ||
+                                            auth?.user?.name ||
+                                            'Health Center Staff'}
+                                    </strong>
+                                </div>
+                                <div>
+                                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Date</span>
+                                    <strong className="text-foreground text-xs">{sessionDateAdministered}</strong>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <span className="font-semibold text-xs text-foreground block">
+                                    Vaccines to be Administered ({selectedSessionCandidates.length}):
+                                </span>
+                                <div className="border rounded-lg divide-y bg-card overflow-hidden">
+                                    {selectedSessionCandidates.map((cand) => {
+                                        const config = sessionDoseConfigs[cand.vaccine_id];
+                                        return (
+                                            <div key={cand.vaccine_id} className="p-2.5 flex items-center justify-between text-xs">
+                                                <div>
+                                                    <strong className="text-foreground">{cand.vaccine_name}</strong>
+                                                    <span className="text-muted-foreground ml-1.5">
+                                                        (Dose {cand.dose_number} of {cand.required_doses})
+                                                    </span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="font-medium text-primary text-[11px] block">
+                                                        {config?.injection_site || 'Standard Site'}
+                                                    </span>
+                                                    {cand.reserved_batch_number && (
+                                                        <span className="font-mono text-[10px] text-muted-foreground">
+                                                            {cand.reserved_batch_number}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 text-[11px] text-emerald-800 dark:text-emerald-300">
+                                A single consolidated next-visit notification will be sent to the guardian user, and routine milestone schedules will be recalculated automatically.
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 border-t px-5 py-3.5 bg-muted/20">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-9 text-xs"
+                                disabled={isSubmittingSession}
+                                onClick={() => setShowSessionProceedModal(false)}
+                            >
+                                Back to Edit
+                            </Button>
+
+                            <Button
+                                type="button"
+                                size="sm"
+                                className="h-9 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                                disabled={isSubmittingSession}
+                                onClick={handleSubmitSession}
+                            >
+                                <Syringe className="mr-1.5 h-4 w-4" />
+                                {isSubmittingSession ? 'Recording Session...' : 'Confirm & Record All Doses'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
             </CardContent>
         </Card>
     );

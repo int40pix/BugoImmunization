@@ -834,6 +834,17 @@ Route::middleware([
 
 
     Route::post(
+        'immunization/patients/{patient}/administer-session',
+        [
+            ImmunizationController::class,
+            'administerSession',
+        ]
+    )->name(
+        'immunization.administer-session'
+    );
+
+
+    Route::post(
         'immunization/patients/{patient}/reschedule',
         [
             ImmunizationController::class,

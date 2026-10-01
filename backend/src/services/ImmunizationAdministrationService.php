@@ -28,7 +28,8 @@ class ImmunizationAdministrationService
         ?string $consentGivenBy = null,
         ?string $injectionSite = null,
         ?string $dateAdministered = null,
-        ?int $vaccineInventoryId = null
+        ?int $vaccineInventoryId = null,
+        bool $dispatchNotification = true
     ): ImmunizationRecord {
         return DB::transaction(function () use (
             $patient,
@@ -38,7 +39,8 @@ class ImmunizationAdministrationService
             $consentGivenBy,
             $injectionSite,
             $dateAdministered,
-            $vaccineInventoryId
+            $vaccineInventoryId,
+            $dispatchNotification
         ) {
             /*
              * Lock the patient so two requests cannot
@@ -434,7 +436,7 @@ class ImmunizationAdministrationService
 
             // Dispatch notification to guardian user if linked
             $guardianUser = $freshRecord->patient?->guardian?->user;
-            if ($guardianUser) {
+            if ($guardianUser && $dispatchNotification) {
                 $nextRecommendation = $this->scheduleService
                     ->resolveNextVisitRecommendation($freshRecord->patient);
 

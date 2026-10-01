@@ -5,14 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\ImmunizationRecord;
 use App\Models\Patient;
 use App\Models\PatientVaccineSchedule;
+use App\Models\User;
 use App\Models\Vaccine;
+use App\Notifications\VaccineSessionAdministeredNotification;
 use App\Services\ImmunizationAdministrationService;
+use App\Services\PatientImmunizationScheduleService;
 use App\Services\VaccineSchedulingPriorityService;
 use App\Http\Controllers\ImmunizationReportController;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -332,6 +337,156 @@ class ImmunizationController extends Controller
         return back()->with(
             'success',
             'Vaccination recorded successfully.'
+        );
+    }
+
+    /**
+     * Administer multiple vaccines in a single clinical session.
+     */
+    public function administerSession(
+        Request $request,
+        Patient $patient,
+        ImmunizationAdministrationService $administrationService
+    ): RedirectResponse {
+        $validated = $request->validate([
+            'consent_obtained' => [
+                'required',
+                'boolean',
+                'accepted',
+            ],
+            'consent_given_by' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'administered_by' => [
+                'nullable',
+                'integer',
+                'exists:users,id',
+            ],
+            'date_administered' => [
+                'nullable',
+                'date',
+                'before_or_equal:today',
+            ],
+            'session_remarks' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+            'doses' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+            'doses.*.vaccine_id' => [
+                'required',
+                'integer',
+                'exists:vaccines,id',
+            ],
+            'doses.*.injection_site' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+            'doses.*.vaccine_inventory_id' => [
+                'nullable',
+                'integer',
+                'exists:vaccine_inventories,id',
+            ],
+            'doses.*.remarks' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+        ]);
+
+        $adminUserId = ! empty($validated['administered_by'])
+            ? (int) $validated['administered_by']
+            : $request->user()?->id;
+
+        try {
+            $administeredRecords = [];
+
+            DB::transaction(function () use (
+                $patient,
+                $validated,
+                $adminUserId,
+                $administrationService,
+                &$administeredRecords
+            ) {
+                foreach ($validated['doses'] as $doseInput) {
+                    $remarks = trim(($doseInput['remarks'] ?? '') . ' ' . ($validated['session_remarks'] ?? ''));
+
+                    $record = $administrationService->administer(
+                        patient: $patient,
+                        vaccineId: (int) $doseInput['vaccine_id'],
+                        administeredBy: $adminUserId,
+                        remarks: $remarks ?: null,
+                        consentGivenBy: $validated['consent_given_by'],
+                        injectionSite: $doseInput['injection_site'] ?? null,
+                        dateAdministered: $validated['date_administered'] ?? null,
+                        vaccineInventoryId: ! empty($doseInput['vaccine_inventory_id'])
+                            ? (int) $doseInput['vaccine_inventory_id']
+                            : null,
+                        dispatchNotification: false
+                    );
+
+                    $administeredRecords[] = $record;
+                }
+            });
+
+            // Automatically reschedule / update schedules for next milestones
+            app(VaccineSchedulingPriorityService::class)->generateSchedules();
+
+            // Refresh patient to get updated status/records
+            $patient->refresh();
+            $patient->load(['guardian.user']);
+            $guardianUser = $patient->guardian?->user;
+
+            if ($guardianUser && ! empty($administeredRecords)) {
+                $scheduleService = app(PatientImmunizationScheduleService::class);
+                $nextRecommendation = $scheduleService->resolveNextVisitRecommendation($patient);
+
+                $administeredDosesData = collect($administeredRecords)->map(function ($rec) {
+                    return [
+                        'vaccine_name' => $rec->vaccine?->name ?? 'Vaccine',
+                        'dose_number' => $rec->dose_number,
+                        'injection_site' => $rec->injection_site,
+                    ];
+                })->all();
+
+                $staffName = $request->user()?->name ?? 'Health Center Staff';
+                if (! empty($validated['administered_by'])) {
+                    $staffUser = User::find($validated['administered_by']);
+                    if ($staffUser) {
+                        $staffName = $staffUser->name;
+                    }
+                }
+
+                Notification::send(
+                    $guardianUser,
+                    new VaccineSessionAdministeredNotification(
+                        patient: $patient,
+                        administeredDoses: $administeredDosesData,
+                        dateAdministered: $validated['date_administered'] ?? Carbon::today()->toDateString(),
+                        administeredByName: $staffName,
+                        nextVisitPrompt: $nextRecommendation['prompt'] ?? null,
+                        nextRecommendedDate: $nextRecommendation['next_recommended_date'] ?? null
+                    )
+                );
+            }
+        } catch (DomainException $exception) {
+            return back()->withErrors([
+                'administration' => $exception->getMessage(),
+            ]);
+        }
+
+        $count = count($administeredRecords);
+
+        return back()->with(
+            'success',
+            "Clinical vaccination session recorded successfully ({$count} vaccines administered)."
         );
     }
 
